@@ -8,7 +8,7 @@ import { joiResolver } from "@hookform/resolvers/joi";
 import Joi from "joi";
 import { showError } from "../utils/showError";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import {
   sendEmailVerificationLink,
   signInUser,
@@ -62,6 +62,7 @@ export const SignInOrSignUp = ({ title }) => {
     (state) => state.user
   );
   const navigate = useNavigate();
+  const path = useLocation()
 
   const {
     register,
@@ -83,42 +84,50 @@ export const SignInOrSignUp = ({ title }) => {
     reset();
   };
 
+  // this is to remember last error key from joi
   const lastErrorKeyRef = useRef(null);
 
   useEffect(() => {
+    // this shows forms errors based on joi validation
     showError(errors, lastErrorKeyRef, toast);
 
     switch (title.toLowerCase()) {
       case "sign up":
         if (!loading && isLoggedIn && user) {
           toast.success("signed up");
-          dispatch(clearMessage());
           dispatch(sendEmailVerificationLink());
           navigate("/profile");
         }
         break;
       case "sign in":
         if (!loading && isLoggedIn && user) {
+          localStorage.clear()
           toast.success("signed in");
-          dispatch(clearMessage());
           navigate("/");
         }
         break;
     }
 
+    // this shows the error if error exists
     if (error) {
       toast.error(error);
       dispatch(clearErrors());
     }
-  }, [errors, title, error, isLoggedIn, success]);
+  }, [errors, title, error, isLoggedIn,loading,user]);
 
-
+// show the success message when both success and message are defined
   useEffect(()=>{
     if(success && message){
       toast.success(message)
       dispatch(clearMessage())
     }
   },[success,message])
+
+
+  // reset the form fields if url is changed
+  useEffect(()=>{
+    reset()
+  },[path.pathname])
 
 
   const signInSignupWithGoogle = ()=>{

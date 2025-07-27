@@ -30,7 +30,7 @@ export const App = () => {
       <main className="p-4 overflow-y-auto relative" ref={mainRef}>
         <ToastContainer
           position="top-center"
-          autoClose={5000}
+          autoClose={3000}
           limit={4}
           hideProgressBar={false}
           newestOnTop={false}

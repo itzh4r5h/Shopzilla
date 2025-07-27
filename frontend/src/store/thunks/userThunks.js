@@ -15,19 +15,6 @@ export const signUpUser = createAsyncThunk(
   }
 );
 
-export const signInOrSignUpWithGoogle = createAsyncThunk(
-  "user/google_signin_signup",
-  async (_, thunkAPI) => {
-    try {
-        // userData is an object in which includes email and password
-      const { data } = await axiosInstance.get('/users/auth/google');
-      return data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");
-    }
-  }
-);
-
 export const signInUser = createAsyncThunk(
   "user/signin",
   async (userData, thunkAPI) => {
@@ -86,6 +73,33 @@ export const loadUser = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const { data } = await axiosInstance.get('/users/me');
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");
+    }
+  }
+);
+
+
+
+export const sendPasswordResetTokenToEmail = createAsyncThunk(
+  "user/send_reset_token",
+  async (email, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.post('/users/reset/password',{email});
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");
+    }
+  }
+);
+
+
+export const resetPassword = createAsyncThunk(
+  "user/reset_password",
+  async (userData, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.patch(`/users/reset/password/${userData.resetToken}`,{password:userData.password});
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");

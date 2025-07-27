@@ -85,6 +85,10 @@ exports.signInUser = catchAsyncErrors(async (req, res, next) => {
 
   const user = await User.findOne({ email }).select("+password");
 
+  if (!user.password) {
+    return next(new ErrorHandler("invalid credentials", 401));
+  }
+
   if (!user) {
     return next(new ErrorHandler("invalid credentials", 401));
   }
@@ -157,10 +161,14 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("token is invalid or expired", 404));
   }
 
+  if (!user.isVerified) {
+    return next(new ErrorHandler("Account no longer exists", 410));
+  }
+
   user.password = password;
   user.resetPasswordToken = undefined;
   user.resetPasswordTokenExpire = undefined;
-  await user.save({ validateBeforeSave: false });
+  await user.save({ validateBeforeSave: true });
 
   sendToken(user, 200, res);
 });

@@ -2,8 +2,9 @@ import { createSlice } from "@reduxjs/toolkit";
 import { handleAsyncThunk } from "../utils/handleAsyncThunk";
 import {
   loadUser,
+  resetPassword,
   sendEmailVerificationLink,
-  signInOrSignUpWithGoogle,
+  sendPasswordResetTokenToEmail,
   signInUser,
   signOutUser,
   signUpUser,
@@ -31,6 +32,7 @@ const actions = {
 const userSlice = createSlice({
   name: "user",
   initialState: {
+    resendTokenIn: undefined,
     resendLinkIn: undefined,
     accountDeletionCountdownExpiresAt: undefined,
     sending: false,
@@ -51,9 +53,10 @@ const userSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    handleAsyncThunk(builder, signInOrSignUpWithGoogle, { ...actions });
     handleAsyncThunk(builder, signUpUser, { ...actions });
+    
     handleAsyncThunk(builder, signInUser, { ...actions });
+
     handleAsyncThunk(builder, loadUser, {
       pending: (state) => {
         state.loading = true;
@@ -69,6 +72,8 @@ const userSlice = createSlice({
         state.error = null;
       },
     });
+
+
     handleAsyncThunk(builder, signOutUser, {
       pending: (state) => {
         state.loading = true;
@@ -89,6 +94,8 @@ const userSlice = createSlice({
         state.error = action.payload;
       },
     });
+
+
     handleAsyncThunk(builder, sendEmailVerificationLink, {
       pending: (state) => {
         state.loading = false;
@@ -107,6 +114,8 @@ const userSlice = createSlice({
         state.error = action.payload;
       },
     });
+
+
     handleAsyncThunk(builder, verifyEmail, {
       pending: (state) => {
         state.loading = true;
@@ -121,6 +130,30 @@ const userSlice = createSlice({
         state.error = action.payload;
       },
     });
+
+
+    handleAsyncThunk(builder, sendPasswordResetTokenToEmail, {
+      pending: (state) => {
+        state.loading = false;
+        state.sending = true;
+        state.message = null;
+      },
+      fulfilled: (state, action) => {
+        state.sending = false;
+        state.message = action.payload.message;
+        state.success = action.payload.success;
+        state.resendTokenIn = action.payload.resendTokenIn;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.sending = false;
+        state.error = action.payload;
+      },
+    });
+
+    handleAsyncThunk(builder, resetPassword, { ...actions });
+
+
   },
 });
 

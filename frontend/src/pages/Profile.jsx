@@ -86,11 +86,7 @@ export const Profile = () => {
       } else {
         toast.success(message);
         dispatch(clearMessage());
-        const key = localStorage.getItem(`resend_timer_${user?._id}`);
-        if (key) {
-          localStorage.removeItem(`resend_timer_${user?._id}`);
-          localStorage.removeItem(`deletion_timer_${user?._id}`);
-        }
+        localStorage.clear()
         navigate("/profile");
       }
     }
@@ -249,7 +245,7 @@ export const Profile = () => {
             )}
 
           {!user.isVerified && (resendCountdown.secondsLeft > 0 || sending) && (
-            <button className="flex justify-center items-center gap-2 w-full text-xl font-bold border-2 border-black rounded-md p-2 py-1 bg-black text-white">
+            <button type="button" className="flex justify-center items-center gap-2 w-full text-xl font-bold border-2 border-black rounded-md p-2 py-1 bg-black text-white">
               {sending
                 ? "Sending..."
                 : `Resend in ${resendCountdown.formatted}`}

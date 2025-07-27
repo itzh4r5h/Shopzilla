@@ -18,11 +18,7 @@ export const TopNavbar = () => {
   const isAdminUser = user?.role === "admin";
 
   const signout = () => {
-      const key = localStorage.getItem(`resend_timer_${user?._id}`)
-      if(key){
-          localStorage.removeItem(`resend_timer_${user?._id}`)
-        localStorage.removeItem(`deletion_timer_${user?._id}`)
-      }
+      localStorage.clear()
       dispatch(signOutUser());
       navigate("/signin");
   };

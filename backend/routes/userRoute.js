@@ -32,7 +32,7 @@ router.route('/users/password').patch(isUserAuthenticated,updateUserPassword)
 // ========================= SEND EMAIL ==============================
 router.route('/users/email').post(isUserAuthenticated,sendOtpToEmail)
 router.route('/users/verify/email').get(isUserAuthenticated,sendEmailForEmailVerification)
-router.route('/users/reset/password').post(sendEmailForResetPassword)
+router.route('/users/reset/password').post(isEmailVerified,sendEmailForResetPassword)
 
 
 // ========================= SHIPPING ADDRESS ==============================
