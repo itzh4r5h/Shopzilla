@@ -1,0 +1,28 @@
+import { useState } from "react";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+
+export const ImageCard = ({ src }) => {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <>
+      {!loaded && (
+        <span className="absolute h-full w-full">
+          <Skeleton height={"100%"} />
+        </span>
+      )}
+
+      <img
+        src={src.url}
+        alt={src.name}
+        loading="lazy"
+        className={`${
+          loaded ? "opacity-100" : "opacity-0"
+        } h-full w-full object-cover`}
+        onLoad={() => setLoaded(true)}
+        onError={() => setLoaded(false)}
+      />
+    </>
+  );
+};

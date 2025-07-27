@@ -1,0 +1,235 @@
+const { User } = require("../../models/User");
+const { Product } = require("../../models/Product");
+const { Order } = require("../../models/Order");
+const ErrorHandler = require("../../utils/errorHandler");
+const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
+const { isOnlyDigits } = require("../../utils/helpers");
+
+// ========================== CREATE NEW ORDER FROM CART PRODUCTS ================================
+exports.createNewOrder = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findById(req.user._id).populate(
+    "cartProducts.product"
+  );
+
+  if (!user) {
+    return next(new ErrorHandler("user not exists", 404));
+  }
+
+  if (user.shippingAddress.length === 0) {
+    return next(new ErrorHandler("add address first", 400));
+  }
+
+  const { shippingAddressIndex } = req.body;
+
+  if (!shippingAddressIndex || shippingAddressIndex.toString().trim() === "") {
+    return next(new ErrorHandler("address is required", 400));
+  }
+
+  if (
+    !isOnlyDigits(shippingAddressIndex) ||
+    Number(shippingAddressIndex) > user.shippingAddress.length
+  ) {
+    return next(new ErrorHandler("invalid address", 400));
+  }
+
+  const shippingAddress =
+    user.shippingAddress[Number(shippingAddressIndex) - 1];
+
+  const orderItems = [];
+  let itemsPrice = 0;
+
+  const singleProduct = await Product.findById(req.params.productId);
+
+  if (!singleProduct) {
+    user.cartProducts.forEach((cartProduct) => {
+      const { product } = cartProduct;
+      const item = {
+        name: product.name,
+        price: product.price,
+        quantity: cartProduct.quantity,
+        image: product.images[0].url,
+        product: product._id,
+      };
+      orderItems.push(item);
+      itemsPrice += product.price;
+    });
+  } else {
+    const quantity = req.params.quantity;
+
+    if (
+      !quantity ||
+      !isOnlyDigits(quantity) ||
+      Number(quantity) > singleProduct.stock
+    ) {
+      return next(new ErrorHandler("invalid quantity", 400));
+    }
+
+    const item = {
+      name: singleProduct.name,
+      price: singleProduct.price,
+      quantity: Number(quantity),
+      image: singleProduct.images[0].url,
+      product: singleProduct._id,
+    };
+
+    orderItems.push(item);
+    itemsPrice = singleProduct.price;
+  }
+
+  const shippingPrice = itemsPrice > 500 ? 0 : 79;
+  const totalPrice = itemsPrice + shippingPrice;
+
+  const order = await Order.create({
+    shippingAddress,
+    orderItems,
+    itemsPrice,
+    shippingPrice,
+    totalPrice,
+    user: req.user._id,
+  });
+
+  res.status(201).json({
+    success: true,
+    orderId: order._id,
+  });
+});
+
+// ========================== GET MY ORDER ================================
+exports.getMyOrder = catchAsyncErrors(async (req, res, next) => {
+  const order = await Order.findOne({ user: req.user._id, _id: req.params.id });
+
+  if (!order) {
+    return next(new ErrorHandler("order not exists", 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    order,
+  });
+});
+
+// ========================== GET MY ALL ORDERS ================================
+exports.getMyAllOrders = catchAsyncErrors(async (req, res, next) => {
+  const orders = await Order.find({
+    user: req.user._id,
+    orderStatus: {
+      $in: [
+        "Processing",
+        "Shipped",
+        "Dispatched",
+        "Out For Delivery",
+        "Delivered",
+      ],
+    },
+  });
+
+  if (!orders) {
+    return next(new ErrorHandler("orders not exists", 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    orders,
+  });
+});
+
+// ========================== ADMIN -- GET ALL ORDERS ================================
+exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
+  const orders = await Order.find();
+
+  if (!orders) {
+    return next(new ErrorHandler("orders not exists", 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    orders,
+  });
+});
+
+// ========================== ADMIN -- UPDATE ORDER STATUS ================================
+exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
+  const order = await Order.findById(req.params.id);
+
+  const orderStatusCodes = [
+    "processing",
+    "shipped",
+    "dispatched",
+    "out for delivery",
+    "delivered",
+  ];
+
+  const { orderStatus } = req.body;
+
+  const orderStatusIndex = orderStatusCodes.indexOf(
+    orderStatus.toString().toLowerCase()
+  );
+  const currentOrderStatusIndex = orderStatusCodes.indexOf(order.orderStatus);
+
+  if (!order) {
+    return next(new ErrorHandler("order not exists", 404));
+  }
+
+  if (!orderStatus || orderStatus.toString().trim() === "") {
+    return next(new ErrorHandler("order status is required", 400));
+  }
+
+  if (!orderStatusCodes.includes(orderStatus)) {
+    return next(new ErrorHandler("invalid order status", 400));
+  }
+
+  if (orderStatus.toString().toLowerCase() === order.orderStatus) {
+    return next(
+      new ErrorHandler(
+        `order status is already set to '${order.orderStatus.toLowerCase()}'`,
+        400
+      )
+    );
+  }
+
+  if (orderStatusIndex < currentOrderStatusIndex) {
+    return next(new ErrorHandler("order status cann't be reverted", 400));
+  }
+
+  if (orderStatusIndex > currentOrderStatusIndex + 1) {
+    return next(
+      new ErrorHandler(
+        `order status cann't directly set to '${orderStatus
+          .toString()
+          .toLowerCase()}'`,
+        400
+      )
+    );
+  }
+
+  if (orderStatus.toString().toLowerCase() === "delivered") {
+    order.deliveredAt = Date.now();
+  }
+
+  order.orderStatus = orderStatus;
+  await order.save({ validateBeforeSave: true });
+
+  res.status(200).json({
+    success: true,
+    order,
+  });
+});
+
+// ========================== DELETE ORDER ================================
+exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return next(new ErrorHandler("order not exists", 404));
+  }
+
+  if (order.orderStatus === "pending") {
+    await order.deleteOne();
+    res.status(200).json({
+      success: true,
+      message: "order deleted",
+    });
+  } else {
+    return next(new ErrorHandler("order cann't be deleted because payment is done", 400));
+  }
+});

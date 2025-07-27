@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root{
+    --grey: #f4f4f0;
+    --black: #000000;
+    --white: #ffffff;
+    --light: #00000080;
+    --purple: #c490ffd0;
+    --purpleDark: #821afa;
+}
+
+@font-face {
+    font-family: 'abc';
+    src: url('../assets/fonts/ABCFavoritRegular.ttf');
+}
+
+*{
+    font-family: 'abc';
+}
+
+html,body,#root{
+    height: 100%;
+    width: 100%;
+}
+
+*::-webkit-scrollbar{
+  display: none;
+}
+
+
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-pagination-bullet-active {
+  background-color: var(--purpleDark)!important;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button{
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number']{
+  -moz-appearance: textfield;
+}

@@ -1,0 +1,163 @@
+const { User } = require("../../models/User");
+const ErrorHandler = require("../../utils/errorHandler");
+const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
+const { joiAddressValidator } = require("../../validators/userValidator");
+
+// ============================ CREATE SHIPPING ADDRESS =======================
+exports.addNewShippingAddress = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    return next(new ErrorHandler("user not exists", 404));
+  }
+
+  if(user.shippingAddress.length === 5){
+    return next(new ErrorHandler('only 5 address are allowed'))
+  }
+
+  const { address, city, state, country, pinCode, mobileNumber } = req.body;
+
+  const error = joiAddressValidator({
+    address,
+    city,
+    state,
+    country,
+    pinCode,
+    mobileNumber,
+  });
+
+  if (error) {
+    const msg = error.message.replaceAll('"', "");
+    return next(new ErrorHandler(msg, 400));
+  }
+
+  user.shippingAddress.push({
+    address,
+    city,
+    state,
+    country,
+    pinCode: Number(pinCode),
+    mobileNumber: Number(mobileNumber),
+  });
+  await user.save({ validateBeforeSave: true });
+
+  res.status(201).json({
+    success: true,
+    message: "address added",
+  });
+});
+
+// ============================ GET SHIPPING ADDRESS =======================
+exports.getShippingAddress = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    return next(new ErrorHandler("user not exists", 404));
+  }
+
+  const shippingAddress = user.shippingAddress.find(
+    (address) => address._id.toString() === req.params.id.toString()
+  );
+
+  if (!shippingAddress) {
+    return next(new ErrorHandler("address not exists", 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    shippingAddress,
+  });
+});
+
+// ============================ GET ALL SHIPPING ADDRESS =======================
+exports.getAllShippingAddress = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    return next(new ErrorHandler("user not exists", 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    allShippingAddress: user.shippingAddress,
+  });
+});
+
+// ============================ UPDATE SHIPPING ADDRESS =======================
+exports.updateShippingAddress = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    return next(new ErrorHandler("user not exists", 404));
+  }
+
+  const isShippingAddressExists = user.shippingAddress.find(
+    (address) => address._id.toString() === req.params.id.toString()
+  );
+
+  if (!isShippingAddressExists) {
+    return next(new ErrorHandler("address not exists", 404));
+  }
+
+  const { address, city, state, country, pinCode, mobileNumber } = req.body;
+
+  const error = joiAddressValidator({
+    address,
+    city,
+    state,
+    country,
+    pinCode,
+    mobileNumber,
+  });
+
+  if (error) {
+    const msg = error.message.replaceAll('"', "");
+    return next(new ErrorHandler(msg, 400));
+  }
+
+  user.shippingAddress.forEach((address) => {
+    if (address._id.toString() === req.params.id.toString()) {
+      address.address = address;
+      address.city = city;
+      address.state = state;
+      address.pinCode = pinCode;
+      address.mobileNumber = mobileNumber;
+    }
+  });
+
+  await user.save({ validateBeforeSave: true });
+
+  res.status(200).json({
+    success: true,
+    message: "address updated",
+  });
+});
+
+// ============================ DELETE SHIPPING ADDRESS =======================
+exports.deleteShippingAddress = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    return next(new ErrorHandler("user not exists", 404));
+  }
+
+  const isShippingAddressExists = user.shippingAddress.find(
+    (address) => address._id.toString() === req.params.id.toString()
+  );
+
+  if (!isShippingAddressExists) {
+    return next(new ErrorHandler("address not exists", 404));
+  }
+
+  const shippingAddress = user.shippingAddress.filter(
+    (address) => address._id.toString() !== req.params.id.toString()
+  );
+
+  await User.findByIdAndUpdate(req.user._id,{shippingAddress},{new:true,runValidators:true})
+
+
+  res.status(200).json({
+    success: true,
+    message: "address deleted",
+  });
+});
