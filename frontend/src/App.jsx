@@ -3,13 +3,14 @@ import { BottomNavbar } from "./components/navbar/BottomNavbar";
 import { TopNavbar } from "./components/navbar/TopNavbar";
 import { Routing } from "./utils/Routing";
 import { Bounce, ToastContainer } from "react-toastify";
-import { useDispatch } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
 import './css/toastifyCustom.css';
 import { loadUser } from "./store/thunks/userThunks";
 
 export const App = () => {
   const mainRef = useRef();
   const dispatch = useDispatch()
+  const {isLoggedIn} = useSelector((state)=>state.user)
 
   useEffect(() => {
     const handleOnline = () => {
@@ -17,7 +18,9 @@ export const App = () => {
     };
 
     window.addEventListener("online", handleOnline);
-    dispatch(loadUser())
+   if(!isLoggedIn){
+     dispatch(loadUser())
+   }
 
     return () => {
       window.removeEventListener("online", handleOnline);

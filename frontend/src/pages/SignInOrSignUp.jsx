@@ -58,11 +58,11 @@ export const SignInOrSignUp = ({ title }) => {
   }, [title]);
 
   const dispatch = useDispatch();
-  const { error, isLoggedIn, success, message, user,loading } = useSelector(
+  const { error, isLoggedIn, success, message, user, loading } = useSelector(
     (state) => state.user
   );
   const navigate = useNavigate();
-  const path = useLocation()
+  const path = useLocation();
 
   const {
     register,
@@ -90,7 +90,17 @@ export const SignInOrSignUp = ({ title }) => {
   useEffect(() => {
     // this shows forms errors based on joi validation
     showError(errors, lastErrorKeyRef, toast);
+  }, [errors]);
 
+  useEffect(() => {
+    // this shows the error if error exists
+    if (error) {
+      toast.error(error);
+      dispatch(clearErrors());
+    }
+  }, [error]);
+
+  useEffect(() => {
     switch (title.toLowerCase()) {
       case "sign up":
         if (!loading && isLoggedIn && user) {
@@ -101,40 +111,31 @@ export const SignInOrSignUp = ({ title }) => {
         break;
       case "sign in":
         if (!loading && isLoggedIn && user) {
-          localStorage.clear()
+          localStorage.clear();
           toast.success("signed in");
           navigate("/");
         }
         break;
     }
+  }, [title, isLoggedIn, loading, user]);
 
-    // this shows the error if error exists
-    if (error) {
-      toast.error(error);
-      dispatch(clearErrors());
+  // show the success message when both success and message are defined
+  useEffect(() => {
+    if (success && message) {
+      toast.success(message);
+      dispatch(clearMessage());
     }
-  }, [errors, title, error, isLoggedIn,loading,user]);
-
-// show the success message when both success and message are defined
-  useEffect(()=>{
-    if(success && message){
-      toast.success(message)
-      dispatch(clearMessage())
-    }
-  },[success,message])
-
+  }, [success, message]);
 
   // reset the form fields if url is changed
-  useEffect(()=>{
-    reset()
-  },[path.pathname])
+  useEffect(() => {
+    reset();
+  }, [path.pathname]);
 
-
-  const signInSignupWithGoogle = ()=>{
-    const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL
-     window.location.href = googleAuthUrl
-  }
-
+  const signInSignupWithGoogle = () => {
+    const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL;
+    window.location.href = googleAuthUrl;
+  };
 
   return (
     <div className="bg-white border border-black w-full p-3 flex flex-col justify-center gap-3">
@@ -192,13 +193,13 @@ export const SignInOrSignUp = ({ title }) => {
 
         <OutlineButton name={title} type={"submit"} />
       </form>
-     <span onClick={signInSignupWithGoogle}>
-       <FillButton
-        name={"Sign In With Google"}
-        icon={<FaGoogle />}
-        type="button"
-      />
-     </span>
+      <span onClick={signInSignupWithGoogle}>
+        <FillButton
+          name={"Sign In With Google"}
+          icon={<FaGoogle />}
+          type="button"
+        />
+      </span>
     </div>
   );
 };

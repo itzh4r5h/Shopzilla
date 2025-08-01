@@ -1,18 +1,14 @@
 import { FaEdit } from "react-icons/fa";
-import { OutlineButton } from "../../components/buttons/OutlineButton";
 import { FaCheckSquare } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
-import { FaExclamation } from "react-icons/fa";
 import { AddressModal } from "../../components/modal/AddressModal";
 import { FillButton } from "../../components/buttons/FillButton";
-import { FaCheck } from "react-icons/fa";
 import { Link, useNavigate, useParams, useLocation } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { clearErrors, clearMessage } from "../../store/slices/userSlice";
 import { ImageCard } from "../../components/cards/ImageCard";
-import Tooltip from "@mui/material/Tooltip";
 
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -24,14 +20,15 @@ import {
 } from "../../store/thunks/userThunks";
 import { useSyncedCountdown } from "../../hooks/useSyncedCountdown";
 import { ProfileName } from "./ProfileName";
+import { ProfileEmail } from "./ProfileEmail";
 
 export const Profile = () => {
   const isEdit = false;
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { token } = useParams();
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
+  const path = useLocation();
+  const searchParams = new URLSearchParams(path.search);
 
   const googleUser = searchParams.get("google_user");
 
@@ -79,20 +76,17 @@ export const Profile = () => {
 
   useEffect(() => {
     if (success && message) {
-      if (!user.isVerified) {
-        deletionCountdown.reset(accountDeletionCountdownExpiresAt);
-        resendCountdown.reset(resendLinkIn);
-        toast.success(message);
-        dispatch(clearMessage());
-      } else {
-        toast.success(message);
-        dispatch(clearMessage());
-        localStorage.clear();
-        dispatch(loadUser());
-        navigate("/profile");
-      }
+      toast.success(message);
+      dispatch(clearMessage());
     }
   }, [success, message]);
+
+  useEffect(() => {
+    if (!user.isVerified) {
+      deletionCountdown.reset(accountDeletionCountdownExpiresAt);
+      resendCountdown.reset(resendLinkIn);
+    }
+  }, [resendLinkIn, accountDeletionCountdownExpiresAt, user]);
 
   useEffect(() => {
     if (
@@ -106,17 +100,21 @@ export const Profile = () => {
       dispatch(clearErrors());
       navigate("/signup");
     }
-  }, [deletionCountdown.secondsLeft]);
+  }, [deletionCountdown.secondsLeft, accountDeletionCountdownExpiresAt, user]);
 
+  const hasDispatched = useRef(false);
   useEffect(() => {
-    if (token) {
-      if (user.isVerified) {
-        navigate("/profile");
-      } else {
-        dispatch(verifyEmail(token));
-      }
+    if (token && !hasDispatched.current) {
+      dispatch(verifyEmail(token));
+      hasDispatched.current = true;
     }
   }, [token]);
+
+  useEffect(() => {
+    if (user.isVerified) {
+      navigate("/profile");
+    }
+  }, [user]);
 
   return (
     <>
@@ -174,55 +172,18 @@ export const Profile = () => {
           {/* profie pic ends */}
 
           {/* name begins */}
-         <ProfileName/>
+          <ProfileName />
           {/* name ends */}
 
           {/* email begins */}
-          <div className="grid grid-cols-[5fr_1fr] items-center">
-            <span className="relative w-full">
-              <input
-                id="email"
-                type="email"
-                value={user.email}
-                className="border rounded-md p-2 text-lg bg-white outline-none w-full pr-8 focus:ring-2 focus:ring-[var(--purpleDark)]"
-                readOnly={true}
-                autoComplete="off"
-              />
-              {user.isVerified ? (
-                <Tooltip
-                  enterTouchDelay={1}
-                  className="absolute top-1/2 right-2 -translate-y-1/2 z-100"
-                  title="Verified"
-                  placement="top-end"
-                >
-                  <FaCheck className="text-green-600 text-xl" />
-                </Tooltip>
-              ) : (
-                <Tooltip
-                  enterTouchDelay={1}
-                  disableFocusListener
-                  className="absolute top-1/2 right-2 -translate-y-1/2 z-100"
-                  title="Not Verified"
-                  placement="top-end"
-                >
-                  <FaExclamation className="text-red-600 text-xl" />
-                </Tooltip>
-              )}
-            </span>
-
-            {!isEdit ? (
-              <FaEdit className="text-2xl justify-self-end active:text-[var(--purpleDark)] transition-colors" />
-            ) : (
-              <FaCheckSquare className="text-2xl justify-self-end active:text-[var(--purpleDark)] transition-colors" />
-            )}
-          </div>
+          <ProfileEmail />
           {/* email ends */}
 
           {!user.isVerified && deletionCountdown.secondsLeft > 0 && (
             <p className="text-sm text-red-500 -mt-4">
               <span className="w-18 inline-block font-bold">
                 {deletionCountdown.formatted}
-              </span>{" "}
+              </span>
               left for account deletion if not verified
             </p>
           )}

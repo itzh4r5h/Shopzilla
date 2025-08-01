@@ -15,7 +15,7 @@ export const ProfileName = () => {
         "string.empty": "Name is required",
         "string.min": "Name must be at least 3 characters",
         "string.max": "Name cann't exceed 20 characters",
-      }),
+      })
     });
   }, []);
 
@@ -48,8 +48,6 @@ export const ProfileName = () => {
     showError(errors, lastErrorKeyRef, toast);
   }, [errors]);
 
-  useEffect(() => {}, [user]);
-
   const resetInputStateOnBlur = () => {
     if (!readOnly) {
       setTimeout(() => {
@@ -81,7 +79,7 @@ export const ProfileName = () => {
       {readOnly ? (
         <label
           htmlFor="name"
-          onClick={() => setReadOnly(false)}
+          onClick={() =>user.isVerified && setReadOnly(false)}
           className="justify-self-end"
         >
           <FaEdit className="text-2xl active:text-[var(--purpleDark)] transition-colors" />
