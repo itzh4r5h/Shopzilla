@@ -119,3 +119,16 @@ export const updateName = createAsyncThunk(
     }
   }
 )
+
+
+export const sendOtpToEmail = createAsyncThunk(
+  "user/send_otp",
+  async (email, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.patch('/users/email',{email});
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");
+    }
+  }
+)
