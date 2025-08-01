@@ -144,6 +144,12 @@ exports.sendOtpToEmail = catchAsyncErrors(async (req, res, next) => {
   // get email for request body
   const { email } = req.body;
 
+  const user = await User.findById(req.user._id);
+
+  if (!user.isVerified) {
+    return next(new ErrorHandler("not allowed, verify email first", 403));
+  }
+
   if (!email || email.toString().trim() === "") {
     return next(new ErrorHandler("email is required", 400));
   }
@@ -155,19 +161,17 @@ exports.sendOtpToEmail = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(msg, 400));
   }
 
+  // first check if it's the same email as old one
+  if (email === user.email) {
+    return next(new ErrorHandler("new email cann't be same as old one", 400));
+  }
+
   // finding user with that email
-  let user = await User.findOne({ email });
+  let anyExistingUser = await User.findOne({ email });
 
   // if user exists
-  if (user) {
-    // first check if it's the same email as old one
-    if (email === user.email) {
-      return next(new ErrorHandler("new email cann't be same as old one", 400));
-    }
-    // if email is not same as old one
-    else if (email !== user.email) {
-      return next(new ErrorHandler("user already exists", 400));
-    }
+  if (anyExistingUser) {
+    return next(new ErrorHandler("user already exists", 400));
   }
 
   const resendTime = new Date(user.resendOtpIn).getTime(); // timestamp in ms
