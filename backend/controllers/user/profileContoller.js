@@ -1,79 +1,77 @@
-const {
-  User
-} = require("../../models/User");
+const { User } = require("../../models/User");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const { uploadToImageKit } = require("../../utils/uploadImages");
-const { joiEmailValidator, joiPasswordValidator } = require("../../validators/userValidator");
-
+const {
+  joiEmailValidator,
+  joiPasswordValidator,
+} = require("../../validators/userValidator");
 
 // ====================== ADMIN --- GET ALL USERS =============================
-exports.getAllUsers = catchAsyncErrors(async (req,res,next)=>{
-  const users = await User.find()
+exports.getAllUsers = catchAsyncErrors(async (req, res, next) => {
+  const users = await User.find();
 
   res.status(200).json({
     success: true,
-    users
-  })
-})
-
+    users,
+  });
+});
 
 // ====================== ADMIN --- GET SINGLE USER =============================
-exports.getSingleUser = catchAsyncErrors(async (req,res,next)=>{
-  const user = await User.findById(req.params.id)
+exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findById(req.params.id);
 
-  if(!user){
-    return next(new ErrorHandler('user not exists',400))
+  if (!user) {
+    return next(new ErrorHandler("user not exists", 400));
   }
 
   res.status(200).json({
     success: true,
-    user
-  })
-})
-
+    user,
+  });
+});
 
 // ====================== ADMIN --- UPDATE USER ROLE =============================
-exports.updateUserRole = catchAsyncErrors(async (req,res,next)=>{
-  const {role} = req.body
+exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
+  const { role } = req.body;
 
-  if(!role || role.toString().trim() === ''){
-    return next(new ErrorHandler('role is required',400))
+  if (!role || role.toString().trim() === "") {
+    return next(new ErrorHandler("role is required", 400));
   }
 
-  const user = await User.findById(req.params.id)
+  const user = await User.findById(req.params.id);
 
-  if(!user){
-    return next(new ErrorHandler('user not exists',400))
+  if (!user) {
+    return next(new ErrorHandler("user not exists", 400));
   }
 
-  await User.findByIdAndUpdate(req.params.id,{role},{runValidators:true,new:true})
+  await User.findByIdAndUpdate(
+    req.params.id,
+    { role },
+    { runValidators: true, new: true }
+  );
 
   res.status(200).json({
     success: true,
-    user
-  })
-})
-
+    user,
+  });
+});
 
 // ====================== ADMIN --- DELETE USER =============================
-exports.deleteUser = catchAsyncErrors(async (req,res,next)=>{
+exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findByIdAndDelete(req.params.id);
 
-  const user = await User.findByIdAndDelete(req.params.id)
-
-  if(!user){
-    return next(new ErrorHandler('user not exists',400))
+  if (!user) {
+    return next(new ErrorHandler("user not exists", 400));
   }
 
   // code to remove imagekit images here
 
   res.status(200).json({
     success: true,
-    message: 'user deleted'
-  })
-})
-
-
+    message: "user deleted",
+  });
+});
 
 // ====================== GET USER INFO =============================
 exports.getUser = catchAsyncErrors(async (req, res, next) => {
@@ -89,11 +87,17 @@ exports.getUser = catchAsyncErrors(async (req, res, next) => {
 exports.updateUserName = catchAsyncErrors(async (req, res, next) => {
   const { name } = req.body;
 
+  const user = await User.findById(req.user._id);
+
+  if (!user.isVerified) {
+    return next(new ErrorHandler("not allowed, verify email first", 403));
+  }
+
   if (!name || name.toString().trim() === "") {
     return next(new ErrorHandler("name is required", 400));
   }
 
-  await User.findByIdAndUpdate(
+  const updatedUser = await User.findByIdAndUpdate(
     req.user._id,
     { name },
     { runValidators: true, new: true }
@@ -102,41 +106,16 @@ exports.updateUserName = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "name updated",
+    user:updatedUser
   });
 });
 
 // ====================== UPDATE USER EMAIL =============================
 exports.updateUserEmail = catchAsyncErrors(async (req, res, next) => {
-   // get email for request body
+  // get email for request body
   const { email } = req.body;
 
-  if (!email || email.toString().trim() === '') {
-    return next(new ErrorHandler("email is required", 400));
-  }
-
-  const error = joiEmailValidator({ email });
-
-  if (error) {
-    const msg = error.message.replaceAll('"', "");
-    return next(new ErrorHandler(msg, 400));
-  }
-
-  // finding user with that email
-  let user = await User.findOne({ email });
-
-  // if user exists
-  if (user) {
-    // first check if it's the same email as old one
-    if (email === user.email) {
-      return next(new ErrorHandler("new email cann't be same as old one", 400));
-    }
-    // if email is not same as old one
-    else if (email !== user.email) {
-      return next(new ErrorHandler("user already exists", 400));
-    }
-  }
-
-  await User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user._id,
     { email },
     { runValidators: true, new: true }
@@ -145,6 +124,7 @@ exports.updateUserEmail = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "email updated",
+    user
   });
 });
 
@@ -172,10 +152,15 @@ exports.updateUserProfilePic = catchAsyncErrors(async (req, res, next) => {
 
 // ====================== UPDATE PASSWORD =============================
 exports.updateUserPassword = catchAsyncErrors(async (req, res, next) => {
-  const { oldPassword,newPassword } = req.body;
+  const { oldPassword, newPassword } = req.body;
 
-  if(!oldPassword || ! newPassword || oldPassword.toString().trim()==='' || newPassword.toString().trim() === ''){
-    return next(new ErrorHandler('enter old password & new password',400))
+  if (
+    !oldPassword ||
+    !newPassword ||
+    oldPassword.toString().trim() === "" ||
+    newPassword.toString().trim() === ""
+  ) {
+    return next(new ErrorHandler("enter old password & new password", 400));
   }
 
   const user = await User.findById(req.user._id).select("+password");
@@ -183,13 +168,13 @@ exports.updateUserPassword = catchAsyncErrors(async (req, res, next) => {
   const isPasswordMatched = await user.comparePassword(oldPassword);
 
   if (!isPasswordMatched) {
-    return next(
-      new ErrorHandler("old password is invalid", 400)
-    );
+    return next(new ErrorHandler("old password is invalid", 400));
   }
 
-  if(oldPassword === newPassword){
-    return next(new ErrorHandler('new password cann\'t be same as old one',400))
+  if (oldPassword === newPassword) {
+    return next(
+      new ErrorHandler("new password cann't be same as old one", 400)
+    );
   }
 
   const error = joiPasswordValidator({ newPassword });
@@ -200,7 +185,7 @@ exports.updateUserPassword = catchAsyncErrors(async (req, res, next) => {
   }
 
   user.password = newPassword;
-  await user.save({validateBeforeSave:false});
+  await user.save({ validateBeforeSave: false });
 
   res.status(200).json({
     success: true,
