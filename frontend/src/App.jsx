@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
-import { BottomNavbar } from "./components/Navbar/BottomNavbar";
+import { BottomNavbar } from "./components/navbar/BottomNavbar";
 import { TopNavbar } from "./components/navbar/TopNavbar";
 import { Routing } from "./utils/Routing";
-import { Bounce, toast, ToastContainer } from "react-toastify";
-import { useDispatch, useSelector } from "react-redux";
+import { Bounce, ToastContainer } from "react-toastify";
+import { useDispatch } from "react-redux";
 import './css/toastifyCustom.css';
 import { loadUser } from "./store/thunks/userThunks";
 

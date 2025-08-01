@@ -105,4 +105,17 @@ export const resetPassword = createAsyncThunk(
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");
     }
   }
-);
+)
+
+
+export const updateName = createAsyncThunk(
+  "user/update_name",
+  async (name, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.patch('/users/name',{name});
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");
+    }
+  }
+)

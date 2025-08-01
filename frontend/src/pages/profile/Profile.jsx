@@ -1,17 +1,17 @@
 import { FaEdit } from "react-icons/fa";
-import { OutlineButton } from "../components/buttons/OutlineButton";
+import { OutlineButton } from "../../components/buttons/OutlineButton";
 import { FaCheckSquare } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
 import { FaExclamation } from "react-icons/fa";
-import { AddressModal } from "../components/modal/AddressModal";
-import { FillButton } from "../components/buttons/FillButton";
+import { AddressModal } from "../../components/modal/AddressModal";
+import { FillButton } from "../../components/buttons/FillButton";
 import { FaCheck } from "react-icons/fa";
-import { Link, useNavigate, useParams,useLocation } from "react-router";
+import { Link, useNavigate, useParams, useLocation } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { clearErrors, clearMessage } from "../store/slices/userSlice";
-import { ImageCard } from "../components/cards/ImageCard";
+import { clearErrors, clearMessage } from "../../store/slices/userSlice";
+import { ImageCard } from "../../components/cards/ImageCard";
 import Tooltip from "@mui/material/Tooltip";
 
 import Skeleton from "react-loading-skeleton";
@@ -21,8 +21,9 @@ import {
   sendEmailVerificationLink,
   signOutUser,
   verifyEmail,
-} from "../store/thunks/userThunks";
-import { useSyncedCountdown } from "../hooks/useSyncedCountdown";
+} from "../../store/thunks/userThunks";
+import { useSyncedCountdown } from "../../hooks/useSyncedCountdown";
+import { ProfileName } from "./ProfileName";
 
 export const Profile = () => {
   const isEdit = false;
@@ -32,7 +33,7 @@ export const Profile = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
 
-  const googleUser = searchParams.get('google_user')
+  const googleUser = searchParams.get("google_user");
 
   const {
     error,
@@ -62,12 +63,12 @@ export const Profile = () => {
     }
   };
 
-  useEffect(()=>{
-    if(googleUser === 'true'){
-      toast.success('signed in with google')
-      navigate('/profile')
+  useEffect(() => {
+    if (googleUser === "true") {
+      toast.success("signed in with google");
+      navigate("/profile");
     }
-  },[googleUser])
+  }, [googleUser]);
 
   useEffect(() => {
     if (error) {
@@ -86,11 +87,12 @@ export const Profile = () => {
       } else {
         toast.success(message);
         dispatch(clearMessage());
-        localStorage.clear()
+        localStorage.clear();
+        dispatch(loadUser());
         navigate("/profile");
       }
     }
-  }, [success, message, user]);
+  }, [success, message]);
 
   useEffect(() => {
     if (
@@ -104,11 +106,15 @@ export const Profile = () => {
       dispatch(clearErrors());
       navigate("/signup");
     }
-  }, [deletionCountdown.secondsLeft, user, accountDeletionCountdownExpiresAt]);
+  }, [deletionCountdown.secondsLeft]);
 
   useEffect(() => {
     if (token) {
-      dispatch(verifyEmail(token));
+      if (user.isVerified) {
+        navigate("/profile");
+      } else {
+        dispatch(verifyEmail(token));
+      }
     }
   }, [token]);
 
@@ -168,22 +174,7 @@ export const Profile = () => {
           {/* profie pic ends */}
 
           {/* name begins */}
-          <div className="grid grid-cols-[5fr_1fr] items-center">
-            <input
-              id="name"
-              type="text"
-              value={user.name}
-              className="border rounded-md p-2 text-lg bg-white outline-none focus:border-[var(--purpleDark)] focus:ring-2 focus:ring-[var(--purpleDark)]"
-              readOnly={true}
-              autoComplete="off"
-            />
-
-            {!isEdit ? (
-              <FaEdit className="text-2xl justify-self-end active:text-[var(--purpleDark)] transition-colors" />
-            ) : (
-              <FaCheckSquare className="text-2xl justify-self-end active:text-[var(--purpleDark)] transition-colors" />
-            )}
-          </div>
+         <ProfileName/>
           {/* name ends */}
 
           {/* email begins */}
@@ -245,7 +236,10 @@ export const Profile = () => {
             )}
 
           {!user.isVerified && (resendCountdown.secondsLeft > 0 || sending) && (
-            <button type="button" className="flex justify-center items-center gap-2 w-full text-xl font-bold border-2 border-black rounded-md p-2 py-1 bg-black text-white">
+            <button
+              type="button"
+              className="flex justify-center items-center gap-2 w-full text-xl font-bold border-2 border-black rounded-md p-2 py-1 bg-black text-white"
+            >
               {sending
                 ? "Sending..."
                 : `Resend in ${resendCountdown.formatted}`}

@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router";
 import { Home } from "../pages/Home";
 import { Cart } from "../pages/Cart";
-import { Profile } from "../pages/Profile";
+import { Profile } from "../pages/profile/Profile";
 import { NotFound } from "../pages/NotFound";
 import { ProductDetails } from "../pages/ProductDetails";
 import { Orders } from "../pages/Orders";

@@ -8,6 +8,7 @@ import {
   signInUser,
   signOutUser,
   signUpUser,
+  updateName,
   verifyEmail,
 } from "../thunks/userThunks";
 
@@ -54,7 +55,7 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     handleAsyncThunk(builder, signUpUser, { ...actions });
-    
+
     handleAsyncThunk(builder, signInUser, { ...actions });
 
     handleAsyncThunk(builder, loadUser, {
@@ -72,7 +73,6 @@ const userSlice = createSlice({
         state.error = null;
       },
     });
-
 
     handleAsyncThunk(builder, signOutUser, {
       pending: (state) => {
@@ -95,12 +95,12 @@ const userSlice = createSlice({
       },
     });
 
-
     handleAsyncThunk(builder, sendEmailVerificationLink, {
       pending: (state) => {
         state.loading = false;
         state.sending = true;
         state.message = null;
+        state.success = false;
       },
       fulfilled: (state, action) => {
         state.sending = false;
@@ -115,11 +115,11 @@ const userSlice = createSlice({
       },
     });
 
-
     handleAsyncThunk(builder, verifyEmail, {
       pending: (state) => {
         state.loading = true;
         state.message = null;
+        state.success = false;
       },
       fulfilled: (state, action) => {
         state.message = action.payload.message;
@@ -131,12 +131,12 @@ const userSlice = createSlice({
       },
     });
 
-
     handleAsyncThunk(builder, sendPasswordResetTokenToEmail, {
       pending: (state) => {
         state.loading = false;
         state.sending = true;
         state.message = null;
+        state.success = false;
       },
       fulfilled: (state, action) => {
         state.sending = false;
@@ -153,7 +153,19 @@ const userSlice = createSlice({
 
     handleAsyncThunk(builder, resetPassword, { ...actions });
 
-
+    handleAsyncThunk(builder, updateName, {
+      pending: (state) => {
+        state.message = null;
+        state.success = false;
+      },
+      fulfilled: (state, action) => {
+        state.message = action.payload.message;
+        state.success = action.payload.success;
+      },
+      rejected: (state, action) => {
+        state.error = action.payload;
+      },
+    });
   },
 });
 
