@@ -4,6 +4,7 @@ import {
   loadUser,
   resetPassword,
   sendEmailVerificationLink,
+  sendOtpToEmail,
   sendPasswordResetTokenToEmail,
   signInUser,
   signOutUser,
@@ -33,6 +34,7 @@ const actions = {
 const userSlice = createSlice({
   name: "user",
   initialState: {
+    resendOtpIn: undefined,
     resendTokenIn: undefined,
     resendLinkIn: undefined,
     accountDeletionCountdownExpiresAt: undefined,
@@ -161,11 +163,34 @@ const userSlice = createSlice({
       fulfilled: (state, action) => {
         state.message = action.payload.message;
         state.success = action.payload.success;
+        state.user = action.payload.user;
       },
       rejected: (state, action) => {
         state.error = action.payload;
       },
+    })
+
+     handleAsyncThunk(builder, sendOtpToEmail, {
+      pending: (state) => {
+        state.loading = false;
+        state.sending = true;
+        state.message = null;
+        state.success = false;
+      },
+      fulfilled: (state, action) => {
+        state.sending = false;
+        state.message = action.payload.message;
+        state.success = action.payload.success;
+        state.resendOtpIn = action.payload.resendOtpIn;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.sending = false;
+        state.error = action.payload;
+      },
     });
+
+
   },
 });
 
