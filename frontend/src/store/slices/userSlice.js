@@ -12,6 +12,7 @@ import {
   signUpUser,
   updateEmail,
   updateName,
+  updatePassword,
   verifyEmail,
 } from "../thunks/userThunks";
 
@@ -197,6 +198,22 @@ const userSlice = createSlice({
         state.user = action.payload.user;
         state.updated = undefined;
         state.resendOtpIn = undefined;
+      },
+      rejected: (state, action) => {
+        state.error = action.payload;
+      }
+    });
+
+
+    handleAsyncThunk(builder, updatePassword, {
+      pending: (state) => {
+        state.message = null;
+        state.success = false;
+      },
+      fulfilled: (state, action) => {
+        state.message = action.payload.message;
+        state.success = action.payload.success;
+        state.updated = true
       },
       rejected: (state, action) => {
         state.error = action.payload;

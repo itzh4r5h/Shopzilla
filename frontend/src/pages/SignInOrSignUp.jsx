@@ -81,7 +81,6 @@ export const SignInOrSignUp = ({ title }) => {
         dispatch(signInUser(data));
         break;
     }
-    reset();
   };
 
   // this is to remember last error key from joi

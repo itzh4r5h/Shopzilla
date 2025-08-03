@@ -196,7 +196,7 @@ exports.updateUserPassword = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-  const error = joiPasswordValidator({ newPassword });
+  const error = joiPasswordValidator({ password: newPassword });
 
   if (error) {
     const msg = error.message.replaceAll('"', "");

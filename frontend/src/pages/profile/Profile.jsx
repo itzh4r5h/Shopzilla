@@ -21,6 +21,7 @@ import {
 import { useSyncedCountdown } from "../../hooks/useSyncedCountdown";
 import { ProfileName } from "./ProfileName";
 import { ProfileEmail } from "./ProfileEmail";
+import { ProfilePassword } from "./ProfilePassword";
 
 export const Profile = () => {
   const isEdit = false;
@@ -206,6 +207,9 @@ export const Profile = () => {
                 : `Resend in ${resendCountdown.formatted}`}
             </button>
           )}
+
+
+          <ProfilePassword/>
 
           {/* address begins */}
           <h2 className="text-2xl">Address</h2>
