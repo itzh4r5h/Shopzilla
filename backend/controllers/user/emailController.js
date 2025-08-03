@@ -190,8 +190,6 @@ exports.sendOtpToEmail = catchAsyncErrors(async (req, res, next) => {
     user.resendOtpIn = new Date(
       Date.now() + process.env.RESEND_EMAIL_IN_MINUTES * 60 * 1000
     );
-
-    user = await User.findOne({ email: req.user.email });
     // generate otp
     user.generateTokenFor(OTP_VERIFICATION);
     // saving the otp

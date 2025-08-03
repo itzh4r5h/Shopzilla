@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { handleAsyncThunk } from "../utils/handleAsyncThunk";
 import {
+  cancelUpdateEmail,
   loadUser,
   resetPassword,
   sendEmailVerificationLink,
@@ -9,6 +10,7 @@ import {
   signInUser,
   signOutUser,
   signUpUser,
+  updateEmail,
   updateName,
   verifyEmail,
 } from "../thunks/userThunks";
@@ -23,6 +25,7 @@ const actions = {
     state.isLoggedIn = true;
     state.accountDeletionCountdownExpiresAt =
       action.payload.accountDeletionCountdownExpiresAt;
+    state.resendTokenIn = undefined;
   },
   rejected: (state, action) => {
     state.loading = false;
@@ -31,9 +34,30 @@ const actions = {
   },
 };
 
+const updateActions = {
+  pending: (state) => {
+    state.message = null;
+    state.success = false;
+  },
+  fulfilled: (state, action) => {
+    state.message = action.payload.message;
+    state.success = action.payload.success;
+    state.user = action.payload.user;
+    state.updated = true;
+    state.resendLinkIn = undefined;
+    state.resendOtpIn = undefined;
+    state.resendTokenIn = undefined
+    state.accountDeletionCountdownExpiresAt = undefined
+  },
+  rejected: (state, action) => {
+    state.error = action.payload;
+  },
+};
+
 const userSlice = createSlice({
   name: "user",
   initialState: {
+    updated: undefined,
     resendOtpIn: undefined,
     resendTokenIn: undefined,
     resendLinkIn: undefined,
@@ -85,6 +109,9 @@ const userSlice = createSlice({
         state.message = action.payload.message;
         state.success = action.payload.success;
         state.resendLinkIn = undefined;
+        state.resendOtpIn = undefined
+        state.resendTokenIn = undefined
+        state.updated = undefined
         state.accountDeletionCountdownExpiresAt = undefined;
         state.isLoggedIn = false;
         state.user = undefined;
@@ -99,7 +126,6 @@ const userSlice = createSlice({
 
     handleAsyncThunk(builder, sendEmailVerificationLink, {
       pending: (state) => {
-        state.loading = false;
         state.sending = true;
         state.message = null;
         state.success = false;
@@ -111,31 +137,15 @@ const userSlice = createSlice({
         state.resendLinkIn = action.payload.resendLinkIn;
       },
       rejected: (state, action) => {
-        state.loading = false;
         state.sending = false;
         state.error = action.payload;
       },
     });
 
-    handleAsyncThunk(builder, verifyEmail, {
-      pending: (state) => {
-        state.loading = true;
-        state.message = null;
-        state.success = false;
-      },
-      fulfilled: (state, action) => {
-        state.message = action.payload.message;
-        state.success = action.payload.success;
-        state.user = action.payload.user;
-      },
-      rejected: (state, action) => {
-        state.error = action.payload;
-      },
-    });
+    handleAsyncThunk(builder, verifyEmail, { ...updateActions });
 
     handleAsyncThunk(builder, sendPasswordResetTokenToEmail, {
       pending: (state) => {
-        state.loading = false;
         state.sending = true;
         state.message = null;
         state.success = false;
@@ -147,7 +157,6 @@ const userSlice = createSlice({
         state.resendTokenIn = action.payload.resendTokenIn;
       },
       rejected: (state, action) => {
-        state.loading = false;
         state.sending = false;
         state.error = action.payload;
       },
@@ -155,24 +164,10 @@ const userSlice = createSlice({
 
     handleAsyncThunk(builder, resetPassword, { ...actions });
 
-    handleAsyncThunk(builder, updateName, {
-      pending: (state) => {
-        state.message = null;
-        state.success = false;
-      },
-      fulfilled: (state, action) => {
-        state.message = action.payload.message;
-        state.success = action.payload.success;
-        state.user = action.payload.user;
-      },
-      rejected: (state, action) => {
-        state.error = action.payload;
-      },
-    })
+    handleAsyncThunk(builder, updateName, { ...updateActions });
 
-     handleAsyncThunk(builder, sendOtpToEmail, {
+    handleAsyncThunk(builder, sendOtpToEmail, {
       pending: (state) => {
-        state.loading = false;
         state.sending = true;
         state.message = null;
         state.success = false;
@@ -184,13 +179,29 @@ const userSlice = createSlice({
         state.resendOtpIn = action.payload.resendOtpIn;
       },
       rejected: (state, action) => {
-        state.loading = false;
         state.sending = false;
         state.error = action.payload;
       },
     });
 
+    handleAsyncThunk(builder, updateEmail, { ...updateActions });
 
+    handleAsyncThunk(builder, cancelUpdateEmail, {
+      pending: (state) => {
+        state.message = null;
+        state.success = false;
+      },
+      fulfilled: (state, action) => {
+        state.message = action.payload.message;
+        state.success = action.payload.success;
+        state.user = action.payload.user;
+        state.updated = undefined;
+        state.resendOtpIn = undefined;
+      },
+      rejected: (state, action) => {
+        state.error = action.payload;
+      },
+    });
   },
 });
 

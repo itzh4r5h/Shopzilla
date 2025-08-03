@@ -125,7 +125,32 @@ export const sendOtpToEmail = createAsyncThunk(
   "user/send_otp",
   async (email, thunkAPI) => {
     try {
-      const { data } = await axiosInstance.patch('/users/email',{email});
+      const { data } = await axiosInstance.post('/users/email',{email});
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");
+    }
+  }
+)
+
+export const updateEmail = createAsyncThunk(
+  "user/update_email",
+  async (userData, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.patch('/users/email',{email:userData.email,otp:userData.otp});
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");
+    }
+  }
+)
+
+
+export const cancelUpdateEmail = createAsyncThunk(
+  "user/cancel_update_email",
+  async (_, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.get('/users/email');
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");

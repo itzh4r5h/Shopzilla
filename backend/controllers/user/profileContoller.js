@@ -128,6 +128,25 @@ exports.updateUserEmail = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+
+// ====================== CANCEL UPDATE USER EMAIL =============================
+exports.cancelUpdateUserEmail = catchAsyncErrors(async (req, res, next) => {
+
+  const user = await User.findById(req.user._id)
+
+  user.otp = undefined
+  user.otpExpire = undefined
+  user.resendOtpIn = undefined
+
+  await user.save({validateBeforeSave:false})
+
+  res.status(200).json({
+    success: true,
+    message: "email updation cancelled",
+    user
+  });
+});
+
 // ====================== UPDATE PROFILE PICTURE =============================
 exports.updateUserProfilePic = catchAsyncErrors(async (req, res, next) => {
   const { image } = req.body;

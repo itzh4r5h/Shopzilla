@@ -129,6 +129,7 @@ exports.verifyUserEmail = catchAsyncErrors(async (req, res, next) => {
   user.isVerified = true;
   user.emailVerificationToken = undefined;
   user.emailVerificationTokenExpire = undefined;
+  user.resendLinkIn = undefined
   await user.save({ validateBeforeSave: false });
 
   res.status(200).json({
@@ -168,6 +169,7 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
   user.password = password;
   user.resetPasswordToken = undefined;
   user.resetPasswordTokenExpire = undefined;
+  user.resendTokenIn = undefined;
   await user.save({ validateBeforeSave: true });
 
   sendToken(user, 200, res);

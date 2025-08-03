@@ -43,7 +43,7 @@ exports.isOtpValid = catchAsyncErrors(async (req,res,next)=>{
     if(!otp || otp.toString().trim() === ''){
         return next(new ErrorHandler('OTP is required',400))
     }
-    const user = await User.findOne({otp,otpExpire:{$gt:Date.now()}})
+    const user = await User.findOne({email:req.user.email,otp,otpExpire:{$gt:Date.now()}})
 
     if(!user){
         return next(new ErrorHandler('Invalid OTP or OTP is expired',404))
@@ -51,6 +51,7 @@ exports.isOtpValid = catchAsyncErrors(async (req,res,next)=>{
     
     user.otp = undefined
     user.otpExpire = undefined
+    user.resendOtpIn = undefined
     await user.save({validateBeforeSave:false})
 
     next()
