@@ -63,11 +63,12 @@ export const ProfileEmail = () => {
 
     switch (buttonValue) {
       case "Send OTP":
-      case "Resend OTP":
-        if (data.email === user.email) {
-          setReadOnly(true);
-          return toast.error("enter new email");
-        } else {
+        case "Resend OTP":
+          if (data.email === user.email) {
+            setReadOnly(true);
+            return toast.error("enter new email");
+          } else {
+          localStorage.setItem('email',data.email)
           dispatch(sendOtpToEmail(data.email));
         }
         break;
@@ -86,6 +87,13 @@ export const ProfileEmail = () => {
     resendCountdown.reset(resendOtpIn);
   }, [resendOtpIn]);
 
+  const key = localStorage.getItem(`otp_resend_timer_${user?._id}`)
+  useEffect(() => {
+     if(key){
+      setReadOnly(false)
+     }
+  }, [key]);
+
   useEffect(() => {
     if (updated) {
       localStorage.clear();
@@ -103,6 +111,7 @@ export const ProfileEmail = () => {
 
 
   const cancelUpdation = ()=>{
+    localStorage.clear()
     setReadOnly(true)
     reset()
     dispatch(cancelUpdateEmail())
@@ -119,7 +128,7 @@ export const ProfileEmail = () => {
             id="email"
             type="email"
             {...register("email", { required: true })}
-            defaultValue={user.email}
+            defaultValue={localStorage.getItem('email') || user.email}
             className={`w-full border rounded-md p-2 text-lg bg-white outline-none ${
               !readOnly &&
               "focus:border-[var(--purpleDark)] focus:ring-2 focus:ring-[var(--purpleDark)]"
