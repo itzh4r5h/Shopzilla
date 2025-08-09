@@ -1,52 +1,85 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { FaTimesCircle } from "react-icons/fa";
+import debounce from "lodash/debounce";
 
 export const SelectCountryStateCity = ({
-  idForLabel,
+  defaultValue,
   name,
-  setName,
-  handleInput,
-  setCode=()=>{},
-  optionsData
+  register,
+  setValue,
+  watch,
+  setCode = () => {},
+  optionsData,
 }) => {
   const [showOptions, setShowOptions] = useState(false);
   const closeIconRef = useRef();
   const [options, setOptions] = useState(optionsData);
 
-  const handleOnChange = (e) => {
-    handleInput(e);
-    let inputValue = e.target.value.trim().toLowerCase();
+  const debouncedFilter = useCallback(
+    debounce((e) => {
+      const inputValue = e.target.value.trim().toLowerCase();
+      if (inputValue === "") {
+        setOptions(optionsData);
+        setCode(undefined);
+        closeIconRef.current.style.opacity = "0";
+      } else {
+        closeIconRef.current.style.opacity = "1";
+        const filteredOptions = optionsData.filter((option) =>
+          option.name.toLowerCase().includes(inputValue)
+        );
+        setOptions(filteredOptions);
+      }
+    }, 300), // 300ms delay
+    [optionsData]
+  );
 
-    if (inputValue.toString().trim() === "") {
-      setOptions(optionsData);
-       setCode(undefined)
-      closeIconRef.current.style.opacity = "0";
-    } 
-    else {
-      closeIconRef.current.style.opacity = "1";
-    }
+  // ✅ Update options if optionsData changes
+  useEffect(() => {
+    setOptions(optionsData);
+  }, [optionsData]);
 
-    const filteredOptions = optionsData.filter((option) =>
-      option.name.toLowerCase().includes(inputValue)
+  // ✅ Clear value if current selection no longer exists in options
+  useEffect(() => {
+    const currentValue = watch(name)?.trim()?.toLowerCase();
+    const found = optionsData.some(
+      (opt) => opt.name.toLowerCase() === currentValue
     );
-    setOptions(filteredOptions);
-  };
+
+    if (!found && currentValue) {
+      setValue(name, "");
+      setCode(undefined);
+      if (closeIconRef.current) {
+        closeIconRef.current.style.opacity = "0";
+      }
+    }
+  }, [optionsData, name, setValue, setCode, watch]);
+
+  //  deafultValue will get if address modal is in edit mode
+  useEffect(() => {
+    if (defaultValue) {
+      setValue(name, defaultValue)
+    }
+  }, [defaultValue]);
 
   const clearInput = () => {
+    setShowOptions(false);
+    setValue(name, "");
     setOptions(optionsData);
-    setName("");
-    setCode(undefined)
+    setCode(undefined);
     closeIconRef.current.style.opacity = "0";
   };
 
   const chooseValueOnClick = (e) => {
-    const isOption = Array.from(e.target.classList).includes("option");
-    if (isOption) {
-      const nameAndCode = e.target.textContent.split('-')
-      setName(nameAndCode[0])
-      setCode(nameAndCode[1])
+    const target = e.target.closest("li[data-name]"); // in case span is clicked
+
+    if (target) {
+      const selectedName = target.dataset.name;
+      const selectedCode = target.dataset.code;
+      setValue(name, selectedName);
+      setCode(selectedCode);
       closeIconRef.current.style.opacity = "1";
-      setOptions(optionsData)
+      setOptions(optionsData);
+      setShowOptions(false);
     }
   };
 
@@ -55,9 +88,9 @@ export const SelectCountryStateCity = ({
       <span className="relative">
         <input
           type="text"
-          id={idForLabel}
-          value={name}
-          onChange={handleOnChange}
+          id={name}
+          {...register(name, { required: true })}
+          onChange={debouncedFilter}
           onFocus={() => setShowOptions(true)}
           onBlur={() => setTimeout(() => setShowOptions(false), 50)}
           autoComplete="off"
@@ -69,7 +102,7 @@ export const SelectCountryStateCity = ({
           onClick={clearInput}
         />
       </span>
-      {showOptions && (
+      {options.length !== 0 && showOptions && (
         <ul
           onClick={chooseValueOnClick}
           className="absolute z-999 bg-white border w-full h-50 rounded-md mt-1 overflow-y-auto p-3 flex flex-col gap-2"
@@ -77,11 +110,12 @@ export const SelectCountryStateCity = ({
           {options.map((option, index) => {
             return (
               <li
-                key={index+option.name}
+                key={index + option.name}
                 className="text-lg p-1 active:bg-[var(--grey)] hover:bg-[var(--grey)] transition-colors cursor-pointer rounded-md"
+                data-name={option.name}
+                data-code={option.isoCode}
               >
-                <span className="option line-clamp-1">{option.name}<span className="invisible">-{option.isoCode}</span></span>
-               
+                <span className="option line-clamp-1">{option.name}</span>
               </li>
             );
           })}

@@ -115,6 +115,30 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
+export const updateImage = createAsyncThunk(
+  "user/update_Image",
+  async (image, thunkAPI) => {
+    try {
+      const formData = new FormData();
+      formData.append("image", image);
+      const { data } = await axiosInstance.patch(
+        "/users/profile-pic",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          }
+        }
+      )
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
 export const updateName = createAsyncThunk(
   "user/update_name",
   async (name, thunkAPI) => {
@@ -182,6 +206,79 @@ export const updatePassword = createAsyncThunk(
         oldPassword: passwords.oldPassword,
         newPassword: passwords.newPassword,
       });
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+export const createPassword = createAsyncThunk(
+  "user/create_password",
+  async (newPassword, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.patch("/users/password/new", newPassword);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+export const addAddress = createAsyncThunk(
+  "user/add_address",
+  async (address, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.post("/users/address", address);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+export const updateAddress = createAsyncThunk(
+  "user/update_address",
+  async (addressData, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.patch(
+        `/users/address/${addressData.id}`,
+        addressData.address
+      );
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+export const getAllAddress = createAsyncThunk(
+  "user/all_address",
+  async (_, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.get("/users/address");
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+export const deleteAddress = createAsyncThunk(
+  "user/delete_address",
+  async (id, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.delete(`/users/address/${id}`);
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(

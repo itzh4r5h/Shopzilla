@@ -1,14 +1,9 @@
-import { FaEdit } from "react-icons/fa";
-import { FaCheckSquare } from "react-icons/fa";
-import { FaTrash } from "react-icons/fa";
-import { AddressModal } from "../../components/modal/AddressModal";
 import { FillButton } from "../../components/buttons/FillButton";
 import { Link, useNavigate, useParams, useLocation } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { clearErrors, clearMessage } from "../../store/slices/userSlice";
-import { ImageCard } from "../../components/cards/ImageCard";
 
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -22,9 +17,10 @@ import { useSyncedCountdown } from "../../hooks/useSyncedCountdown";
 import { ProfileName } from "./ProfileName";
 import { ProfileEmail } from "./ProfileEmail";
 import { ProfilePassword } from "./ProfilePassword";
+import { ProfileAddress } from "./ProfileAddress";
+import { ProfileImage } from "./ProfileImage";
 
 export const Profile = () => {
-  const isEdit = false;
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { token } = useParams();
@@ -164,12 +160,7 @@ export const Profile = () => {
       ) : (
         <div className="flex flex-col justify-center gap-5 relative">
           {/* profie pic begins */}
-          <div className="self-center relative">
-            <picture className="w-55 h-55 block rounded-full overflow-hidden">
-              <ImageCard src={user.profilePic} />
-            </picture>
-            <FaEdit className="absolute text-xl top-0 right-0 active:text-[var(--purpleDark)] transition-colors" />
-          </div>
+          <ProfileImage profilePic={user.profilePic}/>
           {/* profie pic ends */}
 
           {/* name begins */}
@@ -178,7 +169,6 @@ export const Profile = () => {
 
           {/* email begins */}
           <ProfileEmail />
-          {/* email ends */}
 
           {!user.isVerified && deletionCountdown.secondsLeft > 0 && (
             <p className="text-sm text-red-500 -mt-4">
@@ -207,37 +197,13 @@ export const Profile = () => {
                 : `Resend in ${resendCountdown.formatted}`}
             </button>
           )}
+          {/* email ends */}
 
 
           <ProfilePassword/>
 
           {/* address begins */}
-          <h2 className="text-2xl">Address</h2>
-
-          {user.shippingAddress.length === 0 ? (
-            <h3 className="text-xl">No address yet</h3>
-          ) : (
-            <div className="grid grid-cols-[5fr_1fr] items-center">
-              <div className="flex flex-col justify-center gap-1 border bg-white rounded-md p-2">
-                <h3 className="text-md">address</h3>
-                <h3 className="text-md">city</h3>
-                <h3 className="text-md">state, 136135</h3>
-                <h3 className="text-md">mobile no</h3>
-              </div>
-              <span className="justify-self-end self-start flex flex-col items-center gap-5">
-                {!isEdit ? (
-                  <>
-                    <FaEdit className="text-2xl justify-self-end active:text-[var(--purpleDark)] transition-colors" />
-                    <FaTrash className="text-2xl active:text-[var(--purpleDark)] transition-colors" />
-                  </>
-                ) : (
-                  <FaCheckSquare className="text-2xl justify-self-end active:text-[var(--purpleDark)] transition-colors" />
-                )}
-              </span>
-            </div>
-          )}
-
-          <AddressModal />
+          <ProfileAddress/>
           {/* address ends */}
 
           {isAdminUser && (

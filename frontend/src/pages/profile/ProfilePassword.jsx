@@ -8,12 +8,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { showError } from "../../utils/showError";
-import { updatePassword } from "../../store/thunks/userThunks";
+import { createPassword, updatePassword } from "../../store/thunks/userThunks";
 
 export const ProfilePassword = () => {
+  const { updated, isPasswordExists } = useSelector((state) => state.user);
   const schema = useMemo(() => {
-    return Joi.object({
-      oldPassword: Joi.string()
+    const baseSchema = {};
+
+    if (isPasswordExists) {
+      baseSchema.oldPassword = Joi.string()
         .trim()
         .min(8)
         .max(20)
@@ -29,35 +32,39 @@ export const ProfilePassword = () => {
           "string.max": "Old Password cann't exceed 20 characters",
           "string.pattern.base":
             "Old Password must include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (@, #, $, )",
-        }),
+        });
+    }
 
-      newPassword: Joi.string()
-        .trim()
-        .min(8)
-        .max(20)
-        .pattern(
-          new RegExp(
-            "^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$"
-          )
+    baseSchema.newPassword = Joi.string()
+      .trim()
+      .min(8)
+      .max(20)
+      .pattern(
+        new RegExp(
+          "^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$"
         )
-        .required()
-        .messages({
-          "string.empty": "New Password is required",
-          "string.min": "New Password must be at least 8 characters",
-          "string.max": "New Password cann't exceed 20 characters",
-          "string.pattern.base":
-            "Old Password must include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (@, #, $, )",
-        }),
-    });
-  }, []);
+      )
+      .required()
+      .messages({
+        "string.empty": "New Password is required",
+        "string.min": "New Password must be at least 8 characters",
+        "string.max": "New Password cann't exceed 20 characters",
+        "string.pattern.base":
+          "Old Password must include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (@, #, $, )",
+      });
+
+    return Joi.object(baseSchema);
+  }, [isPasswordExists]);
 
   const dispatch = useDispatch();
-    const { updated } = useSelector(
-    (state) => state.user
-  );
 
   const submitForm = (data) => {
-    dispatch(updatePassword(data));
+   if(isPasswordExists){
+     dispatch(updatePassword(data));
+   }else{
+    dispatch(createPassword(data))
+   }
+   reset()
   };
 
   const {
@@ -77,7 +84,7 @@ export const ProfilePassword = () => {
 
   useEffect(() => {
     if (updated) {
-      setOpen(false)
+      setOpen(false);
     }
   }, [updated]);
 
@@ -91,24 +98,23 @@ export const ProfilePassword = () => {
   return (
     <div>
       <span onClick={() => setOpen(true)}>
-        <OutlineButton name={"Update Password"} />
+        <OutlineButton name={isPasswordExists ?"Update Password":'Create Password'} />
       </span>
       {open && (
-        <>
-          <div className="w-full h-screen fixed top-0 left-0 z-100 bg-[#00000063]"></div>
+        <div className="w-full h-screen fixed top-0 left-0 z-999 p-2 bg-[#00000063] overflow-y-auto">
           <form
             onSubmit={handleSubmit(submitForm)}
-            className="bg-white border border-black w-full absolute z-200 top-0 p-3 flex flex-col justify-center gap-5"
+            className="bg-white border border-black w-full p-3 flex flex-col justify-center gap-5 translate-y-1/2"
           >
             <FaTimesCircle
               className="self-end text-2xl active:text-[var(--purpleDark)] transition-colors"
               onClick={handleClose}
             />
 
-            <h1 className="text-center text-3xl -mt-5">Update Password</h1>
+            <h1 className="text-center text-3xl -mt-5">{isPasswordExists?'Update Password':'Create Password'}</h1>
 
             {/* old password begins */}
-            <div className="flex flex-col justify-center gap-2">
+           {isPasswordExists && <div className="flex flex-col justify-center gap-2">
               <label htmlFor="oldPassword" className="text-xl w-fit">
                 Old Password
               </label>
@@ -118,7 +124,7 @@ export const ProfilePassword = () => {
                 id="oldPassword"
                 className="border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
               />
-            </div>
+            </div>}
             {/* old password ends */}
 
             {/* new password begins */}
@@ -136,10 +142,10 @@ export const ProfilePassword = () => {
             {/* new password ends */}
 
             <span>
-              <FillButton type="submit" name={"Update"} />
+              <FillButton type="submit" name={isPasswordExists?"Update":"Create"} />
             </span>
           </form>
-        </>
+        </div>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { FaTimesCircle } from "react-icons/fa";
+import { FaEdit, FaTimesCircle } from "react-icons/fa";
 import { OutlineButton } from "../buttons/OutlineButton";
 import { FillButton } from "../buttons/FillButton";
 import { useForm } from "react-hook-form";
@@ -10,8 +10,14 @@ import { joiResolver } from "@hookform/resolvers/joi";
 import Joi from "joi";
 import { showError } from "../../utils/showError";
 import { useDispatch, useSelector } from "react-redux";
+import { addAddress, updateAddress } from "../../store/thunks/userThunks";
+import { getIsoCode } from "../../utils/helpers";
 
-export const AddressModal = () => {
+export const AddressModal = ({
+  edit = false,
+  id = undefined,
+  shippingAddress = undefined,
+}) => {
   const schema = useMemo(() => {
     return Joi.object({
       address: Joi.string().trim().max(255).required().messages({
@@ -57,11 +63,7 @@ export const AddressModal = () => {
   }, []);
 
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.user);
-
-  const [country, setCountry] = useState("");
-  const [state, setState] = useState("");
-  const [city, setCity] = useState("");
+  // const { user } = useSelector((state) => state.user);
 
   const [countryCode, setCountryCode] = useState(undefined);
   const [stateCode, setStateCode] = useState(undefined);
@@ -70,6 +72,8 @@ export const AddressModal = () => {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm({ resolver: joiResolver(schema) });
 
@@ -83,147 +87,168 @@ export const AddressModal = () => {
 
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    if (!countryCode || !stateCode) {
-      setState("");
-      setStateCode(undefined);
-      setCity("");
-    }
-  }, [countryCode, stateCode]);
-
   const handleClose = () => {
     setOpen(false);
-    setCountry("");
     setCountryCode(undefined);
-    setState("");
     setStateCode(undefined);
-    setCity("");
     reset();
   };
 
   const submitForm = (data) => {
-    console.log(data);
+    if (edit) {
+      dispatch(updateAddress({ id, address: data }));
+    } else {
+      dispatch(addAddress(data));
+    }
+    handleClose();
   };
+
+  useEffect(() => {
+    setValue("state", "");
+  }, [countryCode]);
+
+  useEffect(() => {
+    setValue("city", "");
+  }, [stateCode]);
+
+  useEffect(() => {
+    if (edit && shippingAddress) {
+      setCountryCode(getIsoCode(shippingAddress?.country, true));
+      setStateCode(
+        getIsoCode(shippingAddress?.country, false, shippingAddress.state, true)
+      );
+    }
+  }, [edit, shippingAddress]);
 
   return (
     <div>
       <span onClick={() => setOpen(true)}>
-        <OutlineButton name={"Add Address"} />
+        {edit ? (
+          <FaEdit className="text-2xl justify-self-end active:text-[var(--purpleDark)] transition-colors" />
+        ) : (
+          <OutlineButton name={"Add Address"} />
+        )}
       </span>
       {open && (
         <>
-          <div className="w-full h-screen fixed top-0 left-0 z-100 bg-[#00000063]"></div>
-          <form
-            onSubmit={handleSubmit(submitForm)}
-            className="bg-white border border-black w-full absolute z-200 top-0 p-3 flex flex-col justify-center gap-5"
-          >
-            <FaTimesCircle
-              className="self-end text-2xl active:text-[var(--purpleDark)] transition-colors"
-              onClick={handleClose}
-            />
-
-            <h1 className="text-center text-3xl -mt-5">Shipping Address</h1>
-
-            {/* address begins */}
-            <div className="flex flex-col justify-center gap-2">
-              <label htmlFor="address" className="text-xl w-fit">
-                Address
-              </label>
-              <input
-                {...register("address", { required: true })}
-                id="address"
-                className="border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000063] p-2 py-4 overflow-y-auto">
+            <form
+              onSubmit={handleSubmit(submitForm)}
+              className="bg-white w-full border border-black p-3 flex flex-col justify-center gap-5"
+            >
+              <FaTimesCircle
+                className="self-end text-2xl active:text-[var(--purpleDark)] transition-colors"
+                onClick={handleClose}
               />
-            </div>
-            {/* address ends */}
 
-            {/* country begins */}
-            <div className="flex flex-col justify-center gap-2">
-              <label htmlFor="country" className="text-xl w-fit">
-                Country
-              </label>
-              <SelectCountryStateCity
-                idForLabel={"country"}
-                name={country}
-                handleInput={(e) => {
-                  setCountry(e.target.value);
-                }}
-                setName={setCountry}
-                setCode={setCountryCode}
-                optionsData={Country.getAllCountries()}
-              />
-            </div>
-            {/* country ends */}
+              <h1 className="text-center text-3xl -mt-5">Shipping Address</h1>
 
-            {/* state begins */}
-            {countryCode && (
+              {/* address begins */}
+              <div className="flex flex-col justify-center gap-2">
+                <label htmlFor="address" className="text-xl w-fit">
+                  Address
+                </label>
+                <input
+                  defaultValue={shippingAddress?.address}
+                  autoComplete="off"
+                  {...register("address", { required: true })}
+                  id="address"
+                  className="border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+                />
+              </div>
+              {/* address ends */}
+
+              {/* country begins */}
+              <div className="flex flex-col justify-center gap-2">
+                <label htmlFor="country" className="text-xl w-fit">
+                  Country
+                </label>
+                <SelectCountryStateCity
+                  defaultValue={shippingAddress?.country}
+                  name="country"
+                  register={register}
+                  setValue={setValue}
+                  setCode={setCountryCode}
+                  watch={watch}
+                  optionsData={Country.getAllCountries()}
+                />
+              </div>
+              {/* country ends */}
+
+              {/* state begins */}
               <div className="flex flex-col justify-center gap-2">
                 <label htmlFor="state" className="text-xl w-fit">
                   State
                 </label>
                 <SelectCountryStateCity
-                  idForLabel={"state"}
-                  name={state}
-                  setName={setState}
-                  handleInput={(e) => {
-                    setState(e.target.value);
-                  }}
+                  defaultValue={shippingAddress?.state}
+                  name="state"
+                  register={register}
+                  setValue={setValue}
                   setCode={setStateCode}
-                  optionsData={State.getStatesOfCountry(countryCode)}
+                  watch={watch}
+                  optionsData={
+                    countryCode ? State.getStatesOfCountry(countryCode) : []
+                  }
                 />
               </div>
-            )}
-            {/* state ends */}
+              {/* state ends */}
 
-            {/* city begins */}
-            {countryCode && stateCode && (
+              {/* city begins */}
               <div className="flex flex-col justify-center gap-2">
                 <label htmlFor="city" className="text-xl w-fit">
                   City
                 </label>
                 <SelectCountryStateCity
-                  idForLabel={"city"}
-                  name={city}
-                  setName={setCity}
-                  handleInput={(e) => {
-                    setCity(e.target.value);
-                  }}
-                  optionsData={City.getCitiesOfState(countryCode, stateCode)}
+                  defaultValue={shippingAddress?.city}
+                  name="city"
+                  register={register}
+                  setValue={setValue}
+                  watch={watch}
+                  optionsData={
+                    countryCode && stateCode
+                      ? City.getCitiesOfState(countryCode, stateCode)
+                      : []
+                  }
                 />
               </div>
-            )}
-            {/* city ends */}
+              {/* city ends */}
 
-            {/* pincode begins */}
-            <div className="flex flex-col justify-center gap-2">
-              <label htmlFor="pinCode" className="text-xl w-fit">
-                Pin Code
-              </label>
-              <input
-                {...register("pinCode", { required: true })}
-                type="number"
-                id="pinCode"
-                className="border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-              />
-            </div>
-            {/* pincode ends */}
+              {/* pincode begins */}
+              <div className="flex flex-col justify-center gap-2">
+                <label htmlFor="pinCode" className="text-xl w-fit">
+                  Pin Code
+                </label>
+                <input
+                  defaultValue={shippingAddress?.pinCode}
+                  autoComplete="off"
+                  {...register("pinCode", { required: true })}
+                  type="number"
+                  id="pinCode"
+                  className="border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+                />
+              </div>
+              {/* pincode ends */}
 
-            {/* Mobile number begins */}
-            <div className="flex flex-col justify-center gap-2">
-              <label htmlFor="mobileNumber" className="text-xl w-fit">
-                Mobile Number
-              </label>
-              <input
-                {...register("mobileNumber", { required: true })}
-                id="mobileNumber"
-                type="number"
-                className="border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-              />
-            </div>
-            {/* Mobile number ends */}
+              {/* Mobile number begins */}
+              <div className="flex flex-col justify-center gap-2">
+                <label htmlFor="mobileNumber" className="text-xl w-fit">
+                  Mobile Number
+                </label>
+                <input
+                  defaultValue={shippingAddress?.mobileNumber}
+                  autoComplete="off"
+                  {...register("mobileNumber", { required: true })}
+                  id="mobileNumber"
+                  type="number"
+                  className="border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+                />
+              </div>
+              {/* Mobile number ends */}
 
-            <FillButton type="submit" name={"Add"} />
-          </form>
+              <FillButton type="submit" name={edit ? "Update" : "Add"} />
+            </form>
+          </div>
         </>
       )}
     </div>

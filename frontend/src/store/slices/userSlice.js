@@ -1,7 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { handleAsyncThunk } from "../utils/handleAsyncThunk";
 import {
+  addAddress,
   cancelUpdateEmail,
+  createPassword,
+  deleteAddress,
+  getAllAddress,
   loadUser,
   resetPassword,
   sendEmailVerificationLink,
@@ -10,67 +14,52 @@ import {
   signInUser,
   signOutUser,
   signUpUser,
+  updateAddress,
   updateEmail,
+  updateImage,
   updateName,
   updatePassword,
   verifyEmail,
 } from "../thunks/userThunks";
 
-const actions = {
-  pending: (state) => {
-    state.loading = true;
-  },
-  fulfilled: (state, action) => {
-    state.loading = false;
-    state.user = action.payload.user;
-    state.isLoggedIn = true;
-    state.accountDeletionCountdownExpiresAt =
-      action.payload.accountDeletionCountdownExpiresAt;
-    state.resendTokenIn = undefined;
-  },
-  rejected: (state, action) => {
-    state.loading = false;
-    state.isLoggedIn = false;
-    state.error = action.payload;
-  },
-};
-
-const updateActions = {
+const addressActions = {
   pending: (state) => {
     state.message = null;
     state.success = false;
+    state.updated = false;
   },
   fulfilled: (state, action) => {
     state.message = action.payload.message;
     state.success = action.payload.success;
-    state.user = action.payload.user;
-    state.updated = true;
-    state.resendLinkIn = undefined;
-    state.resendOtpIn = undefined;
-    state.resendTokenIn = undefined
-    state.accountDeletionCountdownExpiresAt = undefined
+    state.updatedAddress = true;
   },
   rejected: (state, action) => {
     state.error = action.payload;
   },
 };
 
+const initialState = {
+  error: null,
+  uploading: false,
+  updated: undefined,
+  updatedAddress: undefined,
+  resendOtpIn: undefined,
+  resendTokenIn: undefined,
+  resendLinkIn: undefined,
+  accountDeletionCountdownExpiresAt: undefined,
+  sending: false,
+  success: false,
+  loading: true,
+  message: null,
+  isLoggedIn: false,
+  isPasswordExists: undefined,
+  allShippingAddress: undefined,
+  user: undefined,
+};
+
 const userSlice = createSlice({
   name: "user",
-  initialState: {
-    updated: undefined,
-    resendOtpIn: undefined,
-    resendTokenIn: undefined,
-    resendLinkIn: undefined,
-    accountDeletionCountdownExpiresAt: undefined,
-    sending: false,
-    success: false,
-    loading: true,
-    message: null,
-    isLoggedIn: false,
-    user: undefined,
-    error: null,
-  },
+  initialState,
   reducers: {
     clearErrors: (state) => {
       state.error = null;
@@ -81,9 +70,41 @@ const userSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    handleAsyncThunk(builder, signUpUser, { ...actions });
+    handleAsyncThunk(builder, signUpUser, {
+      pending: (state) => {
+        Object.assign(state, initialState); // reset all fields
+        state.loading = true;
+      },
+      fulfilled: (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.isPasswordExists = action.payload.isPasswordExists
+        state.isLoggedIn = true;
+        state.accountDeletionCountdownExpiresAt =
+          action.payload.accountDeletionCountdownExpiresAt;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      },
+    });
 
-    handleAsyncThunk(builder, signInUser, { ...actions });
+    handleAsyncThunk(builder, signInUser, {
+      pending: (state) => {
+        Object.assign(state, initialState); // reset all fields
+        state.loading = true;
+      },
+      fulfilled: (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.isLoggedIn = true;
+        state.isPasswordExists = action.payload.isPasswordExists
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      },
+    });
 
     handleAsyncThunk(builder, loadUser, {
       pending: (state) => {
@@ -93,10 +114,10 @@ const userSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.isLoggedIn = true;
+        state.isPasswordExists = action.payload.isPasswordExists;
       },
       rejected: (state, action) => {
         state.loading = false;
-        state.isLoggedIn = false;
         state.error = null;
       },
     });
@@ -106,21 +127,13 @@ const userSlice = createSlice({
         state.loading = true;
       },
       fulfilled: (state, action) => {
-        state.loading = false;
+        Object.assign(state, initialState); // reset all fields
         state.message = action.payload.message;
         state.success = action.payload.success;
-        state.resendLinkIn = undefined;
-        state.resendOtpIn = undefined
-        state.resendTokenIn = undefined
-        state.updated = undefined
-        state.accountDeletionCountdownExpiresAt = undefined;
-        state.isLoggedIn = false;
-        state.user = undefined;
+        state.loading = false
       },
       rejected: (state, action) => {
-        state.loading = false;
-        state.isLoggedIn = false;
-        state.user = undefined;
+        state.loading = false
         state.error = action.payload;
       },
     });
@@ -143,7 +156,21 @@ const userSlice = createSlice({
       },
     });
 
-    handleAsyncThunk(builder, verifyEmail, { ...updateActions });
+    handleAsyncThunk(builder, verifyEmail, {
+      pending: (state) => {
+        state.message = null;
+        state.success = false;
+      },
+      fulfilled: (state, action) => {
+        state.message = action.payload.message;
+        state.success = action.payload.success;
+        state.user = action.payload.user;
+        state.resendLinkIn = undefined;
+      },
+      rejected: (state, action) => {
+        state.error = action.payload;
+      },
+    });
 
     handleAsyncThunk(builder, sendPasswordResetTokenToEmail, {
       pending: (state) => {
@@ -163,9 +190,56 @@ const userSlice = createSlice({
       },
     });
 
-    handleAsyncThunk(builder, resetPassword, { ...actions });
+    handleAsyncThunk(builder, resetPassword, {
+      pending: (state) => {
+        state.loading = true;
+      },
+      fulfilled: (state, action) => {
+        Object.assign(state, initialState); // reset all fields
+        state.loading = false;
+        state.user = action.payload.user;
+        state.isLoggedIn = true;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      },
+    });
 
-    handleAsyncThunk(builder, updateName, { ...updateActions });
+    handleAsyncThunk(builder, updateImage, {
+      pending: (state) => {
+        state.message = null;
+        state.success = false;
+        state.uploading = true;
+      },
+      fulfilled: (state, action) => {
+        state.message = action.payload.message;
+        state.success = action.payload.success;
+        state.user = action.payload.user;
+        state.updated = true;
+        state.uploading = false;
+      },
+      rejected: (state, action) => {
+        state.uploading = false;
+        state.error = action.payload;
+      },
+    });
+
+    handleAsyncThunk(builder, updateName, {
+      pending: (state) => {
+        state.message = null;
+        state.success = false;
+      },
+      fulfilled: (state, action) => {
+        state.message = action.payload.message;
+        state.success = action.payload.success;
+        state.user = action.payload.user;
+        state.updated = true;
+      },
+      rejected: (state, action) => {
+        state.error = action.payload;
+      },
+    });
 
     handleAsyncThunk(builder, sendOtpToEmail, {
       pending: (state) => {
@@ -185,7 +259,22 @@ const userSlice = createSlice({
       },
     });
 
-    handleAsyncThunk(builder, updateEmail, { ...updateActions });
+    handleAsyncThunk(builder, updateEmail, {
+      pending: (state) => {
+        state.message = null;
+        state.success = false;
+      },
+      fulfilled: (state, action) => {
+        state.message = action.payload.message;
+        state.success = action.payload.success;
+        state.user = action.payload.user;
+        state.updated = true;
+        state.resendOtpIn = undefined;
+      },
+      rejected: (state, action) => {
+        state.error = action.payload;
+      },
+    });
 
     handleAsyncThunk(builder, cancelUpdateEmail, {
       pending: (state) => {
@@ -201,9 +290,8 @@ const userSlice = createSlice({
       },
       rejected: (state, action) => {
         state.error = action.payload;
-      }
+      },
     });
-
 
     handleAsyncThunk(builder, updatePassword, {
       pending: (state) => {
@@ -213,7 +301,41 @@ const userSlice = createSlice({
       fulfilled: (state, action) => {
         state.message = action.payload.message;
         state.success = action.payload.success;
-        state.updated = true
+        state.updated = true;
+      },
+      rejected: (state, action) => {
+        state.error = action.payload;
+      },
+    });
+
+    handleAsyncThunk(builder, createPassword, {
+      pending: (state) => {
+        state.message = null;
+        state.success = false;
+      },
+      fulfilled: (state, action) => {
+        state.message = action.payload.message;
+        state.success = action.payload.success;
+        state.isPasswordExists = action.payload.isPasswordExists;
+        state.updated = true;
+      },
+      rejected: (state, action) => {
+        state.error = action.payload;
+      },
+    });
+
+    handleAsyncThunk(builder, addAddress, { ...addressActions });
+
+    handleAsyncThunk(builder, updateAddress, { ...addressActions });
+
+    handleAsyncThunk(builder, deleteAddress, { ...addressActions });
+
+    handleAsyncThunk(builder, getAllAddress, {
+      pending: (state) => {
+        state.allShippingAddress = undefined;
+      },
+      fulfilled: (state, action) => {
+        state.allShippingAddress = action.payload.allShippingAddress;
       },
       rejected: (state, action) => {
         state.error = action.payload;
