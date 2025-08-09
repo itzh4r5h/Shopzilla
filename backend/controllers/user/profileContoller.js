@@ -1,15 +1,18 @@
 const { User } = require("../../models/User");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
-const { uploadToImageKit } = require("../../utils/uploadImages");
+const { uploadToImageKit, imagekit } = require("../../utils/uploadImages");
 const {
   joiEmailValidator,
   joiPasswordValidator,
 } = require("../../validators/userValidator");
+const { getBasicDetailsOnly } = require("../../utils/helpers");
 
 // ====================== ADMIN --- GET ALL USERS =============================
 exports.getAllUsers = catchAsyncErrors(async (req, res, next) => {
-  const users = await User.find();
+  const users = await User.find().select(
+    "-password -otp -otpExpire -resetPasswordToken -resetPasswordTokenExpire -emailVerificationToken -emailVerificationTokenExpire"
+  );
 
   res.status(200).json({
     success: true,
@@ -19,11 +22,13 @@ exports.getAllUsers = catchAsyncErrors(async (req, res, next) => {
 
 // ====================== ADMIN --- GET SINGLE USER =============================
 exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
-  const user = await User.findById(req.params.id);
+  let user = await User.findById(req.params.id);
 
   if (!user) {
     return next(new ErrorHandler("user not exists", 400));
   }
+
+  user = getBasicDetailsOnly(user);
 
   res.status(200).json({
     success: true,
@@ -39,7 +44,7 @@ exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("role is required", 400));
   }
 
-  const user = await User.findById(req.params.id);
+  let user = await User.findById(req.params.id);
 
   if (!user) {
     return next(new ErrorHandler("user not exists", 400));
@@ -50,6 +55,8 @@ exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
     { role },
     { runValidators: true, new: true }
   );
+
+  user = getBasicDetailsOnly(user);
 
   res.status(200).json({
     success: true,
@@ -66,6 +73,9 @@ exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
   }
 
   // code to remove imagekit images here
+  if (user.profilePic.fileId !== process.env.IMAGE_KIT_DEFAULT_FILE_ID) {
+    await imagekit.deleteFile(user.profilePic.fileId);
+  }
 
   res.status(200).json({
     success: true,
@@ -75,11 +85,20 @@ exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
 
 // ====================== GET USER INFO =============================
 exports.getUser = catchAsyncErrors(async (req, res, next) => {
-  const user = await User.findById(req.user._id);
+  let user = await User.findById(req.user._id).select("+password");
+
+  let isPasswordExists = false;
+
+  if (user.password) {
+    isPasswordExists = true;
+  }
+
+  user = getBasicDetailsOnly(user);
 
   res.status(200).json({
     success: true,
     user,
+    isPasswordExists,
   });
 });
 
@@ -87,7 +106,7 @@ exports.getUser = catchAsyncErrors(async (req, res, next) => {
 exports.updateUserName = catchAsyncErrors(async (req, res, next) => {
   const { name } = req.body;
 
-  const user = await User.findById(req.user._id);
+  let user = await User.findById(req.user._id);
 
   if (!user.isVerified) {
     return next(new ErrorHandler("not allowed, verify email first", 403));
@@ -97,16 +116,18 @@ exports.updateUserName = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("name is required", 400));
   }
 
-  const updatedUser = await User.findByIdAndUpdate(
+  user = await User.findByIdAndUpdate(
     req.user._id,
     { name },
     { runValidators: true, new: true }
   );
 
+  user = getBasicDetailsOnly(user);
+
   res.status(200).json({
     success: true,
     message: "name updated",
-    user:updatedUser
+    user,
   });
 });
 
@@ -115,57 +136,95 @@ exports.updateUserEmail = catchAsyncErrors(async (req, res, next) => {
   // get email for request body
   const { email } = req.body;
 
-  const user = await User.findByIdAndUpdate(
+  let user = await User.findByIdAndUpdate(
     req.user._id,
     { email },
     { runValidators: true, new: true }
   );
 
+  user = getBasicDetailsOnly(user);
+
   res.status(200).json({
     success: true,
     message: "email updated",
-    user
+    user,
   });
 });
 
-
 // ====================== CANCEL UPDATE USER EMAIL =============================
 exports.cancelUpdateUserEmail = catchAsyncErrors(async (req, res, next) => {
+  let user = await User.findById(req.user._id);
 
-  const user = await User.findById(req.user._id)
+  user.otp = undefined;
+  user.otpExpire = undefined;
+  user.resendOtpIn = undefined;
 
-  user.otp = undefined
-  user.otpExpire = undefined
-  user.resendOtpIn = undefined
+  await user.save({ validateBeforeSave: false });
 
-  await user.save({validateBeforeSave:false})
+  user = getBasicDetailsOnly(user);
 
   res.status(200).json({
     success: true,
     message: "email updation cancelled",
-    user
+    user,
   });
 });
 
 // ====================== UPDATE PROFILE PICTURE =============================
 exports.updateUserProfilePic = catchAsyncErrors(async (req, res, next) => {
-  const { image } = req.body;
+  const { buffer, originalname } = req.file;
 
-  //multer code here
+  let user = await User.findById(req.user._id);
+  if (user.profilePic.fileId !== process.env.IMAGE_KIT_DEFAULT_FILE_ID) {
+    await imagekit.deleteFile(user.profilePic.fileId);
+  }
 
-  //imagekit code here
+  const { url, fileId } = await uploadToImageKit(
+    buffer,
+    originalname,
+    `${process.env.USER_PICS_FOLDER}/${req.user._id}`
+  );
 
-  const { url, fileId } = req.user.profilePic;
   // then saves the url and fileId in db
-  await User.findByIdAndUpdate(
+  user = await User.findByIdAndUpdate(
     req.user._id,
-    { profilePic: { url, fileId } },
+    { profilePic: { url, fileId, name: originalname.split(".")[0] } },
     { runValidators: true, new: true }
   );
+
+  user = getBasicDetailsOnly(user);
 
   res.status(200).json({
     success: true,
     message: "picture updated",
+    user,
+  });
+});
+
+// ====================== CREATE PASSWORD =============================
+exports.createPassword = catchAsyncErrors(async (req, res, next) => {
+  const { newPassword } = req.body;
+
+  const error = joiPasswordValidator({ password: newPassword });
+
+  if (error) {
+    const msg = error.message.replaceAll('"', "");
+    return next(new ErrorHandler(msg, 400));
+  }
+
+  const user = await User.findById(req.user._id).select("+password");
+
+  if(!user.isGoogleUser){
+    return next(new ErrorHandler('Not allowed',403))
+  }
+
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: true });
+
+  res.status(200).json({
+    success: true,
+    message: "password created",
+    isPasswordExists: true
   });
 });
 
@@ -204,7 +263,7 @@ exports.updateUserPassword = catchAsyncErrors(async (req, res, next) => {
   }
 
   user.password = newPassword;
-  await user.save({ validateBeforeSave: false });
+  await user.save({ validateBeforeSave: true });
 
   res.status(200).json({
     success: true,

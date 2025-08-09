@@ -1,3 +1,5 @@
+const { getBasicDetailsOnly } = require("./helpers");
+
 // creating the jwt token and saving it in cookie
 const sendToken = (user, statusCode, res) => {
   const token = user.getJWTToken();
@@ -9,8 +11,14 @@ const sendToken = (user, statusCode, res) => {
     // secure: true //enable it when in production
   };
 
+  let isPasswordExists = false
+
+  if(user.password){
+    isPasswordExists = true
+  }
+
   // Exclude password manually
-  const { password, ...userData } = user._doc;
+  const userData = getBasicDetailsOnly(user)
 
   const deletionDelay = process.env.USER_DELETION_MINUTES * 60 * 1000; // in ms
   const createdTime = new Date(user.createdAt).getTime(); // timestamp in ms
@@ -25,7 +33,7 @@ const sendToken = (user, statusCode, res) => {
     .json({
       success: true,
       user: userData,
-      token,
+      isPasswordExists,
       accountDeletionCountdownExpiresAt: user.isVerified
         ? undefined
         : accountDeletionCountdownExpiresAt,

@@ -3,7 +3,7 @@ const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const { uploadToImageKit } = require("../../utils/uploadImages");
 const sendToken = require("../../utils/sendToken");
-const { createHashWithCrypto } = require("../../utils/helpers");
+const { createHashWithCrypto, getBasicDetailsOnly } = require("../../utils/helpers");
 const {
   joiValidator,
   joiPasswordValidator,
@@ -85,12 +85,12 @@ exports.signInUser = catchAsyncErrors(async (req, res, next) => {
 
   const user = await User.findOne({ email }).select("+password");
 
-  if (!user.password) {
+  if (!user) {
     return next(new ErrorHandler("invalid credentials", 401));
   }
 
-  if (!user) {
-    return next(new ErrorHandler("invalid credentials", 401));
+  if (!user.password) {
+    return next(new ErrorHandler("Use sign in with google", 400));
   }
 
   const isPasswordMatch = await user.comparePassword(password);
@@ -117,7 +117,7 @@ exports.verifyUserEmail = catchAsyncErrors(async (req, res, next) => {
   // creating token hash
   const emailVerificationToken = createHashWithCrypto(req.params.token);
 
-  const user = await User.findOne({
+  let user = await User.findOne({
     emailVerificationToken,
     emailVerificationTokenExpire: { $gt: Date.now() },
   });
@@ -129,8 +129,10 @@ exports.verifyUserEmail = catchAsyncErrors(async (req, res, next) => {
   user.isVerified = true;
   user.emailVerificationToken = undefined;
   user.emailVerificationTokenExpire = undefined;
-  user.resendLinkIn = undefined
+  user.resendLinkIn = undefined;
   await user.save({ validateBeforeSave: false });
+
+   user = getBasicDetailsOnly(user)
 
   res.status(200).json({
     success: true,

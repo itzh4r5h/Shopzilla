@@ -42,13 +42,12 @@ const userSchema = new mongoose.Schema({
     url: {
       type: String,
       required: [true, "image url is required"],
-      default:
-        "https://ik.imagekit.io/hczmohsn7/shopzilla/users/default_pic/user_rKwhex_5O.jpg",
+      default: process.env.IMAGE_KIT_DEFAULT_URL,
     },
     fileId: {
       type: String,
       required: [true, "image file-id is required"],
-      default: "6863f9f75c7cd75eb8dd6aa8",
+      default: process.env.IMAGE_KIT_DEFAULT_FILE_ID,
     },
     name: {
       type: String,

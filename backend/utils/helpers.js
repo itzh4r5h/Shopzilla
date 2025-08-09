@@ -9,3 +9,10 @@ exports.createHashWithCrypto = (token) => {
 
   return hash;
 };
+
+
+
+exports.getBasicDetailsOnly = (user)=>{
+  const { password,otp,otpExpire,resetPasswordToken,resetPasswordTokenExpire,emailVerificationToken,emailVerificationTokenExpire, ...userData } = user._doc
+  return userData
+}

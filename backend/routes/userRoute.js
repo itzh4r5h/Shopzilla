@@ -3,10 +3,11 @@ const router = express.Router()
 const passport = require('passport')
 const { isUserAuthenticated, isOtpValid, isEmailVerified, authorizedRoles } = require('../middlewares/auth')
 const {signInWithGoogle, signUpUser, signInUser, signOut, verifyUserEmail,resetPassword} = require('../controllers/user/authController')
-const {getAllUsers, getSingleUser, updateUserRole, deleteUser, getUser, updateUserName, updateUserEmail, updateUserProfilePic, updateUserPassword, cancelUpdateUserEmail} = require('../controllers/user/profileContoller')
+const {getAllUsers, getSingleUser, updateUserRole, deleteUser, getUser, updateUserName, updateUserEmail, updateUserProfilePic, updateUserPassword, cancelUpdateUserEmail, createPassword} = require('../controllers/user/profileContoller')
 const {sendEmailForResetPassword, sendEmailForEmailVerification, sendOtpToEmail} = require('../controllers/user/emailController')
 const { addNewShippingAddress, getShippingAddress, getAllShippingAddress, updateShippingAddress, deleteShippingAddress } = require('../controllers/user/addressController')
 const { getAllProductsOfCart, addProductToCartOrUpdateQuantity, removeProductFromCart } = require('../controllers/user/cartController')
+const { upload } = require('../utils/uploadImages')
 
 
 // ========================= AUTH ==============================
@@ -26,8 +27,9 @@ router.route('/users/me').get(isUserAuthenticated,getUser)
 router.route('/users/name').patch(isUserAuthenticated,updateUserName)
 router.route('/users/email').patch(isUserAuthenticated,isOtpValid,updateUserEmail)
 router.route('/users/email').get(isUserAuthenticated,cancelUpdateUserEmail)
-router.route('/users/profile-pic').patch(isUserAuthenticated,updateUserProfilePic)
+router.route('/users/profile-pic').patch(isUserAuthenticated, upload.single('image'), updateUserProfilePic)
 router.route('/users/password').patch(isUserAuthenticated,updateUserPassword)
+router.route('/users/password/new').patch(isUserAuthenticated,createPassword)
 
 
 // ========================= SEND EMAIL ==============================

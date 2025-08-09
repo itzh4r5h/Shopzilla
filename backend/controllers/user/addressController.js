@@ -115,13 +115,13 @@ exports.updateShippingAddress = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(msg, 400));
   }
 
-  user.shippingAddress.forEach((address) => {
-    if (address._id.toString() === req.params.id.toString()) {
-      address.address = address;
-      address.city = city;
-      address.state = state;
-      address.pinCode = pinCode;
-      address.mobileNumber = mobileNumber;
+  user.shippingAddress.forEach((oldAddress) => {
+    if (oldAddress._id.toString() === req.params.id.toString()) {
+      oldAddress.address = address;
+      oldAddress.city = city;
+      oldAddress.state = state;
+      oldAddress.pinCode = pinCode;
+      oldAddress.mobileNumber = mobileNumber;
     }
   });
 
