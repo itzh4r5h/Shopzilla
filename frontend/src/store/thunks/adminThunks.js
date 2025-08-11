@@ -33,7 +33,7 @@ export const getTotalOrders = createAsyncThunk(
   "admin/total_orders",
   async (_, thunkAPI) => {
     try {
-      const { data } = await axiosInstance.get("/admin/orders/total");
+      const { data } = await axiosInstance.get("/admin/orders");
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -88,6 +88,21 @@ export const addProduct = createAsyncThunk(
       });
 
       const { data } = await axiosInstance.post("/admin/products", formData);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+
+export const deleteProduct = createAsyncThunk(
+  "admin/delete_product",
+  async (id, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.delete(`/admin/products/${id}`);
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(

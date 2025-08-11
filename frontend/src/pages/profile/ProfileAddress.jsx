@@ -1,8 +1,9 @@
-import {FaTrash } from "react-icons/fa";
 import { AddressModal } from "../../components/modal/AddressModal";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { deleteAddress, getAllAddress } from "../../store/thunks/userThunks";
+import { MdDelete } from "react-icons/md";
+import { DeleteModal } from "../../components/modal/DeleteModal";
 
 export const ProfileAddress = () => {
   const dispatch = useDispatch();
@@ -40,7 +41,7 @@ export const ProfileAddress = () => {
           </div>
           <span className="justify-self-end self-start flex flex-col items-center gap-5">
             <AddressModal edit={true} id={shippingAddress._id} shippingAddress={shippingAddress}/>
-            <FaTrash className="text-2xl active:text-[var(--purpleDark)] transition-colors" onClick={()=>deleteShippingAddress(shippingAddress._id)}/>
+            <DeleteModal deleteFunction={()=>deleteShippingAddress(shippingAddress._id)} classes={'text-3xl justify-self-end active:text-[var(--purpleDark)] transition-colors'}/>
           </span>
         </article>
        })

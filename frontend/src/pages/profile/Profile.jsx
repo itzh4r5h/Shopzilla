@@ -93,6 +93,7 @@ export const Profile = () => {
       new Date(accountDeletionCountdownExpiresAt).getTime() <= Date.now() // makes sure timer was really active and has expired ✅
     ) {
       dispatch(signOutUser());
+      localStorage.clear()
       toast.error("Account is deleted");
       dispatch(clearErrors());
       navigate("/signup");
@@ -108,7 +109,13 @@ export const Profile = () => {
   }, [token]);
 
   useEffect(() => {
+    const key1 = localStorage.getItem(`resend_timer_${user?._id}`)
+    const key2 = localStorage.getItem(`deletion_timer_${user?._id}`)
     if (user.isVerified) {
+      if(key1 || key2){
+        localStorage.removeItem(`resend_timer_${user?._id}`)
+        localStorage.removeItem(`deletion_timer_${user?._id}`)
+      }
       navigate("/profile");
     }
   }, [user]);

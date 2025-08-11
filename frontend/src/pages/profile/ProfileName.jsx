@@ -5,8 +5,9 @@ import { joiResolver } from "@hookform/resolvers/joi";
 import Joi from "joi";
 import { showError } from "../../utils/showError";
 import { useDispatch, useSelector } from "react-redux";
-import { FaCheckSquare, FaEdit } from "react-icons/fa";
+import { FaCheckSquare } from "react-icons/fa";
 import { updateName } from "../../store/thunks/userThunks";
+import { MdEditSquare } from "react-icons/md";
 
 export const ProfileName = () => {
   const schema = useMemo(() => {
@@ -82,7 +83,7 @@ export const ProfileName = () => {
           onClick={() =>user.isVerified && setReadOnly(false)}
           className="justify-self-end"
         >
-          <FaEdit className="text-2xl active:text-[var(--purpleDark)] transition-colors" />
+          <MdEditSquare className="text-2xl active:text-[var(--purpleDark)] transition-colors" />
         </label>
       ) : (
         <label htmlFor="name" className="justify-self-end">

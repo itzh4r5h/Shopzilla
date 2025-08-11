@@ -101,7 +101,7 @@ export const ProfilePassword = () => {
         <OutlineButton name={isPasswordExists ?"Update Password":'Create Password'} />
       </span>
       {open && (
-        <div className="w-full h-screen fixed top-0 left-0 z-999 p-2 bg-[#00000063] overflow-y-auto">
+        <div className="w-full h-screen fixed top-0 left-0 z-999 p-2 bg-[#00000089] overflow-y-auto">
           <form
             onSubmit={handleSubmit(submitForm)}
             className="bg-white border border-black w-full p-3 flex flex-col justify-center gap-5 translate-y-1/2"

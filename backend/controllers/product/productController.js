@@ -4,7 +4,7 @@ const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const ProductSearchAndFilter = require("../../utils/productSearchAndFilter");
 const { isOnlyDigits } = require("../../utils/helpers");
-const { uploadToImageKit } = require("../../utils/uploadImages");
+const { uploadToImageKit, imagekit } = require("../../utils/uploadImages");
 
 // ======================= ADMIN -- CREATE PRODUCT ==============================
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
@@ -33,39 +33,39 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
     message: "product creation started",
   });
 
-  (async()=>{const uploadedImages = await Promise.all(
-    req.files.map(async (image) => {
-      const { buffer, originalname } = image;
+  (async () => {
+    const uploadedImages = await Promise.all(
+      req.files.map(async (image) => {
+        const { buffer, originalname } = image;
 
-      const { url, fileId } = await uploadToImageKit(
-        buffer,
-        originalname,
-        `${process.env.PRODUCT_PICS_FOLDER}/${product._id}`
-      );
+        const { url, fileId } = await uploadToImageKit(
+          buffer,
+          originalname,
+          `${process.env.PRODUCT_PICS_FOLDER}/${product._id}`
+        );
 
-      return {
-        url,
-        fileId,
-        name: originalname.split(".")[0],
-      };
-    })
-  );
+        return {
+          url,
+          fileId,
+          name: originalname.split(".")[0],
+        };
+      })
+    );
 
-  await Product.findByIdAndUpdate(
-    product._id,
-    { images: uploadedImages, imagesUploaded: true },
-    { new: true, runValidators: true }
-  );
+    await Product.findByIdAndUpdate(
+      product._id,
+      { images: uploadedImages, imagesUploaded: true },
+      { new: true, runValidators: true }
+    );
 
-  // Lookup socketId from userId
-  const socketId = global._userSockets[req.user._id];
-  if (socketId && global._io) {
-    global._io.to(socketId).emit("productImagesUploaded", {
-      message: "product created",
-    });
-  }})()
-
-
+    // Lookup socketId from userId
+    const socketId = global._userSockets[req.user._id];
+    if (socketId && global._io) {
+      global._io.to(socketId).emit("productImagesUploaded", {
+        message: "product created",
+      });
+    }
+  })();
 });
 
 // ======================= ADMIN -- UPDATE PRODUCT ==============================
@@ -92,6 +92,10 @@ exports.deleteProduct = catchAsyncErrors(async (req, res, next) => {
   if (!product) {
     return next(new ErrorHandler("Product not found", 404));
   }
+
+  await imagekit.deleteFolder(
+    `${process.env.PRODUCT_PICS_FOLDER}/${product._id}`
+  );
 
   res.status(200).json({
     success: true,

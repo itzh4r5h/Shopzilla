@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { handleAsyncThunk } from "../utils/handleAsyncThunk";
-import { addProduct, getAllUsers, getOrdersByStatus, getTotalOrders, getTotalProducts, getTotalUsers } from "../thunks/adminThunks";
+import { addProduct, deleteProduct, getAllUsers, getOrdersByStatus, getTotalOrders, getTotalProducts, getTotalUsers } from "../thunks/adminThunks";
 
 const initialState = {
     success:false,
@@ -11,6 +11,22 @@ const initialState = {
     totalOrders: undefined,
     users: undefined,
     orders: undefined,
+}
+
+
+const commonActions = {
+   pending: (state) => {
+        state.loading = true
+      },
+      fulfilled: (state, action) => {
+        state.success = action.payload.success;
+        state.message = action.payload.message;
+        state.loading = false
+      },
+      rejected: (state, action) => {
+        state.loading = false
+        state.error = action.payload;
+      },
 }
 
 const adminSlice = createSlice({
@@ -100,20 +116,10 @@ const adminSlice = createSlice({
     });
 
 
-    handleAsyncThunk(builder, addProduct, {
-      pending: (state) => {
-        state.loading = true
-      },
-      fulfilled: (state, action) => {
-        state.success = action.payload.success;
-        state.message = action.payload.message;
-        state.loading = false
-      },
-      rejected: (state, action) => {
-        state.loading = false
-        state.error = action.payload;
-      },
-    });
+    handleAsyncThunk(builder, addProduct, {...commonActions});
+
+
+    handleAsyncThunk(builder, deleteProduct, {...commonActions});
 
 
 

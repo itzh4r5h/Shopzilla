@@ -2,15 +2,16 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
-import Joi, { ref } from "joi";
+import Joi from "joi";
 import { showError } from "../../utils/showError";
 import { useDispatch, useSelector } from "react-redux";
-import { FaCheck, FaCheckSquare, FaEdit, FaExclamation } from "react-icons/fa";
+import { FaCheck, FaExclamation } from "react-icons/fa";
 import Tooltip from "@mui/material/Tooltip";
 import { useSyncedCountdown } from "../../hooks/useSyncedCountdown";
 import { FillButton } from "../../components/buttons/FillButton";
 import { FaTimesCircle } from "react-icons/fa";
 import { cancelUpdateEmail, sendOtpToEmail, updateEmail } from "../../store/thunks/userThunks";
+import { MdEditSquare } from "react-icons/md";
 
 export const ProfileEmail = () => {
   const { user, resendOtpIn, sending, updated } = useSelector(
@@ -59,7 +60,6 @@ export const ProfileEmail = () => {
   const submitForm = (data, e) => {
     const buttonValue = e.nativeEvent.submitter.textContent;
     data.email = data.email.toLowerCase();
-    console.log(buttonValue);
 
     switch (buttonValue) {
       case "Send OTP":
@@ -111,10 +111,18 @@ export const ProfileEmail = () => {
 
 
   const cancelUpdation = ()=>{
-    localStorage.clear()
-    setReadOnly(true)
-    reset()
-    dispatch(cancelUpdateEmail())
+    const key1 = localStorage.getItem('email')
+    const key2 = localStorage.getItem(`otp_resend_timer_${user?._id}`)
+    if(key1 && key2){
+      localStorage.removeItem('email')
+      localStorage.removeItem(`otp_resend_timer_${user?._id}`)
+      setReadOnly(true)
+      reset()
+      dispatch(cancelUpdateEmail())
+    }else{
+      reset()
+      setReadOnly(true)
+    }
   }
   
   return (
@@ -165,7 +173,7 @@ export const ProfileEmail = () => {
             onClick={() => user.isVerified && setReadOnly(false)}
             className="justify-self-end"
           >
-            <FaEdit className="text-2xl active:text-[var(--purpleDark)] transition-colors" />
+            <MdEditSquare className="text-2xl active:text-[var(--purpleDark)] transition-colors" />
           </label>
         ) : (
           <FaTimesCircle

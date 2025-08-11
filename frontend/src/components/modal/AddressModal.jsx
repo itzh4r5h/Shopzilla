@@ -1,4 +1,4 @@
-import { FaEdit, FaTimesCircle } from "react-icons/fa";
+import { FaTimesCircle } from "react-icons/fa";
 import { OutlineButton } from "../buttons/OutlineButton";
 import { FillButton } from "../buttons/FillButton";
 import { useForm } from "react-hook-form";
@@ -12,6 +12,7 @@ import { showError } from "../../utils/showError";
 import { useDispatch, useSelector } from "react-redux";
 import { addAddress, updateAddress } from "../../store/thunks/userThunks";
 import { getIsoCode } from "../../utils/helpers";
+import { MdEditSquare } from "react-icons/md";
 
 export const AddressModal = ({
   edit = false,
@@ -124,14 +125,14 @@ export const AddressModal = ({
     <div>
       <span onClick={() => setOpen(true)}>
         {edit ? (
-          <FaEdit className="text-2xl justify-self-end active:text-[var(--purpleDark)] transition-colors" />
+          <MdEditSquare className="text-2xl justify-self-end active:text-[var(--purpleDark)] transition-colors" />
         ) : (
           <OutlineButton name={"Add Address"} />
         )}
       </span>
       {open && (
         <>
-          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000063] p-2 py-4 overflow-y-auto">
+          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000089] p-2 py-4 overflow-y-auto">
             <form
               onSubmit={handleSubmit(submitForm)}
               className="bg-white w-full border border-black p-3 flex flex-col justify-center gap-5"

@@ -26,7 +26,7 @@ const addressActions = {
   pending: (state) => {
     state.message = null;
     state.success = false;
-    state.updated = false;
+    state.updatedAddress = undefined;
   },
   fulfilled: (state, action) => {
     state.message = action.payload.message;

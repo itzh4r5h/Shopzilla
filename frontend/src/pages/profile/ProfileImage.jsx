@@ -1,4 +1,4 @@
-import { FaCheckSquare, FaEdit, FaTimesCircle } from "react-icons/fa";
+import { FaCheckSquare, FaTimesCircle } from "react-icons/fa";
 import { ImageCard } from "../../components/cards/ImageCard";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateImage } from "../../store/thunks/userThunks";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { MdEditSquare } from "react-icons/md";
 
 export const ProfileImage = ({ profilePic }) => {
   const dispatch = useDispatch();
@@ -93,7 +94,7 @@ export const ProfileImage = ({ profilePic }) => {
       {!image && (
         <>
           <label htmlFor="images" className="absolute top-0 right-0 ">
-            <FaEdit className=" text-xl active:text-[var(--purpleDark)] transition-colors" />
+            <MdEditSquare className=" text-2xl active:text-[var(--purpleDark)] transition-colors" />
           </label>
           <input
             type="file"

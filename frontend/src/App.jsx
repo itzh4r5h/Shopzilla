@@ -33,7 +33,7 @@ export const App = () => {
     if(isLoggedIn && user.role === 'admin'){
       startSocketConnection(user._id)
     }
-  },[isLoggedIn,user])
+  },[isLoggedIn,user?._id])
 
   return (
     <div className="h-full w-full grid grid-rows-[1fr_10fr_1fr] bg-[var(--grey)]">
