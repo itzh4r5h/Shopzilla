@@ -16,12 +16,14 @@ export const BottomNavbar = () => {
   const isAdminUser = user?.role === "admin";
 
   const userRoutes = [
+    { path: "/", name: "home", icon: <FaHouse /> },
     { path: "/cart", name: "cart", icon: <FaBagShopping /> },
     { path: "/orders", name: "orders", icon: <FaBoxOpen /> },
     { path: "/profile", name: "profile", icon: <FaUser /> },
   ];
 
   const nonProtectedRoutes = [
+    { path: "/", name: "home", icon: <FaHouse /> },
     {
       path: "/reset/password",
       name: "reset password",
@@ -63,19 +65,55 @@ export const BottomNavbar = () => {
     <nav className="px-4 py-2">
       {loading ? (
         <ul className="border border-[var(--black)] rounded-2xl bg-[var(--white)] w-full p-2 flex justify-around items-center gap-3">
-          <Skeleton height={36} width={44}/>
-          <Skeleton height={36} width={44}/>
-          <Skeleton height={36} width={44}/>
-          <Skeleton height={36} width={44}/>
+          <Skeleton height={36} width={44} />
+          <Skeleton height={36} width={44} />
+          <Skeleton height={36} width={44} />
+          <Skeleton height={36} width={44} />
         </ul>
       ) : (
         <ul className="border border-[var(--black)] rounded-2xl bg-[var(--white)] w-full p-2 flex justify-around items-center gap-5">
-          {/* navigation for every user */}
-          {!isAdminUser &&
-            [
-              { path: "/", name: "home", icon: <FaHouse /> },
-              ...(isLoggedIn ? userRoutes : nonProtectedRoutes),
-            ].map((menu, index) => {
+          {/* navigation for not logged in users */}
+          {!isLoggedIn &&
+            nonProtectedRoutes.map((menu, index) => {
+              return (
+                <li key={index}>
+                  <NavLink
+                    to={menu.path}
+                    className="flex flex-col items-center justify-center"
+                  >
+                    {({ isActive }) => {
+                      return (
+                        <>
+                          <span
+                            className={`text-xl ${
+                              isActive
+                                ? "text-[var(--purpleDark)]"
+                                : "text-[var(--light)]"
+                            }`}
+                          >
+                            {menu.icon}
+                          </span>
+                          <span
+                            className={`text-sm capitalize ${
+                              isActive
+                                ? "text-[var(--purpleDark)] font-bold"
+                                : "text-[var(--light)]"
+                            }`}
+                          >
+                            {menu.name}
+                          </span>
+                        </>
+                      );
+                    }}
+                  </NavLink>
+                </li>
+              );
+            })}
+
+          {/* navigation for logged in user */}
+          {isLoggedIn &&
+            !path.pathname.includes("/admin/dashboard/") &&
+            userRoutes.map((menu, index) => {
               return (
                 <li key={index}>
                   <NavLink
@@ -120,6 +158,7 @@ export const BottomNavbar = () => {
           {/* navigation for admin user dashboard */}
           {isLoggedIn &&
             isAdminUser &&
+            path.pathname.includes("/admin/dashboard/") &&
             adminRoutes.map((menu, index) => {
               return (
                 <li key={index}>

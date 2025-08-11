@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const Joi = require("joi");
 
 const productSchema = new mongoose.Schema({
   name: {
@@ -54,6 +53,11 @@ const productSchema = new mongoose.Schema({
     },
   ],
 
+  imagesUploaded: {
+    type: Boolean,
+    default: false
+  },
+
   ratings: {
     type: Number,
     default: 0,
@@ -98,41 +102,8 @@ const productSchema = new mongoose.Schema({
   },
 });
 
-const joiValidator = (data) => {
-  const schema = Joi.object({
-    name: Joi.string().min(2).max(30).trim().required(),
-    description: Joi.string().min(10).max(10000).trim().required(),
-    price: Joi.number().min(0).required(),
-    category: Joi.string().trim().required(),
-    stock: Joi.number().min(0),
-    images: Joi.array().items({
-      url: Joi.string().required().messages({
-      'string.empty': 'Image URL is required',
-      'any.required': 'Image URL is required',
-    }),
-    fileId: Joi.string().required().messages({
-       'string.empty': 'Image fileId is required',
-      'any.required': 'Image fileId is required',
-    }),
-    name: Joi.string().required().messages({
-       'string.empty': 'Image name is required',
-      'any.required': 'Image name is required',
-    })
-    }),
-    ratings: Joi.number().min(0).max(5),
-    reviewsCount: Joi.number(),
-    reviews: Joi.array().items({
-      user: Joi.string().required(),
-      name: Joi.string().required(),
-      rating: Joi.number().min(0).max(5).required(),
-      comment: Joi.string().required(),
-    }),
-  });
 
-  const { error } = schema.validate(data);
-  return error;
-};
 
 const Product = mongoose.model("Product", productSchema);
 
-module.exports = { joiValidator, Product };
+module.exports = { Product };

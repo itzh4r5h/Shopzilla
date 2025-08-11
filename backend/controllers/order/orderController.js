@@ -133,9 +133,19 @@ exports.getMyAllOrders = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+// ========================== ADMIN -- GET TOTAL NUBMER OF ORDERS ================================
+exports.getTotalNumberOfOrders = catchAsyncErrors(async (req, res, next) => {
+  const totalOrders = await Order.countDocuments();
+
+  res.status(200).json({
+    success: true,
+    totalOrders,
+  });
+});
+
 // ========================== ADMIN -- GET ALL ORDERS ================================
 exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
-  const orders = await Order.find();
+  const orders = await Order.find({ orderStatus: req.params.status.toLowerCase()});
 
   if (!orders) {
     return next(new ErrorHandler("orders not exists", 404));

@@ -1,26 +1,31 @@
 import { FaSignOutAlt } from "react-icons/fa";
 import logo from "../../assets/shopzillaLogo.webp";
-import {useNavigate } from "react-router";
+import {useLocation, useNavigate } from "react-router";
 import { BiSolidDashboard } from "react-icons/bi";
 import { FaCircleArrowLeft } from "react-icons/fa6";
 import { SearchBar } from "../Filters/SearchBar";
 import { useDispatch, useSelector } from "react-redux";
 import { signOutUser } from "../../store/thunks/userThunks";
+import { useEffect } from "react";
+import { stopSocketConnection } from "../../utils/socketEvents";
+
 
 export const TopNavbar = () => {
   const navigate = useNavigate();
+  const path = useLocation()
 
 
   const dispatch = useDispatch();
-  const { isLoggedIn, user, loading, message } = useSelector(
+  const { isLoggedIn, user } = useSelector(
     (state) => state.user
   );
   const isAdminUser = user?.role === "admin";
-
+  
   const signout = () => {
-      localStorage.clear()
-      dispatch(signOutUser());
-      navigate("/signin");
+    localStorage.clear()
+    stopSocketConnection()
+    dispatch(signOutUser());
+    navigate("/signin");
   };
 
 
@@ -38,20 +43,18 @@ export const TopNavbar = () => {
       {/* logo ends */}
 
       {/* only for admin info -- dashboard heading begins */}
-      {isLoggedIn && isAdminUser && (
+      {isLoggedIn && isAdminUser && path.pathname.includes('/admin/dashboard/')? (
         <h1 className="text-center text-3xl font-bold flex justify-center items-center gap-2">
           <BiSolidDashboard className="text-3xl" />
           <span>Dashboard</span>
         </h1>
-      )}
+      ):<SearchBar placeholderValue={"Search any product..."} />}
       {/* only for admin info -- dashboard heading ends */}
 
-      {/* searchbar begins */}
-      {!isAdminUser && <SearchBar placeholderValue={"Search any product..."} />}
-      {/* searchbar ends */}
+    
 
       {/* show back button when admin user is in dashboard else show logout button begins */}
-      {isLoggedIn && isAdminUser ? (
+      {isLoggedIn && isAdminUser && path.pathname.includes('/admin/dashboard/') ? (
         <FaCircleArrowLeft
           className="text-2xl active:text-[var(--purpleDark)] transition-colors"
           onClick={() => navigate("/profile")}

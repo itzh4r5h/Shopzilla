@@ -75,7 +75,7 @@ export const SelectCountryStateCity = ({
     if (target) {
       const selectedName = target.dataset.name;
       const selectedCode = target.dataset.code;
-      setValue(name, selectedName);
+      setValue(name, selectedName,{ shouldValidate: true });
       setCode(selectedCode);
       closeIconRef.current.style.opacity = "1";
       setOptions(optionsData);

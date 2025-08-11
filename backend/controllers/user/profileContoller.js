@@ -20,6 +20,16 @@ exports.getAllUsers = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+// ====================== ADMIN --- GET TOTAL NUMBER USERS =============================
+exports.getTotalNumberOfUsers = catchAsyncErrors(async (req, res, next) => {
+  const totalUsers = await User.countDocuments()
+
+  res.status(200).json({
+    success: true,
+    totalUsers
+  });
+});
+
 // ====================== ADMIN --- GET SINGLE USER =============================
 exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
   let user = await User.findById(req.params.id);

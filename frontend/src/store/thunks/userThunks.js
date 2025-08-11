@@ -123,13 +123,8 @@ export const updateImage = createAsyncThunk(
       formData.append("image", image);
       const { data } = await axiosInstance.patch(
         "/users/profile-pic",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          }
-        }
-      )
+        formData
+      );
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -219,7 +214,10 @@ export const createPassword = createAsyncThunk(
   "user/create_password",
   async (newPassword, thunkAPI) => {
     try {
-      const { data } = await axiosInstance.patch("/users/password/new", newPassword);
+      const { data } = await axiosInstance.patch(
+        "/users/password/new",
+        newPassword
+      );
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(

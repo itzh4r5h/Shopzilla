@@ -54,7 +54,7 @@ export const ProfileImage = ({ profilePic }) => {
         <picture className="w-55 h-55 block rounded-full overflow-hidden">
           {uploading && (
             <div className="h-full w-full relative">
-              <Skeleton height={'100%'}/>
+              <Skeleton height={'100%'} style={{scale:1.1}}/>
               <p className="text-xl absolute z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">Uploading...</p>
             </div>
               

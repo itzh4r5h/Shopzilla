@@ -1,12 +1,18 @@
 import { NavLink, useLocation, useParams } from "react-router";
 import { BsCurrencyRupee } from "react-icons/bs";
 import { OutlineButton } from "../../components/buttons/OutlineButton";
+import {useDispatch,useSelector} from 'react-redux'
+
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectCreative, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/effect-creative";
 import "swiper/css/pagination";
+import { useEffect } from "react";
+import { getOrdersByStatus } from "../../store/thunks/adminThunks";
 
 export const UserOrders = () => {
   const orderStatus = [
@@ -19,8 +25,16 @@ export const UserOrders = () => {
     "delivered",
   ];
 
+  const {status} = useParams()
+  const dispatch = useDispatch()
+  const {loading,orders} = useSelector((state)=>state.admin)
+
+  useEffect(()=>{
+    dispatch(getOrdersByStatus(status))
+  },[status])
+
   return (
-    <div>
+    <div className="h-full relative">
       <h1 className="text-2xl text-center font-semibold">Orders</h1>
 
       {/* orders status begins */}
@@ -54,7 +68,45 @@ export const UserOrders = () => {
 
       {/* order begins */}
       <div className="flex flex-col justify-center gap-5">
-        {[1, 2, 4].map((item, index) => {
+        {loading && [1, 2].map((item, index) => {
+          return (
+            <article
+              className="bg-white border border-black rounded-md p-2"
+              key={index}
+            >
+              <h3 className="text-center text-md text-[var(--light)]">
+               <Skeleton width={'65%'}/>
+              </h3>
+
+              {/* order amount begins */}
+              <h2 className="grid grid-cols-2 text-xl">
+                <span><Skeleton/></span>
+                <span className="text-right">
+                  <Skeleton width={'80%'}/>
+                </span>
+              </h2>
+              {/* order amount ends */}
+
+              <h2 className="grid grid-cols-2 text-xl">
+                <span><Skeleton/></span>
+                <span className="text-right">
+                  <Skeleton width={'80%'}/>
+                </span>
+              </h2>
+
+              <div className="grid grid-rows-2 items-center mt-2 mb-4">
+                <h2 className="text-xl text-center"><Skeleton width={'70%'}/></h2>
+                <Skeleton height={35}/>
+              </div>
+
+                <picture className="w-full block h-35 overflow-hidden">
+                         <Skeleton height={'100%'}/>
+                </picture>
+            </article>
+          );
+        })}
+
+        {!loading && orders?.length !== 0 && orders?.map((item, index) => {
           return (
             <article
               className="bg-white border border-black rounded-md p-2"
@@ -107,7 +159,7 @@ export const UserOrders = () => {
                 {[...Array(item)].map((v, index) => {
                   return (
                     <SwiperSlide key={index}>
-                      <div className="grid grid-cols-[2.5fr_4fr] gap-2 bg-white w-full border p-1 rounded-md h-35">
+                      <div className="grid grid-cols-[2.5fr_4fr] gap-2 bg-white w-full border border-[var(--light)] p-1 rounded-md h-35">
                         <picture className="w-full h-full block">
                           <img
                             src="https://plus.unsplash.com/premium_photo-1664392147011-2a720f214e01?q=80&w=1156&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
@@ -170,7 +222,9 @@ export const UserOrders = () => {
             </article>
           );
         })}
+
       </div>
+      {!loading && orders?.length === 0 && <p className="text-center text-xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">No Orders Yet</p>}
       {/* order ends */}
     </div>
   );

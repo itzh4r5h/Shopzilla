@@ -6,11 +6,12 @@ import { Bounce, ToastContainer } from "react-toastify";
 import { useDispatch,useSelector } from "react-redux";
 import './css/toastifyCustom.css';
 import { loadUser } from "./store/thunks/userThunks";
+import { startSocketConnection } from "./utils/socketEvents";
 
 export const App = () => {
   const mainRef = useRef();
   const dispatch = useDispatch()
-  const {isLoggedIn} = useSelector((state)=>state.user)
+  const {isLoggedIn,user} = useSelector((state)=>state.user)
 
   useEffect(() => {
     const handleOnline = () => {
@@ -26,6 +27,13 @@ export const App = () => {
       window.removeEventListener("online", handleOnline);
     };
   }, []);
+
+
+  useEffect(()=>{
+    if(isLoggedIn && user.role === 'admin'){
+      startSocketConnection(user._id)
+    }
+  },[isLoggedIn,user])
 
   return (
     <div className="h-full w-full grid grid-rows-[1fr_10fr_1fr] bg-[var(--grey)]">

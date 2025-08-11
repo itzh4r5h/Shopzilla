@@ -1,6 +1,6 @@
 const { isOnlyDigits } = require("./helpers")
 
-class ApiFeatures{
+class ProductSearchAndFilter{
     constructor(query,queryString){
         this.query = query
         this.queryString = queryString
@@ -11,8 +11,9 @@ class ApiFeatures{
             name: {
                 $regex: this.queryString.keyword,
                 $options: 'i'
-            }
-        }:{}
+            },
+            imagesUploaded:true
+        }:{imagesUploaded:true}
 
         this.query = this.query.find({...keyword})
 
@@ -60,4 +61,4 @@ class ApiFeatures{
     }
 }
 
-module.exports = ApiFeatures
+module.exports = ProductSearchAndFilter

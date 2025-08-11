@@ -1,6 +1,6 @@
-const redis = require('../config/redis');
+const redis = require("../config/redis");
 const { Worker } = require("bullmq");
-const {User} = require("../models/User");
+const { User } = require("../models/User");
 
 const startUserDeletionWorker = () => {
   const worker = new Worker(
@@ -19,18 +19,18 @@ const startUserDeletionWorker = () => {
       }
     },
     {
-     connection:redis
+      connection: redis,
     }
-  )
+  );
 
-  worker.on('completed', job => {
+  worker.on("completed", (job) => {
     console.log(`[Worker] Job completed: ${job.id}`);
   });
 
-  worker.on('failed', (job, err) => {
+  worker.on("failed", (job, err) => {
     console.error(`[Worker] Job failed: ${job.id}`, err);
   });
 };
 
 
-module.exports = {startUserDeletionWorker}
+module.exports = { startUserDeletionWorker };

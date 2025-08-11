@@ -10,9 +10,10 @@ const productSlice = createSlice({
     maxPrice: undefined,
     page: 1,
     products: undefined,
-    productsCount: 0,
+    productsCount: undefined,
     product: undefined,
     error: null,
+    loading: true,
   },
   reducers: {
     saveKeyword: (state, action) => {
@@ -25,26 +26,29 @@ const productSlice = createSlice({
   extraReducers: (builder) => {
     handleAsyncThunk(builder, getAllProducts, {
       pending: (state) => {
-        state.products = undefined;
-        state.productsCount = 0;
+        state.loading = true;
       },
       fulfilled: (state, action) => {
+        state.loading = false
         state.products = action.payload.products;
         state.productsCount = action.payload.productsCount;
       },
       rejected: (state, action) => {
+        state.loading = true
         state.error = action.payload;
       },
     });
 
     handleAsyncThunk(builder, getProductDetails, {
       pending: (state) => {
-        state.product = undefined;
+        state.loading = true;
       },
       fulfilled: (state, action) => {
+        state.loading = false;
         state.product = action.payload.product;
       },
       rejected: (state, action) => {
+        state.loading = true;
         state.error = action.payload;
       },
     });

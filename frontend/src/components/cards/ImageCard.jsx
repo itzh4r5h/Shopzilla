@@ -9,7 +9,7 @@ export const ImageCard = ({ src }) => {
     <>
       {!loaded && (
         <span className="absolute h-full w-full">
-          <Skeleton height={"100%"} />
+          <Skeleton height={"100%"} style={{scale:1.1}}/>
         </span>
       )}
 

@@ -9,6 +9,12 @@ import {
   Legend,
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
+import {useDispatch,useSelector} from 'react-redux'
+import { useEffect } from "react";
+import { getTotalOrders, getTotalProducts, getTotalUsers } from "../../store/thunks/adminThunks";
+
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 // Register Chart.js components
 ChartJS.register(
@@ -128,6 +134,15 @@ const doughnutOptions = {
 };
 
 export const Dashboard = () => {
+  const dispatch = useDispatch()
+  const {loading,totalProducts,totalUsers,totalOrders} = useSelector((state)=>state.admin)
+
+  useEffect(()=>{
+    dispatch(getTotalProducts())
+    dispatch(getTotalUsers())
+    dispatch(getTotalOrders())
+  },[])
+
   const currentYear = new Date().getFullYear();
   return (
     <div className="flex flex-col gap-4 justify-center items-center">
@@ -152,7 +167,9 @@ export const Dashboard = () => {
               key={index}
             >
               <h1 className="text-xl font-bold text-center">Total {name}</h1>
-              <h1 className="text-xl font-bold text-center mt-2">21</h1>
+              {name === 'Products' && <h1 className="text-xl font-bold text-center mt-2">{loading?<Skeleton height={25}/>:totalProducts}</h1>}
+              {name === 'Users' && <h1 className="text-xl font-bold text-center mt-2">{loading?<Skeleton height={25}/>:totalUsers}</h1>}
+              {name === 'Orders' && <h1 className="text-xl font-bold text-center mt-2">{loading?<Skeleton height={25}/>:totalOrders}</h1>}
             </div>
           );
         })}

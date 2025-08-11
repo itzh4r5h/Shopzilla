@@ -24,7 +24,7 @@ export const ProductCard = ({
     >
       {/* product image begins */}
       <picture
-        className={`w-full ${orderDetails ? "h-55" : "h-35"} block relative`}
+        className={`w-full ${orderDetails ? "h-55" : "h-35"} block relative overflow-hidden`}
       >
         <ImageCard src={product.images[0]} />
       </picture>

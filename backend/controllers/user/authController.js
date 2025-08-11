@@ -8,7 +8,7 @@ const {
   joiValidator,
   joiPasswordValidator,
 } = require("../../validators/userValidator");
-const { deletionQueue } = require("../../jobs/userDeletion.queue");
+const { deletionQueue } = require("../../jobs/queue");
 
 // ====================== SIGNUP/SIGNIN USER WITH GOOGLE =============================
 exports.signInWithGoogle = catchAsyncErrors(async (req, res, next) => {

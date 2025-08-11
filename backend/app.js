@@ -1,8 +1,14 @@
+// Map of userId => socketId
+const userSockets = {};
+global._userSockets = userSockets;
+
 const express = require('express')
 const app  = express()
 const passport = require('passport')
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
+
+
 
 // env configuration
 require('dotenv').config({ quiet: true})
@@ -12,6 +18,7 @@ app.use(cors({
     origin: "http://localhost:5173",  // your React frontend URL
     credentials: true                 // if you're using cookies or sessions
   }))
+
 app.use(cookieParser())
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
