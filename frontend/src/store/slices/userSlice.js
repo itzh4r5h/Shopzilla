@@ -27,6 +27,7 @@ const addressActions = {
     state.message = null;
     state.success = false;
     state.updatedAddress = undefined;
+    state.loading = false
   },
   fulfilled: (state, action) => {
     state.message = action.payload.message;

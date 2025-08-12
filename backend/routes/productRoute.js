@@ -8,7 +8,7 @@ const router = express.Router()
 
 // =================================== Admin User Routes =======================================
 router.route('/admin/products').post(isUserAuthenticated,authorizedRoles('admin'),upload.array('images',Number(process.env.PRODUCT_MAX_IMAGES)),createProduct).get(isUserAuthenticated,authorizedRoles('admin'),getTotalNumberOfProducts)
-router.route('/admin/products/:id').patch(isUserAuthenticated,authorizedRoles('admin'),updateProduct).delete(isUserAuthenticated,authorizedRoles('admin'),deleteProduct)
+router.route('/admin/products/:id').patch(isUserAuthenticated,authorizedRoles('admin'),upload.array('images',Number(process.env.PRODUCT_MAX_IMAGES)),updateProduct).delete(isUserAuthenticated,authorizedRoles('admin'),deleteProduct)
 
 
 

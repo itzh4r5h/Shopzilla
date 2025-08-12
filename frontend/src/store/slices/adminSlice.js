@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { handleAsyncThunk } from "../utils/handleAsyncThunk";
-import { addProduct, deleteProduct, getAllUsers, getOrdersByStatus, getTotalOrders, getTotalProducts, getTotalUsers } from "../thunks/adminThunks";
+import { addProduct, deleteProduct, getAllUsers, getOrdersByStatus, getTotalOrders, getTotalProducts, getTotalUsers, updateProduct } from "../thunks/adminThunks";
 
 const initialState = {
     success:false,
@@ -117,6 +117,9 @@ const adminSlice = createSlice({
 
 
     handleAsyncThunk(builder, addProduct, {...commonActions});
+
+
+    handleAsyncThunk(builder, updateProduct, {...commonActions});
 
 
     handleAsyncThunk(builder, deleteProduct, {...commonActions});

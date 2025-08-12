@@ -48,10 +48,9 @@ export const TopNavbar = () => {
           <BiSolidDashboard className="text-3xl" />
           <span>Dashboard</span>
         </h1>
-      ):<SearchBar placeholderValue={"Search any product..."} />}
+      ):<SearchBar placeholderValue={"Search any product..."} path='/products' />}
       {/* only for admin info -- dashboard heading ends */}
 
-    
 
       {/* show back button when admin user is in dashboard else show logout button begins */}
       {isLoggedIn && isAdminUser && path.pathname.includes('/admin/dashboard/') ? (

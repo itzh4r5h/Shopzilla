@@ -97,8 +97,10 @@ export const AddressModal = ({
 
   const submitForm = (data) => {
     if (edit) {
+      handleClose()
       dispatch(updateAddress({ id, address: data }));
     } else {
+      handleClose()
       dispatch(addAddress(data));
     }
     handleClose();

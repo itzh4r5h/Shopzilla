@@ -15,23 +15,29 @@ export const Home = () => {
   }, []);
 
   return (
-    <div className="grid grid-cols-2 gap-3">
-      {loading &&
-        [...Array(20)].map((item, index) => {
-          return <ProductCard key={index} />;
-        })}
+    <div className="h-full relative">
+      <div className="grid grid-cols-2 gap-3">
+        {loading &&
+          [...Array(20)].map((item, index) => {
+            return <ProductCard key={index} />;
+          })}
 
-      {!loading &&  products?.length !== 0 &&
-        products?.map((product) => {
-          return (
-            <Link to={`/products/${product._id}`} key={product._id}>
-              <ProductCard product={product} />
-            </Link>
-          );
-        })}
+        {!loading &&
+          products?.length !== 0 &&
+          products?.map((product) => {
+            return (
+              <Link to={`/products/${product._id}`} key={product._id}>
+                <ProductCard product={product} />
+              </Link>
+            );
+          })}
+      </div>
 
-
-        {!loading && products?.length === 0 && <p className="text-xl text-center col-span-2 h-fit my-auto">No Products Yet</p>}
+      {!loading && products?.length === 0 && (
+        <p className="text-center text-xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          No Products Yet
+        </p>
+      )}
     </div>
   );
 };

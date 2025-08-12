@@ -42,7 +42,7 @@ exports.joiValidator = (data) => {
     images: Joi.array()
       .items(
         Joi.custom((file, helpers) => {
-          const allowedTypes = ["image/png", "image/jpeg"];
+          const allowedTypes = ["image/png", "image/jpeg","image/webp"];
           if (!allowedTypes.includes(file.mimetype)) {
             return helpers.error("file.type");
           }

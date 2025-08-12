@@ -26,6 +26,8 @@ import { useParams } from "react-router";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { ImageCard } from "../components/cards/ImageCard";
+import { toast } from "react-toastify";
+import { clearErrors } from "../store/slices/productSlice";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 10,
@@ -48,9 +50,7 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 export const ProductDetails = ({ path, mainRef }) => {
   const dispatch = useDispatch();
   const { id } = useParams();
-  const { error, product } = useSelector(
-    (state) => state.products
-  );
+  const { error, product } = useSelector((state) => state.products);
 
   useEffect(() => {
     dispatch(getProductDetails(id));
@@ -60,6 +60,14 @@ export const ProductDetails = ({ path, mainRef }) => {
     });
   }, []);
 
+  useEffect(() => {
+    // this shows the error if error exists
+    if (error) {
+      toast.error(error);
+      dispatch(clearErrors());
+    }
+  }, [error]);
+
   const reviews = 2;
   return (
     <div>
@@ -67,7 +75,7 @@ export const ProductDetails = ({ path, mainRef }) => {
       {product ? (
         <article className="w-full min-h-full border border-[var(--black)] bg-[var(--white)] p-2 flex flex-col gap-2 mt-5">
           <Swiper
-            loop={product?.images?.length>1?true:false}
+            loop={product?.images?.length > 1 ? true : false}
             pagination={{ clickable: true }}
             grabCursor={true}
             effect={"creative"}
@@ -86,8 +94,8 @@ export const ProductDetails = ({ path, mainRef }) => {
             {product.images.map((img) => {
               return (
                 <SwiperSlide key={img._id}>
-                  <picture className="w-full h-55 block relative overflow-hidden">
-                    <ImageCard src={img} />
+                  <picture className="w-full h-55 block relative overflow-hidden bg-white">
+                    <ImageCard src={img} product={true} />
                   </picture>
                 </SwiperSlide>
               );

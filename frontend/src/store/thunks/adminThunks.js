@@ -98,6 +98,34 @@ export const addProduct = createAsyncThunk(
 );
 
 
+export const updateProduct = createAsyncThunk(
+  "admin/update_product",
+  async (productData, thunkAPI) => {
+    try {
+      const formData = new FormData();
+      Object.keys(productData).forEach((key) => {
+        if (key === "images") {
+          // Handle multiple files
+          productData[key].forEach((file) => {
+            formData.append('images', file);
+          });
+        }
+        else {
+          formData.append(key, productData[key]);
+        }
+      });
+
+      const { data } = await axiosInstance.patch(`/admin/products/${productData.id}`, formData);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+
 export const deleteProduct = createAsyncThunk(
   "admin/delete_product",
   async (id, thunkAPI) => {

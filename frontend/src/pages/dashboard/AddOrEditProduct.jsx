@@ -17,7 +17,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { NormalSelect } from "../../components/selectors/NormalSelect";
 import { toast } from "react-toastify";
 import { clearErrors, clearMessage } from "../../store/slices/adminSlice";
-import { addProduct } from "../../store/thunks/adminThunks";
+import { addProduct, updateProduct } from "../../store/thunks/adminThunks";
+import { getProductDetails } from "../../store/thunks/productThunks";
+import { useLocation, useNavigate, useParams } from "react-router";
+import { clearProductDetails } from "../../store/slices/productSlice";
 
 export const AddOrEditProduct = ({ edit = false, name }) => {
   const maxImages = Number(import.meta.env.VITE_PRODUCT_MAX_IMAGES);
@@ -62,7 +65,10 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
       images: Joi.array()
         .items(
           Joi.custom((file, helpers) => {
-            const allowedTypes = ["image/png", "image/jpeg"];
+            if (file.url) {
+              return file;
+            }
+            const allowedTypes = ["image/png", "image/jpeg","image/webp"];
 
             if (!allowedTypes.includes(file.type)) {
               return helpers.error("file.type");
@@ -92,7 +98,6 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
     register,
     handleSubmit,
     setValue,
-    getValues,
     watch,
     reset,
     formState: { errors },
@@ -102,10 +107,9 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
 
   const chooseImages = (e) => {
     const selectedImages = Array.from(e.target.files);
-
     // Optional: filter only jpg/png files
     const validImages = selectedImages.filter(
-      (file) => file.type === "image/png" || file.type === "image/jpeg"
+      (file) => file.type === "image/png" || file.type === "image/jpeg" || file.type === "image/webp"
     );
 
     setValue("images", [...(images || []), ...validImages], {
@@ -113,10 +117,21 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
     });
   };
 
+  const [removedImagesFileIds,setRemovedImagesFileIds] = useState([]);
+
   const removeImage = (index) => {
     setValue(
       "images",
-      images.filter((_, i) => i !== index),
+      images.filter((img, i) => {
+        if (i === index) {
+          // This is the one we're removing
+          if (img.url) {
+            setRemovedImagesFileIds((prev)=>[...prev,img.fileId]);
+          }
+          return false; // exclude from array
+        }
+        return true; // keep others
+      }),
       { shouldValidate: true }
     );
   };
@@ -125,11 +140,23 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
   const { error, success, message, loading } = useSelector(
     (state) => state.admin
   );
-  const { user } = useSelector((state) => state.user);
+  const { product } = useSelector((state) => state.products);
+  const { id } = useParams();
+  const path = useLocation();
+  const navigate = useNavigate()
 
   const submitForm = (data) => {
-    dispatch(addProduct(data));
-    reset()
+    if (edit) {
+      data.images = data.images.filter((img)=>!img.url)
+      data.removedImagesFileIds = removedImagesFileIds!==0?removedImagesFileIds:[]
+      data.id = product?._id
+      dispatch(updateProduct(data))
+      reset()
+      navigate('/admin/dashboard/products')
+    } else {
+      dispatch(addProduct(data));
+      reset();
+    }
   };
 
   // this is to remember last error key from joi
@@ -155,6 +182,24 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
     }
   }, [success, message]);
 
+  useEffect(() => {
+    if (edit) {
+      dispatch(getProductDetails(id));
+    } else {
+      dispatch(clearProductDetails());
+    }
+  }, [edit]);
+
+  useEffect(() => {
+    if (product) {
+        setValue('name',product.name)
+        setValue('description',product.description)
+        setValue('price',product.price)
+        setValue('stock',product.stock)
+        setValue('category',product.category)
+        setValue('images',product.images)
+    }
+  }, [product?.images]);
 
   const categories = [
     "mobile",
@@ -165,6 +210,10 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
     "headphone",
     "earbuds",
   ];
+
+  useEffect(() => {
+    reset();
+  }, [path.pathname]);
 
   return (
     <div>
@@ -246,6 +295,7 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
             Category
           </label>
           <NormalSelect
+            selected={product?.category}
             name="category"
             defaultValue={"Select Category"}
             register={register}
@@ -271,7 +321,7 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
               {...register("images", { required: true })}
               name="images"
               id="images"
-              accept="image/png, image/jpeg"
+              accept="image/png, image/jpeg, image/webp"
               multiple
               className="hidden"
               onChange={chooseImages}
@@ -298,12 +348,12 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
               {images.map((img, index) => {
                 return (
                   <SwiperSlide key={index}>
-                    <picture className="w-full h-55 block relative border">
+                    <picture className="w-full h-55 block relative border bg-white">
                       <img
-                        src={URL.createObjectURL(img)}
-                        alt={img.name.split(".")[0]}
+                        src={img.url || URL.createObjectURL(img)}
+                        alt={img.name || img.name.split(".")[0]}
                         loading="lazy"
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-contain"
                       />
                       <FaTimesCircle
                         className="self-end text-2xl absolute top-2 right-2 z-100 text-[var(--purpleDark)]"
@@ -325,10 +375,11 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
         {/* images ends */}
 
         <span>
-          {loading?<FillButton type="button" name={'Creating...'}/>:<FillButton
-            type="submit"
-            name={`${name.split(" ")[0]} Product`}
-          />}
+          {loading ? (
+            <FillButton type="button" name={"Creating..."} />
+          ) : (
+            <FillButton type="submit" name={`${name.split(" ")[0]} Product`} />
+          )}
         </span>
       </form>
     </div>

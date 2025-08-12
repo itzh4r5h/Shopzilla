@@ -31,7 +31,7 @@ export const App = () => {
 
   useEffect(()=>{
     if(isLoggedIn && user.role === 'admin'){
-      startSocketConnection(user._id)
+      startSocketConnection(user._id,dispatch)
     }
   },[isLoggedIn,user?._id])
 

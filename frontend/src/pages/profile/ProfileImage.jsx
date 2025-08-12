@@ -1,6 +1,5 @@
 import { FaCheckSquare, FaTimesCircle } from "react-icons/fa";
 import { ImageCard } from "../../components/cards/ImageCard";
-import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,7 +20,8 @@ export const ProfileImage = ({ profilePic }) => {
 
     if (
       selectedImage.type === "image/png" ||
-      selectedImage.type === "image/jpeg"
+      selectedImage.type === "image/jpeg" ||
+      selectedImage.type === "image/webp" 
     ) {
       // Size in MB
       const fileSizeMB = selectedImage.size / (1024 * 1024);
@@ -100,7 +100,7 @@ export const ProfileImage = ({ profilePic }) => {
             type="file"
             name="images"
             id="images"
-            accept="image/png, image/jpeg"
+            accept="image/png, image/jpeg, image/webp"
             className="hidden"
             onChange={chooseImages}
           />

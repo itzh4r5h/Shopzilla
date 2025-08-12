@@ -22,6 +22,7 @@ export const Users = () => {
       <TitleWithSearchBar
         title={"Users"}
         placeholderValue={"search by name or email..."}
+        path='/admin/dashboard/users'
       />
 
       <div className="grid grid-cols-2 gap-2.5 mt-5">

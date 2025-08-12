@@ -3,7 +3,7 @@ import { useNavigate  } from 'react-router'
 import {useDispatch} from 'react-redux'
 import {saveKeyword} from '../../store/slices/productSlice.js'
 
-export const SearchBar = ({placeholderValue}) => {
+export const SearchBar = ({placeholderValue,path}) => {
      const [search, setSearch] = useState("");
      const navigate = useNavigate()
      const dispatch = useDispatch()
@@ -12,7 +12,7 @@ export const SearchBar = ({placeholderValue}) => {
         if(e.key === 'Enter'){
           dispatch(saveKeyword(search.trim()))
           setSearch('')
-          navigate('/products')
+          navigate(path)
         }
      }
 

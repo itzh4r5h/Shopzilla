@@ -22,6 +22,9 @@ const productSlice = createSlice({
     clearErrors: (state) => {
       state.error = null;
     },
+    clearProductDetails: (state) => {
+      state.product= undefined
+    }
   },
   extraReducers: (builder) => {
     handleAsyncThunk(builder, getAllProducts, {
@@ -32,6 +35,7 @@ const productSlice = createSlice({
         state.loading = false
         state.products = action.payload.products;
         state.productsCount = action.payload.productsCount;
+        state.keyword = ""
       },
       rejected: (state, action) => {
         state.loading = true
@@ -55,5 +59,5 @@ const productSlice = createSlice({
   },
 });
 
-export const { saveKeyword, clearErrors } = productSlice.actions;
+export const { saveKeyword, clearErrors,clearProductDetails } = productSlice.actions;
 export const productReducer = productSlice.reducer;

@@ -17,12 +17,25 @@ export const AllProducts = () => {
   const adminDefaultPath = "/admin/dashboard";
 
   const dispatch = useDispatch();
-  const { loading:productsLoading, products } = useSelector((state) => state.products);
-  const { loading:adminLoading,error,success,message } = useSelector((state) => state.admin);
+  const {
+    loading: productsLoading,
+    products,
+    keyword,
+  } = useSelector((state) => state.products);
+  const {
+    loading: adminLoading,
+    error,
+    success,
+    message,
+  } = useSelector((state) => state.admin);
 
   useEffect(() => {
     dispatch(getAllProducts());
   }, []);
+
+  useEffect(() => {
+    dispatch(getAllProducts(keyword));
+  }, [keyword]);
 
   useEffect(() => {
     // this shows the error if error exists
@@ -50,6 +63,7 @@ export const AllProducts = () => {
       <TitleWithSearchBar
         title={"Products"}
         placeholderValue={"search any product..."}
+        path="/admin/dashboard/products"
       />
 
       <div className="grid grid-cols-2 gap-3 mt-4">
@@ -72,7 +86,8 @@ export const AllProducts = () => {
             );
           })}
 
-        {(!productsLoading && !adminLoading) &&
+        {!productsLoading &&
+          !adminLoading &&
           products?.length !== 0 &&
           products?.map((product) => {
             return (
@@ -84,16 +99,16 @@ export const AllProducts = () => {
                   to={`${adminDefaultPath}/products/${product._id}/update`}
                   className="absolute -top-1 -right-1 cursor-pointer"
                 >
-                  <span className="bg-[var(--purpleDark)] h-8 w-8 grid place-content-center rounded-md">
+                  <span className="bg-[var(--purpleDark)] h-7 w-7 grid place-content-center rounded-md">
                     <MdEditSquare className="text-xl text-white" />
                   </span>
                 </Link>
 
-                <span className="absolute top-10 -right-1">
+                <span className="absolute top-8 -right-1">
                   <DeleteModal
                     classes={"text-2xl text-white"}
                     spanClasses={
-                      "bg-[var(--purpleDark)] h-8 w-8 grid place-content-center rounded-md"
+                      "bg-[var(--purpleDark)] h-7 w-7 grid place-content-center rounded-md"
                     }
                     deleteFunction={() => handleDeleteProduct(product._id)}
                   />

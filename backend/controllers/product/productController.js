@@ -70,19 +70,88 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
 
 // ======================= ADMIN -- UPDATE PRODUCT ==============================
 exports.updateProduct = catchAsyncErrors(async (req, res, next) => {
-  const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const product = await Product.findById(req.params.id);
 
   if (!product) {
     return next(new ErrorHandler("Product not found", 404));
   }
 
+  const { removedImagesFileIds, id, ...data } = req.body;
+
+  // if imagekit image fileids exists
+  if (removedImagesFileIds) {
+    // then convert into array
+    const fileIds = removedImagesFileIds.split(",");
+
+    // after deleting images on imagekit
+    // keep those images whose fileid not in fileIds array
+    const productImages = product.images.filter(
+      (img) => !fileIds.includes(img.fileId)
+    );
+
+    // update product images array
+    product.images = [...productImages];
+    await product.save({ validateBeforeSave: true });
+
+    // run delete function of each imagekit file id
+    await Promise.all(fileIds.map((id) => imagekit.deleteFile(id)));
+  }
+
+  // updating product basic details - name, description, price, stock and category
+  await Product.findByIdAndUpdate(
+    product._id,
+    { ...data, imagesUploaded: req.files.length === 0 },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
   res.status(200).json({
     success: true,
-    product,
+    message:
+      req.files.length !== 0 ? "product updation started" : "product updated",
   });
+
+  // this will run in the background if req.files have any file to upload on imagekit
+  (async () => {
+    if (req.files.length !== 0) {
+      const uploadedImages = await Promise.all(
+        req.files.map(async (image) => {
+          const { buffer, originalname } = image;
+
+          const { url, fileId } = await uploadToImageKit(
+            buffer,
+            originalname,
+            `${process.env.PRODUCT_PICS_FOLDER}/${product._id}`
+          );
+
+          return {
+            url,
+            fileId,
+            name: originalname.split(".")[0],
+          };
+        })
+      );
+
+      await Product.findByIdAndUpdate(
+        product._id,
+        {
+          images: [...product.images, ...uploadedImages],
+          imagesUploaded: true,
+        },
+        { new: true, runValidators: true }
+      );
+
+      // Lookup socketId from userId
+      const socketId = global._userSockets[req.user._id];
+      if (socketId && global._io) {
+        global._io.to(socketId).emit("productImagesUploaded", {
+          message: "product updated",
+        });
+      }
+    }
+  })();
 });
 
 // ======================= ADMIN -- DELETE PRODUCT ==============================

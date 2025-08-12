@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IoIosArrowDropdownCircle } from "react-icons/io";
 
 export const NormalSelect = ({
+  selected,
   name,
   defaultValue,
   register,
@@ -30,6 +31,12 @@ export const NormalSelect = ({
       setValue(name,selectedCategory,{ shouldValidate: true });
     }
   };
+
+  useEffect(()=>{
+    if(selected){
+      setValue(name,selected)
+    }
+  },[selected])
 
   return (
     <div className="relative">
