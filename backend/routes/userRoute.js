@@ -5,7 +5,7 @@ const { isUserAuthenticated, isOtpValid, isEmailVerified, authorizedRoles } = re
 const {signInWithGoogle, signUpUser, signInUser, signOut, verifyUserEmail,resetPassword} = require('../controllers/user/authController')
 const {getAllUsers, getSingleUser, updateUserRole, deleteUser, getUser, updateUserName, updateUserEmail, updateUserProfilePic, updateUserPassword, cancelUpdateUserEmail, createPassword, getTotalNumberOfUsers} = require('../controllers/user/profileContoller')
 const {sendEmailForResetPassword, sendEmailForEmailVerification, sendOtpToEmail} = require('../controllers/user/emailController')
-const { addNewShippingAddress, getShippingAddress, getAllShippingAddress, updateShippingAddress, deleteShippingAddress } = require('../controllers/user/addressController')
+const { addNewShippingAddress, getShippingAddress, getAllShippingAddress, updateShippingAddress, deleteShippingAddress, updateShippingAddressIndex } = require('../controllers/user/addressController')
 const { getAllProductsOfCart, addProductToCartOrUpdateQuantity, removeProductFromCart } = require('../controllers/user/cartController')
 const { upload } = require('../utils/uploadImages')
 
@@ -40,7 +40,7 @@ router.route('/users/reset/password').post(isEmailVerified,sendEmailForResetPass
 
 
 // ========================= SHIPPING ADDRESS ==============================
-router.route('/users/address').post(isUserAuthenticated,addNewShippingAddress).get(isUserAuthenticated,getAllShippingAddress)
+router.route('/users/address').post(isUserAuthenticated,addNewShippingAddress).get(isUserAuthenticated,getAllShippingAddress).patch(isUserAuthenticated,updateShippingAddressIndex)
 router.route('/users/address/:id').get(isUserAuthenticated,getShippingAddress).patch(isUserAuthenticated,updateShippingAddress).delete(isUserAuthenticated,deleteShippingAddress)
 
 // ========================= CART PRODUCTS ==============================

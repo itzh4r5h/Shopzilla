@@ -202,6 +202,7 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
   }, [product?.images]);
 
   const categories = [
+    "smart watch",
     "mobile",
     "laptop",
     "shirt",
@@ -209,7 +210,21 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
     "earphone",
     "headphone",
     "earbuds",
-  ];
+    "watch",
+    "t-shirt",
+    "tablet",
+    "game",
+    "toy",
+    "book",
+    "handbag",
+    "luggage",
+    "camera",
+    "chair",
+    "monitor",
+    "smart television",
+    "washing machine",
+    "pencil"
+  ].sort();
 
   useEffect(() => {
     reset();
@@ -327,7 +342,7 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
               onChange={chooseImages}
             />
           </div>
-          {images.length !== 0 ? (
+          {images.length > 0  ? (
             <Swiper
               loop={images.length > 1 ? true : false}
               pagination={{ clickable: true }}

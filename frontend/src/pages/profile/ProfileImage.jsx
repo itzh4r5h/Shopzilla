@@ -72,7 +72,7 @@ export const ProfileImage = ({ profilePic }) => {
         </picture>
       ) : (
         <picture className="w-55 h-55 block rounded-full overflow-hidden relative">
-          <ImageCard src={profilePic} />
+          <ImageCard src={profilePic} product={false} />
         </picture>
       )}
 

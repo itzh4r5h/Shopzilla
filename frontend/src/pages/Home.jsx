@@ -23,7 +23,7 @@ export const Home = () => {
           })}
 
         {!loading &&
-          products?.length !== 0 &&
+          products?.length > 0 &&
           products?.map((product) => {
             return (
               <Link to={`/products/${product._id}`} key={product._id}>

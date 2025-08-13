@@ -45,9 +45,9 @@ export const getTotalOrders = createAsyncThunk(
 
 export const getAllUsers = createAsyncThunk(
   "admin/all_users",
-  async (_, thunkAPI) => {
+  async (keyword='', thunkAPI) => {
     try {
-      const { data } = await axiosInstance.get("/admin/users");
+      const { data } = await axiosInstance.get(`/admin/users?keyword=${keyword}`);
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(

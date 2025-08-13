@@ -2,7 +2,7 @@ import { useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
-export const ImageCard = ({ src,product=false }) => {
+export const ImageCard = ({ src,product=true }) => {
   const [loaded, setLoaded] = useState(false);
 
   return (

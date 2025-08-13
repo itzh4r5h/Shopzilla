@@ -85,7 +85,6 @@ const productSchema = new mongoose.Schema({
       },
       comment: {
         type: String,
-        required: [true, "comment is required"],
       },
       createdAt: {
         type: Date,

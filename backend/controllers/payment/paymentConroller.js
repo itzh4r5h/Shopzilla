@@ -4,7 +4,8 @@ const { Payment } = require("../../models/Payment");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const Razorpay = require("razorpay");
-const crypto = require('crypto')
+const crypto = require('crypto');
+const { User } = require("../../models/User");
 
 // Intance of RazorPay
 const razorpay = new Razorpay({
@@ -14,11 +15,18 @@ const razorpay = new Razorpay({
 
 // =============================== CEATE PAYMENT ORDER =========================
 exports.createPaymentOrder = catchAsyncErrors(async (req, res, next) => {
-  const order = await Order.findById(req.params.id);
+  const {orderId} = req.body
+
+  if(!orderId){
+    return next(new ErrorHandler('order id is required'))
+  }
+
+  const order = await Order.findById(orderId);
 
   if (!order) {
     return next(new ErrorHandler("order not exists", 404));
   }
+
 
   const options = {
     amount: order.totalPrice * 100, // amount in smallest currency unit
@@ -44,11 +52,11 @@ exports.createPaymentOrder = catchAsyncErrors(async (req, res, next) => {
 
 // =============================== VERIFY PAYMENT  =========================
 exports.verifyPayment = catchAsyncErrors(async(req,res,next)=>{
-   const { razorpayOrderId, razorpayPaymentId, signature } = req.body;
+   const { razorpay_order_id, razorpay_payment_id, razorpay_signature,cart } = req.body;
     const secret = process.env.RAZORPAY_KEY_SECRET
-    const body = `${razorpayOrderId}|${razorpayPaymentId}`
+    const body = `${razorpay_order_id}|${razorpay_payment_id}`
 
-    const payment = await Payment.findOne({razorpayOrderId})
+    const payment = await Payment.findOne({razorpayOrderId:razorpay_order_id})
        
     if(!payment){
     return next(new ErrorHandler('razorpay order not exists',404))
@@ -56,15 +64,15 @@ exports.verifyPayment = catchAsyncErrors(async(req,res,next)=>{
 
     const expectedSignature = crypto.createHmac('sha256',secret).update(body.toString()).digest('hex')
 
-    if(expectedSignature === signature){
+    if(expectedSignature === razorpay_signature){
        
-       payment.razorpayPaymentId = razorpayPaymentId
-       payment.signature = signature
+       payment.razorpayPaymentId = razorpay_payment_id
+       payment.signature = razorpay_signature
        payment.status = 'completed'
 
        await payment.save({validateBeforeSave:true})
        
-      const order = await Order.findByIdAndUpdate(payment.order,{orderStatus:'confirmed',paymentInfo:payment._id})
+      const order = await Order.findByIdAndUpdate(payment.order,{orderStatus:'confirmed',confirmed:Date.now(),paymentInfo:payment._id})
 
       order.orderItems.forEach(async(item)=>{
         const product = await Product.findById(item.product)
@@ -73,11 +81,14 @@ exports.verifyPayment = catchAsyncErrors(async(req,res,next)=>{
         await product.save({validateBeforeSave:true})
       })
 
-      // TODO:  later change it with redirect
-       res.status(200).json({
-         success:true,
-         message: 'payment succeed'
-       })
+     if(cart){
+       await User.findByIdAndUpdate(req.user._id,{cartProducts:[]},{new:true,runValidators:true})
+     }
+
+      res.status(200).json({
+        success:true,
+        orderId: order._id
+      })
     }
     else{
       // TODO:  later change it with redirect // i don't know right now

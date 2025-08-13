@@ -8,6 +8,7 @@ export const NormalSelect = ({
   register,
   setValue,
   optionsData,
+  updateFunction=()=>{}
 }) => {
   const [showOptions, setShowOptions] = useState(false);
   const dropDownIconRef = useRef();
@@ -24,12 +25,16 @@ export const NormalSelect = ({
   };
 
   const chooseValueOnClick = (e) => {
-    const target = e.target.closest("li[data-category]"); // in case span is clicked
-
+    const target = e.target.closest("li[data-option]"); // in case span is clicked
+    
     if (target) {
-      const selectedCategory = target.dataset.category;
-      setValue(name,selectedCategory,{ shouldValidate: true });
+      const selectedData = target.dataset.option;
+      setValue(name,selectedData,{ shouldValidate: true });
+
+      const index = optionsData.indexOf(selectedData)
+      updateFunction(index+1)
     }
+    closeDropDown()
   };
 
   useEffect(()=>{
@@ -50,7 +55,7 @@ export const NormalSelect = ({
           onBlur={() => setTimeout(() => closeDropDown(), 50)}
           autoComplete="off"
           readOnly
-          className="capitalize bg-[var(--grey)] border rounded-md p-1 text-lg outline-none w-full pr-10 cursor-default focus:ring-2 focus:ring-[var(--purpleDark)]"
+          className={`${name.toLowerCase()==='quantity' && 'text-center text-xl'} capitalize bg-[var(--grey)] border rounded-md p-1 text-lg outline-none w-full pr-10 cursor-default focus:ring-2 focus:ring-[var(--purpleDark)]`}
         />
         <IoIosArrowDropdownCircle
           ref={dropDownIconRef}
@@ -68,9 +73,9 @@ export const NormalSelect = ({
               <li
                 key={index + option}
                 className="text-lg p-1 active:bg-[var(--grey)] hover:bg-[var(--grey)] transition-colors cursor-pointer rounded-md"
-                data-category={option}
+                data-option={option}
               >
-                <span className="line-clamp-1 capitalize">{option}</span>
+                <span className={`line-clamp-1 capitalize ${name.toLowerCase()==='quantity' && 'text-center text-xl'}`}>{option}</span>
               </li>
             );
           })}

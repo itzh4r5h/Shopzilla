@@ -12,6 +12,7 @@ import { MdEditSquare } from "react-icons/md";
 import { deleteProduct } from "../../store/thunks/adminThunks";
 import { toast } from "react-toastify";
 import { clearErrors, clearMessage } from "../../store/slices/adminSlice";
+import { saveKeyword } from "../../store/slices/productSlice";
 
 export const AllProducts = () => {
   const adminDefaultPath = "/admin/dashboard";
@@ -30,6 +31,7 @@ export const AllProducts = () => {
   } = useSelector((state) => state.admin);
 
   useEffect(() => {
+    dispatch(saveKeyword(''))
     dispatch(getAllProducts());
   }, []);
 
@@ -88,7 +90,7 @@ export const AllProducts = () => {
 
         {!productsLoading &&
           !adminLoading &&
-          products?.length !== 0 &&
+          products?.length > 0 &&
           products?.map((product) => {
             return (
               <div key={product._id} className="relative">

@@ -1,6 +1,7 @@
 import { toast } from "react-toastify";
 import { socket } from "./socket";
 import { getAllProducts } from "../store/thunks/productThunks";
+import { saveKeyword } from "../store/slices/productSlice";
 
 export const startSocketConnection = (loggedInUserId,dispatch) => {
   if (!socket.connected) {
@@ -17,6 +18,7 @@ export const startSocketConnection = (loggedInUserId,dispatch) => {
   socket.off("productImagesUploaded"); // remove old listeners
   socket.on("productImagesUploaded", (data) => {
     toast.success(data.message);
+    dispatch(saveKeyword(''))
     dispatch(getAllProducts())
   });
 };

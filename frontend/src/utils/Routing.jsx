@@ -35,7 +35,7 @@ export const Routing = ({ mainRef }) => {
       {/*  user protected routes begins */}
       {isLoggedIn && (
         <>
-          <Route path="/cart" element={<Cart />} />
+          <Route path="/cart" element={<Cart mainRef={mainRef}/>} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/orders/:id" element={<OrderDetails />} />
           <Route path="/profile" element={<Profile />} />

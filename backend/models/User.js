@@ -61,15 +61,15 @@ const userSchema = new mongoose.Schema({
     default: false,
   },
 
-  createdAt:{
+  createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
 
   resendLinkIn: Date,
   resendOtpIn: Date,
   resendTokenIn: Date,
-  
+
   otp: String,
   otpExpire: Date,
 
@@ -88,6 +88,11 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
+
+  shippingAddressIndex: {
+    type: Number,
+    default: 1,
+  },
 
   role: {
     type: String,

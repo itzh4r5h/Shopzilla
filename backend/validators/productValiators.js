@@ -42,7 +42,7 @@ exports.joiValidator = (data) => {
     images: Joi.array()
       .items(
         Joi.custom((file, helpers) => {
-          const allowedTypes = ["image/png", "image/jpeg","image/webp"];
+          const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
           if (!allowedTypes.includes(file.mimetype)) {
             return helpers.error("file.type");
           }
@@ -70,7 +70,6 @@ exports.joiValidator = (data) => {
   return error;
 };
 
-
 exports.joiReviewValidator = (data) => {
   const schema = Joi.object({
     ratings: Joi.number().min(0).max(5),
@@ -78,8 +77,17 @@ exports.joiReviewValidator = (data) => {
     reviews: Joi.array().items({
       user: Joi.string().required(),
       name: Joi.string().required(),
-      rating: Joi.number().min(0).max(5).required(),
-      comment: Joi.string().required(),
+      rating: Joi.number().min(1).max(5).required().messages({
+        "number.base": "Rating must be a number",
+        "number.min": "Rating is required",
+        "number.max": "Rating cannot be more than 5",
+        "any.required": "Rating is required",
+      }),
+
+      comment: Joi.string().max(5000).optional().messages({
+        "string.base": "Comment must be a text string",
+        "string.max": "Comment cannot exceed 5000 characters",
+      }),
     }),
   });
 

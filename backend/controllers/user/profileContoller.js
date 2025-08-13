@@ -7,26 +7,33 @@ const {
   joiPasswordValidator,
 } = require("../../validators/userValidator");
 const { getBasicDetailsOnly } = require("../../utils/helpers");
+const UserSearch = require("../../utils/userSearch");
 
 // ====================== ADMIN --- GET ALL USERS =============================
 exports.getAllUsers = catchAsyncErrors(async (req, res, next) => {
-  const users = await User.find().select(
-    "-password -otp -otpExpire -resetPasswordToken -resetPasswordTokenExpire -emailVerificationToken -emailVerificationTokenExpire"
-  );
+  const resultPerPage = 10;
+  const userCount = await User.countDocuments();
+
+  let users = new UserSearch(User, req.query)
+    .search()
+    .pagination(resultPerPage);
+
+  users = await users.query;
 
   res.status(200).json({
     success: true,
     users,
+    userCount
   });
 });
 
 // ====================== ADMIN --- GET TOTAL NUMBER USERS =============================
 exports.getTotalNumberOfUsers = catchAsyncErrors(async (req, res, next) => {
-  const totalUsers = await User.countDocuments()
+  const totalUsers = await User.countDocuments();
 
   res.status(200).json({
     success: true,
-    totalUsers
+    totalUsers,
   });
 });
 
@@ -224,8 +231,8 @@ exports.createPassword = catchAsyncErrors(async (req, res, next) => {
 
   const user = await User.findById(req.user._id).select("+password");
 
-  if(!user.isGoogleUser){
-    return next(new ErrorHandler('Not allowed',403))
+  if (!user.isGoogleUser) {
+    return next(new ErrorHandler("Not allowed", 403));
   }
 
   user.password = newPassword;
@@ -234,7 +241,7 @@ exports.createPassword = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "password created",
-    isPasswordExists: true
+    isPasswordExists: true,
   });
 });
 

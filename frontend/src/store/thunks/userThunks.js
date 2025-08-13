@@ -258,6 +258,20 @@ export const updateAddress = createAsyncThunk(
   }
 );
 
+export const updateAddressIndex = createAsyncThunk(
+  "user/update_address_index",
+  async (shippingAddressIndex, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.patch("/users/address", {shippingAddressIndex});
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
 export const getAllAddress = createAsyncThunk(
   "user/all_address",
   async (_, thunkAPI) => {

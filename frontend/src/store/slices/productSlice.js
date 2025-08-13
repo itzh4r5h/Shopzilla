@@ -35,7 +35,6 @@ const productSlice = createSlice({
         state.loading = false
         state.products = action.payload.products;
         state.productsCount = action.payload.productsCount;
-        state.keyword = ""
       },
       rejected: (state, action) => {
         state.loading = true

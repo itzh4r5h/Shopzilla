@@ -33,11 +33,11 @@ export const ProfileAddress = () => {
        allShippingAddress?.map((shippingAddress)=>{
         return  <article className="grid grid-cols-[5fr_1fr] items-center" key={shippingAddress._id}>
           <div className="flex flex-col justify-center gap-1 border bg-white rounded-md p-2">
-            <h3 className="text-md">{shippingAddress.address}</h3>
-            <h3 className="text-md">{shippingAddress.city}</h3>
-            <h3 className="text-md">{shippingAddress.state}, {shippingAddress.pinCode}</h3>
-            <h3 className="text-md">{shippingAddress.country}</h3>
-            <h3 className="text-md">{shippingAddress.mobileNumber}</h3>
+            <h3 className="text-md capitalize">{shippingAddress.address}</h3>
+            <h3 className="text-md capitalize">{shippingAddress.city}</h3>
+            <h3 className="text-md capitalize">{shippingAddress.state}, {shippingAddress.pinCode}</h3>
+            <h3 className="text-md capitalize">{shippingAddress.country}</h3>
+            <h3 className="text-md capitalize">{shippingAddress.mobileNumber}</h3>
           </div>
           <span className="justify-self-end self-start flex flex-col items-center gap-5">
             <AddressModal edit={true} id={shippingAddress._id} shippingAddress={shippingAddress}/>

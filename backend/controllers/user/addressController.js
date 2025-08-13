@@ -2,17 +2,14 @@ const { User } = require("../../models/User");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const { joiAddressValidator } = require("../../validators/userValidator");
+const { isOnlyDigits } = require("../../utils/helpers");
 
 // ============================ CREATE SHIPPING ADDRESS =======================
 exports.addNewShippingAddress = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user._id);
 
-  if (!user) {
-    return next(new ErrorHandler("user not exists", 404));
-  }
-
-  if(user.shippingAddress.length === 5){
-    return next(new ErrorHandler('only 5 address are allowed'))
+  if (user.shippingAddress.length === 5) {
+    return next(new ErrorHandler("only 5 address are allowed"));
   }
 
   const { address, city, state, country, pinCode, mobileNumber } = req.body;
@@ -51,10 +48,6 @@ exports.addNewShippingAddress = catchAsyncErrors(async (req, res, next) => {
 exports.getShippingAddress = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user._id);
 
-  if (!user) {
-    return next(new ErrorHandler("user not exists", 404));
-  }
-
   const shippingAddress = user.shippingAddress.find(
     (address) => address._id.toString() === req.params.id.toString()
   );
@@ -86,10 +79,6 @@ exports.getAllShippingAddress = catchAsyncErrors(async (req, res, next) => {
 // ============================ UPDATE SHIPPING ADDRESS =======================
 exports.updateShippingAddress = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user._id);
-
-  if (!user) {
-    return next(new ErrorHandler("user not exists", 404));
-  }
 
   const isShippingAddressExists = user.shippingAddress.find(
     (address) => address._id.toString() === req.params.id.toString()
@@ -133,13 +122,40 @@ exports.updateShippingAddress = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+// ============================ UPDATE SHIPPING ADDRESS INDEX =======================
+exports.updateShippingAddressIndex = catchAsyncErrors(
+  async (req, res, next) => {
+    const user = await User.findById(req.user._id);
+
+    const { shippingAddressIndex } = req.body;
+
+    if (
+      !shippingAddressIndex ||
+      shippingAddressIndex.toString().trim() === ""
+    ) {
+      return next(new ErrorHandler("address is required", 400));
+    }
+
+    if (
+      !isOnlyDigits(shippingAddressIndex) ||
+      Number(shippingAddressIndex) > user.shippingAddress.length
+    ) {
+      return next(new ErrorHandler("invalid address", 400));
+    }
+
+    user.shippingAddressIndex = shippingAddressIndex;
+    await user.save({ validateBeforeSave: true });
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  }
+);
+
 // ============================ DELETE SHIPPING ADDRESS =======================
 exports.deleteShippingAddress = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user._id);
-
-  if (!user) {
-    return next(new ErrorHandler("user not exists", 404));
-  }
 
   const isShippingAddressExists = user.shippingAddress.find(
     (address) => address._id.toString() === req.params.id.toString()
@@ -153,8 +169,11 @@ exports.deleteShippingAddress = catchAsyncErrors(async (req, res, next) => {
     (address) => address._id.toString() !== req.params.id.toString()
   );
 
-  await User.findByIdAndUpdate(req.user._id,{shippingAddress},{new:true,runValidators:true})
-
+  await User.findByIdAndUpdate(
+    req.user._id,
+    { shippingAddress },
+    { new: true, runValidators: true }
+  );
 
   res.status(200).json({
     success: true,

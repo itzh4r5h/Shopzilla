@@ -70,7 +70,7 @@ const orderSchema = new mongoose.Schema({
 
   paymentInfo: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Payment'
+    ref: "Payment",
   },
 
   itemsPrice: {
@@ -106,7 +106,12 @@ const orderSchema = new mongoose.Schema({
     ],
   },
 
-  deliveredAt: Date,
+  confirmed: Date,
+  processing: Date,
+  shipped: Date,
+  dispatched: Date,
+  out_for_delivery: Date,
+  delivered: Date,
 
   createdAt: {
     type: Date,
@@ -115,6 +120,6 @@ const orderSchema = new mongoose.Schema({
   },
 });
 
-const Order = mongoose.model("Order",orderSchema)
+const Order = mongoose.model("Order", orderSchema);
 
-module.exports = {Order}
+module.exports = { Order };

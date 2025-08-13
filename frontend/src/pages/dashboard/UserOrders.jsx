@@ -106,7 +106,7 @@ export const UserOrders = () => {
           );
         })}
 
-        {!loading && orders?.length !== 0 && orders?.map((item, index) => {
+        {!loading && orders?.length > 0 && orders?.map((item, index) => {
           return (
             <article
               className="bg-white border border-black rounded-md p-2"

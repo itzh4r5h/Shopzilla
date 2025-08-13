@@ -11,26 +11,13 @@ exports.createNewOrder = catchAsyncErrors(async (req, res, next) => {
     "cartProducts.product"
   );
 
-  if (!user) {
-    return next(new ErrorHandler("user not exists", 404));
-  }
-
   if (user.shippingAddress.length === 0) {
     return next(new ErrorHandler("add address first", 400));
   }
 
-  const { shippingAddressIndex } = req.body;
+  const { buyNow } = req.body;
 
-  if (!shippingAddressIndex || shippingAddressIndex.toString().trim() === "") {
-    return next(new ErrorHandler("address is required", 400));
-  }
-
-  if (
-    !isOnlyDigits(shippingAddressIndex) ||
-    Number(shippingAddressIndex) > user.shippingAddress.length
-  ) {
-    return next(new ErrorHandler("invalid address", 400));
-  }
+  const shippingAddressIndex = user.shippingAddressIndex;
 
   const shippingAddress =
     user.shippingAddress[Number(shippingAddressIndex) - 1];
@@ -38,22 +25,13 @@ exports.createNewOrder = catchAsyncErrors(async (req, res, next) => {
   const orderItems = [];
   let itemsPrice = 0;
 
-  const singleProduct = await Product.findById(req.params.productId);
+  if (buyNow) {
+    const singleProduct = await Product.findById(req.params.productId);
 
-  if (!singleProduct) {
-    user.cartProducts.forEach((cartProduct) => {
-      const { product } = cartProduct;
-      const item = {
-        name: product.name,
-        price: product.price,
-        quantity: cartProduct.quantity,
-        image: product.images[0].url,
-        product: product._id,
-      };
-      orderItems.push(item);
-      itemsPrice += product.price;
-    });
-  } else {
+    if (!singleProduct) {
+      return next(new ErrorHandler("product not exists", 404));
+    }
+
     const quantity = req.params.quantity;
 
     if (
@@ -73,7 +51,20 @@ exports.createNewOrder = catchAsyncErrors(async (req, res, next) => {
     };
 
     orderItems.push(item);
-    itemsPrice = singleProduct.price;
+    itemsPrice = singleProduct.price * Number(quantity);
+  } else {
+    user.cartProducts.forEach((cartProduct) => {
+      const { product } = cartProduct;
+      const item = {
+        name: product.name,
+        price: product.price,
+        quantity: cartProduct.quantity,
+        image: product.images[0].url,
+        product: product._id,
+      };
+      orderItems.push(item);
+      itemsPrice += product.price * cartProduct.quantity;
+    });
   }
 
   const shippingPrice = itemsPrice > 500 ? 0 : 79;
@@ -96,15 +87,22 @@ exports.createNewOrder = catchAsyncErrors(async (req, res, next) => {
 
 // ========================== GET MY ORDER ================================
 exports.getMyOrder = catchAsyncErrors(async (req, res, next) => {
-  const order = await Order.findOne({ user: req.user._id, _id: req.params.id });
+  const order = await Order.findOne({ user: req.user._id, _id: req.params.id, orderStatus: { $ne: "pending" } });
 
   if (!order) {
     return next(new ErrorHandler("order not exists", 404));
   }
 
+  let orderQuantity = 0
+
+  order.orderItems.forEach((item)=>{
+    orderQuantity += item.quantity
+  })
+
   res.status(200).json({
     success: true,
     order,
+    orderQuantity
   });
 });
 
@@ -114,11 +112,12 @@ exports.getMyAllOrders = catchAsyncErrors(async (req, res, next) => {
     user: req.user._id,
     orderStatus: {
       $in: [
-        "Processing",
-        "Shipped",
-        "Dispatched",
-        "Out For Delivery",
-        "Delivered",
+        "confirmed",
+        "processing",
+        "shipped",
+        "dispatched",
+        "out for delivery",
+        "delivered",
       ],
     },
   });
@@ -145,7 +144,9 @@ exports.getTotalNumberOfOrders = catchAsyncErrors(async (req, res, next) => {
 
 // ========================== ADMIN -- GET ALL ORDERS ================================
 exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
-  const orders = await Order.find({ orderStatus: req.params.status.toLowerCase()});
+  const orders = await Order.find({
+    orderStatus: req.params.status.toLowerCase(),
+  });
 
   if (!orders) {
     return next(new ErrorHandler("orders not exists", 404));
@@ -212,9 +213,7 @@ exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-  if (orderStatus.toString().toLowerCase() === "delivered") {
-    order.deliveredAt = Date.now();
-  }
+  order[orderStatus.toString().toLowerCase()] = Date.now();
 
   order.orderStatus = orderStatus;
   await order.save({ validateBeforeSave: true });
@@ -240,6 +239,8 @@ exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
       message: "order deleted",
     });
   } else {
-    return next(new ErrorHandler("order cann't be deleted because payment is done", 400));
+    return next(
+      new ErrorHandler("order cann't be deleted because payment is done", 400)
+    );
   }
 });

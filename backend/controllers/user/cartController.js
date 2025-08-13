@@ -9,8 +9,8 @@ exports.addProductToCartOrUpdateQuantity = catchAsyncErrors(
   async (req, res, next) => {
     const user = await User.findById(req.user._id);
 
-    if (!user) {
-      return next(new ErrorHandler("user not exists", 404));
+    if (user.shippingAddress.length === 0) {
+      return next(new ErrorHandler("add address first", 400));
     }
 
     const product = await Product.findById(req.params.id);
@@ -52,7 +52,7 @@ exports.addProductToCartOrUpdateQuantity = catchAsyncErrors(
     } else {
       user.cartProducts.push({
         product: product._id,
-        quantity,
+        quantity
       });
       await user.save({ validateBeforeSave: true });
 
@@ -70,13 +70,19 @@ exports.getAllProductsOfCart = catchAsyncErrors(async (req, res, next) => {
     "cartProducts.product"
   );
 
-  if (!user) {
-    return next(new ErrorHandler("user not exists", 404));
-  }
+  let cartProductsQuantity = 0;
+  let totalPrice = 0;
+
+  user.cartProducts.forEach((cartProduct) => {
+    cartProductsQuantity += cartProduct.quantity;
+    totalPrice += cartProduct.product.price * cartProduct.quantity;
+  });
 
   res.status(200).json({
     success: true,
     cartProducts: user.cartProducts,
+    cartProductsQuantity,
+    totalPrice,
   });
 });
 
@@ -84,19 +90,21 @@ exports.getAllProductsOfCart = catchAsyncErrors(async (req, res, next) => {
 exports.removeProductFromCart = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user._id);
 
-  if (!user) {
-    return next(new ErrorHandler("user not exists", 404));
-  }
-
   const product = await Product.findById(req.params.id);
 
   if (!product) {
     return next(new ErrorHandler("product not exists", 404));
   }
 
-  const cartProducts = user.cartProducts.filter((cartProduct) => cartProduct.product.toString() !== product._id.toString());
+  const cartProducts = user.cartProducts.filter(
+    (cartProduct) => cartProduct.product.toString() !== product._id.toString()
+  );
 
-  await User.findByIdAndUpdate(req.user._id,{cartProducts},{new:true,runValidators:true})
+  await User.findByIdAndUpdate(
+    req.user._id,
+    { cartProducts },
+    { new: true, runValidators: true }
+  );
 
   res.status(200).json({
     success: true,

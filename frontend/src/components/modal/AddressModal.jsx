@@ -96,6 +96,7 @@ export const AddressModal = ({
   };
 
   const submitForm = (data) => {
+    data.address = data.address.toLowerCase()
     if (edit) {
       handleClose()
       dispatch(updateAddress({ id, address: data }));
@@ -156,7 +157,7 @@ export const AddressModal = ({
                   autoComplete="off"
                   {...register("address", { required: true })}
                   id="address"
-                  className="border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+                  className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
                 />
               </div>
               {/* address ends */}

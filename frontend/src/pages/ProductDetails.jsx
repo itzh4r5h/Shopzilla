@@ -2,7 +2,6 @@ import { BsCurrencyRupee } from "react-icons/bs";
 import { FaStar } from "react-icons/fa";
 import { FaPlusSquare } from "react-icons/fa";
 import { FaMinusSquare } from "react-icons/fa";
-import { FaEdit } from "react-icons/fa";
 import { FillButton } from "../components/buttons/FillButton";
 import Box from "@mui/material/Box";
 import Rating from "@mui/material/Rating";
@@ -18,16 +17,26 @@ import "swiper/css";
 import "swiper/css/effect-creative";
 import "swiper/css/pagination";
 import { Heading } from "../components/Headers/Heading";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getProductDetails } from "../store/thunks/productThunks";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { ImageCard } from "../components/cards/ImageCard";
 import { toast } from "react-toastify";
-import { clearErrors } from "../store/slices/productSlice";
+import { clearErrors as clearProductErrors } from "../store/slices/productSlice";
+import { ReviewModal } from "../components/modal/ReviewModal";
+import { ReviewCard } from "../components/cards/ReviewCard";
+import { addProductToCartOrUpdateQuantity } from "../store/thunks/cartThunk";
+import {
+  clearErrors as clearCartErrors,
+  clearMessage,
+} from "../store/slices/cartSlice";
+import { getAllAddress } from "../store/thunks/userThunks";
+import { ShippingAddressCard } from "../components/cards/ShippingAddressCard";
+import { Checkout } from "./Checkout";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 10,
@@ -49,11 +58,21 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 
 export const ProductDetails = ({ path, mainRef }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { id } = useParams();
-  const { error, product } = useSelector((state) => state.products);
+  const { error: productError, product } = useSelector(
+    (state) => state.products
+  );
+  const { isLoggedIn } = useSelector((state) => state.user);
+  const {
+    success,
+    message,
+    error: cartError,
+  } = useSelector((state) => state.cart);
 
   useEffect(() => {
     dispatch(getProductDetails(id));
+    dispatch(getAllAddress());
 
     mainRef.current.scrollTo({
       top: 0,
@@ -62,11 +81,50 @@ export const ProductDetails = ({ path, mainRef }) => {
 
   useEffect(() => {
     // this shows the error if error exists
-    if (error) {
-      toast.error(error);
-      dispatch(clearErrors());
+    if (productError) {
+      toast.error(productError);
+      dispatch(clearProductErrors());
     }
-  }, [error]);
+  }, [productError]);
+
+  useEffect(() => {
+    // this shows the error if error exists
+    if (cartError) {
+      toast.error(cartError);
+      dispatch(clearCartErrors());
+    }
+  }, [cartError]);
+
+  useEffect(() => {
+    // this shows the error if error exists
+    if (success && message) {
+      toast.success(message);
+      dispatch(clearMessage());
+    }
+  }, [success, message]);
+
+  const [quantity, setQuantity] = useState(1);
+
+  const increaseQuantity = () => {
+    if (quantity < product.stock) {
+      setQuantity((prev) => prev + 1);
+    }
+  };
+
+  const decreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity((prev) => prev - 1);
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (!isLoggedIn) {
+      toast.error("Please sign in");
+      navigate("/signin");
+    } else {
+      dispatch(addProductToCartOrUpdateQuantity({ id, quantity }));
+    }
+  };
 
   const reviews = 2;
   return (
@@ -95,7 +153,7 @@ export const ProductDetails = ({ path, mainRef }) => {
               return (
                 <SwiperSlide key={img._id}>
                   <picture className="w-full h-55 block relative overflow-hidden bg-white">
-                    <ImageCard src={img} product={true} />
+                    <ImageCard src={img} />
                   </picture>
                 </SwiperSlide>
               );
@@ -148,22 +206,42 @@ export const ProductDetails = ({ path, mainRef }) => {
           </div>
           {/* price and rating container ends */}
 
-          {/*increase/decrease quanity begins */}
-          <div className="grid grid-cols-2 items-center justify-items-center">
-            <h3 className="justify-self-start text-xl">Quantity</h3>
+          {product.stock > 0 ? (
+            <p className="text-green-600 font-bold">In Stock</p>
+          ) : (
+            <p className="text-red-600 font-bold">Out of Stock</p>
+          )}
 
-            <div className="grid grid-cols-3 items-center justify-items-center w-full">
-              <FaPlusSquare className="text-2xl active:text-[var(--purpleDark)] transition-colors" />
-              <span className="text-xl font-bold">1</span>
-              <FaMinusSquare className="text-2xl active:text-[var(--purpleDark)] transition-colors" />
+          {/*increase/decrease quanity begins */}
+          {product.stock > 0 && (
+            <div className="grid grid-cols-2 items-center justify-items-center">
+              <h3 className="justify-self-start text-xl">Quantity</h3>
+
+              <div className="grid grid-cols-3 items-center justify-items-center w-full">
+                <FaPlusSquare
+                  className="text-2xl active:text-[var(--purpleDark)] transition-colors"
+                  onClick={increaseQuantity}
+                />
+                <span className="text-xl font-bold">{quantity}</span>
+                <FaMinusSquare
+                  className="text-2xl active:text-[var(--purpleDark)] transition-colors"
+                  onClick={decreaseQuantity}
+                />
+              </div>
             </div>
-          </div>
+          )}
           {/*increase/decrease quanity begins */}
 
-          <div className="grid grid-cols-2 items-center justify-items-center gap-5 mt-4">
-            <OutlineButton name={"Add To Cart"} />
-            <FillButton name={"Buy Now"} />
-          </div>
+          {/* shipping Address begins */}
+          <ShippingAddressCard />
+          {/* shipping Address ends */}
+
+         {product.stock > 0  && <div className="grid grid-cols-2 items-center justify-items-center gap-5 mt-4">
+            <span onClick={handleAddToCart} className="w-full">
+              <OutlineButton name={"Add To Cart"} />
+            </span>
+            <Checkout id={product._id} quantity={quantity}/>
+          </div>}
 
           {/* description begins */}
           <h2 className="text-center border-t-1 border-black mt-5 pt-1 text-2xl font-bold">
@@ -177,7 +255,7 @@ export const ProductDetails = ({ path, mainRef }) => {
           {/* Rating and reviews begins */}
 
           <h2 className="text-2xl text-center">Ratings & Reviews</h2>
-          <FillButton name={"Rate Product"} />
+          {isLoggedIn && <ReviewModal />}
 
           {/* overvall rating begins */}
           <div className="grid grid-rows-3 items-center justify-items-center mt-4 gap-0">
@@ -230,27 +308,7 @@ export const ProductDetails = ({ path, mainRef }) => {
                 No reviews yet
               </h2>
             ) : (
-              <div className="flex flex-col gap-0 justify-center">
-                <div className="grid grid-cols-2 items-center pr-2">
-                  <h3 className="text-lg font-medium">Abhishek singh</h3>
-                  <FaEdit className="text-xl justify-self-end active:text-[var(--purpleDark)] transition-colors" />
-                </div>
-                <Box sx={{ "& > legend": { mt: 2 } }}>
-                  <Rating
-                    name="simple-controlled"
-                    value={4}
-                    readOnly
-                    size="medium"
-                    sx={{
-                      color: "var(--purpleDark)", // or any CSS color
-                    }}
-                  />
-                </Box>
-                <p className="text-md">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Dolorem, praesentium!
-                </p>
-              </div>
+              <ReviewCard />
             )}
           </div>
           {/* reviews ends */}
@@ -279,6 +337,11 @@ export const ProductDetails = ({ path, mainRef }) => {
           </div>
           {/* price and rating container ends */}
 
+          <p>
+            {" "}
+            <Skeleton style={{ lineHeight: "initial" }} width={"40%"} />
+          </p>
+
           {/*increase/decrease quanity begins */}
           <div className="grid grid-cols-2 items-center justify-items-center">
             <h3 className="justify-self-start text-xl">
@@ -288,6 +351,11 @@ export const ProductDetails = ({ path, mainRef }) => {
             <Skeleton height={30} width={150} />
           </div>
           {/*increase/decrease quanity begins */}
+
+          <div className="mt-2">
+             <Skeleton height={30} width={150}/>
+             <Skeleton height={30} width={'100%'}/>
+          </div>
 
           <div className="grid grid-cols-2 items-center justify-items-center gap-5 mt-4">
             <Skeleton height={40} width={150} />

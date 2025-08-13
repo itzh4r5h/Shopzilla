@@ -110,12 +110,12 @@ exports.updateProduct = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message:
-      req.files.length !== 0 ? "product updation started" : "product updated",
+      req.files.length > 0 ? "product updation started" : "product updated",
   });
 
   // this will run in the background if req.files have any file to upload on imagekit
   (async () => {
-    if (req.files.length !== 0) {
+    if (req.files.length > 0) {
       const uploadedImages = await Promise.all(
         req.files.map(async (image) => {
           const { buffer, originalname } = image;

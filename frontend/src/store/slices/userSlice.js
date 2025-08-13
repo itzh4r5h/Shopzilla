@@ -15,6 +15,7 @@ import {
   signOutUser,
   signUpUser,
   updateAddress,
+  updateAddressIndex,
   updateEmail,
   updateImage,
   updateName,
@@ -27,7 +28,7 @@ const addressActions = {
     state.message = null;
     state.success = false;
     state.updatedAddress = undefined;
-    state.loading = false
+    state.loading = false;
   },
   fulfilled: (state, action) => {
     state.message = action.payload.message;
@@ -79,7 +80,7 @@ const userSlice = createSlice({
       fulfilled: (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.isPasswordExists = action.payload.isPasswordExists
+        state.isPasswordExists = action.payload.isPasswordExists;
         state.isLoggedIn = true;
         state.accountDeletionCountdownExpiresAt =
           action.payload.accountDeletionCountdownExpiresAt;
@@ -99,7 +100,7 @@ const userSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.isLoggedIn = true;
-        state.isPasswordExists = action.payload.isPasswordExists
+        state.isPasswordExists = action.payload.isPasswordExists;
       },
       rejected: (state, action) => {
         state.loading = false;
@@ -131,10 +132,10 @@ const userSlice = createSlice({
         Object.assign(state, initialState); // reset all fields
         state.message = action.payload.message;
         state.success = action.payload.success;
-        state.loading = false
+        state.loading = false;
       },
       rejected: (state, action) => {
-        state.loading = false
+        state.loading = false;
         state.error = action.payload;
       },
     });
@@ -329,6 +330,19 @@ const userSlice = createSlice({
 
     handleAsyncThunk(builder, updateAddress, { ...addressActions });
 
+    handleAsyncThunk(builder, updateAddressIndex, {
+      pending: (state) => {
+        state.success = false;
+      },
+      fulfilled: (state, action) => {
+        state.success = action.payload.success;
+        state.user = action.payload.user;
+      },
+      rejected: (state, action) => {
+        state.error = action.payload;
+      },
+    });
+
     handleAsyncThunk(builder, deleteAddress, { ...addressActions });
 
     handleAsyncThunk(builder, getAllAddress, {
@@ -345,5 +359,6 @@ const userSlice = createSlice({
   },
 });
 
-export const { clearErrors, clearMessage } = userSlice.actions;
+export const { clearErrors, clearMessage } =
+  userSlice.actions;
 export const userReducer = userSlice.reducer;

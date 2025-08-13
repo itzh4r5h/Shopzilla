@@ -102,7 +102,7 @@ export const SelectCountryStateCity = ({
           onClick={clearInput}
         />
       </span>
-      {options.length !== 0 && showOptions && (
+      {options.length > 0 && showOptions && (
         <ul
           onClick={chooseValueOnClick}
           className="absolute z-999 bg-white border w-full h-50 rounded-md mt-1 overflow-y-auto p-3 flex flex-col gap-2"
