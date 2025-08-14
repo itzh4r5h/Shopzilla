@@ -45,7 +45,7 @@ export const BottomNavbar = () => {
       icon: <FaUser />,
     },
     {
-      path: `${adminDefaultPath}/orders/pending`,
+      path: `${adminDefaultPath}/orders/confirmed`,
       name: "orders",
       icon: <FaBoxOpen />,
     },

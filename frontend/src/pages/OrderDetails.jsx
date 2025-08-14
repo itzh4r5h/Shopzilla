@@ -19,6 +19,7 @@ import { getMySinglOrder } from "../store/thunks/orderThunk";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { formatMongodbDate } from "../utils/helpers";
+import { ReviewModal } from "../components/modal/ReviewModal";
 
 const QontoConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.active}`]: {
@@ -98,7 +99,6 @@ QontoStepIcon.propTypes = {
 };
 
 export const OrderDetails = () => {
-  const navigate = useNavigate();
   const steps = [
     "confirmed",
     "processing",
@@ -108,29 +108,35 @@ export const OrderDetails = () => {
   ];
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { order,loading,orderQuantity } = useSelector((state) => state.order);
+  const { order, loading, orderQuantity } = useSelector((state) => state.order);
+  const { user } = useSelector((state) => state.user);
 
   useEffect(() => {
     dispatch(getMySinglOrder(id));
   }, []);
 
-  const makeOrderStatusKey = (text)=>{
-    return text.toLowerCase().replaceAll(" ","_")
-  }
+  const makeOrderStatusKey = (text) => {
+    return text.toLowerCase().replaceAll(" ", "_");
+  };
 
   return !loading && order ? (
     <div className="h-full w-full">
       <Heading name={"Order Details"} path={"/orders"} />
 
       <div className="flex flex-col justify-center gap-4 mt-5">
-     
-          {order.orderItems.map((product)=>{
-          return  <Link to={`/products/${product.product}`} key={product.product}>
-            {console.log(product)}
-                <ProductCard product={product} orderDetails={true}/>
+        {order.orderItems.map((orderedProduct) => {
+          return (
+            <div className="mb-5" key={orderedProduct.id}>
+              <Link to={`/products/${orderedProduct.id}`}>
+                <ProductCard product={orderedProduct} orderDetails={true} />
               </Link>
+
+              {user.orderedProducts.includes(orderedProduct.id) && <div className="w-1/2 mx-auto -mt-5">
+                <ReviewModal />
+              </div>}
+            </div>
+          );
         })}
-     
 
         {/* order status begins */}
         <div className="border border-black bg-white p-2">
@@ -148,12 +154,14 @@ export const OrderDetails = () => {
                     slots={{ stepIcon: QontoStepIcon }}
                     sx={{ fontSize: "20px" }}
                   >
-                   <div className="flex justify-between items-center capitalize">
-                     <span className="text-lg">{label}</span>
-                    <span className="text-[var(--light)] text-md">
-                      {order[makeOrderStatusKey(label)]?formatMongodbDate(order[makeOrderStatusKey(label)]):""}
-                    </span>
-                   </div>
+                    <div className="flex justify-between items-center capitalize">
+                      <span className="text-lg">{label}</span>
+                      <span className="text-[var(--light)] text-md">
+                        {order[makeOrderStatusKey(label)]
+                          ? formatMongodbDate(order[makeOrderStatusKey(label)])
+                          : ""}
+                      </span>
+                    </div>
                   </StepLabel>
                 </Step>
               ))}
@@ -163,17 +171,29 @@ export const OrderDetails = () => {
         {/* order status ends */}
 
         {/* price details begins */}
-        <PriceCard quanity={orderQuantity} price={order.totalPrice} orderDetails={true} />
+        <PriceCard
+          quanity={orderQuantity}
+          price={order.totalPrice}
+          orderDetails={true}
+        />
         {/* price details ends */}
 
         {/* address begins */}
         <div className="flex flex-col justify-center gap-1 border bg-white rounded-md p-2">
           <h1 className="text-xl border-b-1 pb-1 mb-2">Shipping Address</h1>
-          <h3 className="text-md capitalize">{order.shippingAddress.address}</h3>
+          <h3 className="text-md capitalize">
+            {order.shippingAddress.address}
+          </h3>
           <h3 className="text-md capitalize">{order.shippingAddress.city}</h3>
-          <h3 className="text-md capitalize">{order.shippingAddress.state}, {order.shippingAddress.pinCode}</h3>
-          <h3 className="text-md capitalize">{order.shippingAddress.country}</h3>
-          <h3 className="text-md capitalize">{order.shippingAddress.mobileNumber}</h3>
+          <h3 className="text-md capitalize">
+            {order.shippingAddress.state}, {order.shippingAddress.pinCode}
+          </h3>
+          <h3 className="text-md capitalize">
+            {order.shippingAddress.country}
+          </h3>
+          <h3 className="text-md capitalize">
+            {order.shippingAddress.mobileNumber}
+          </h3>
         </div>
         {/* address ends */}
       </div>
@@ -205,11 +225,21 @@ export const OrderDetails = () => {
 
         {/* address begins */}
         <div className="flex flex-col justify-center gap-1 border bg-white rounded-md p-2">
-          <h1 className="text-xl border-b-1 pb-1 mb-2 capitalize">Shipping Address</h1>
-          <h3 className="text-md capitalize"><Skeleton/></h3>
-          <h3 className="text-md capitalize"><Skeleton/></h3>
-          <h3 className="text-md capitalize"><Skeleton/></h3>
-          <h3 className="text-md capitalize"><Skeleton/></h3>
+          <h1 className="text-xl border-b-1 pb-1 mb-2 capitalize">
+            Shipping Address
+          </h1>
+          <h3 className="text-md capitalize">
+            <Skeleton />
+          </h3>
+          <h3 className="text-md capitalize">
+            <Skeleton />
+          </h3>
+          <h3 className="text-md capitalize">
+            <Skeleton />
+          </h3>
+          <h3 className="text-md capitalize">
+            <Skeleton />
+          </h3>
         </div>
         {/* address ends */}
       </div>

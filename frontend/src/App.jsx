@@ -7,9 +7,11 @@ import { useDispatch,useSelector } from "react-redux";
 import './css/toastifyCustom.css';
 import { loadUser } from "./store/thunks/userThunks";
 import { startSocketConnection } from "./utils/socketEvents";
+import { useLocation } from "react-router";
 
 export const App = () => {
   const mainRef = useRef();
+  const path = useLocation()
   const dispatch = useDispatch()
   const {isLoggedIn,user} = useSelector((state)=>state.user)
 
@@ -27,6 +29,13 @@ export const App = () => {
       window.removeEventListener("online", handleOnline);
     };
   }, []);
+
+
+  useEffect(()=>{
+     mainRef.current.scrollTo({
+      top: 0,
+    });
+  },[path.pathname])
 
 
   useEffect(()=>{
@@ -53,7 +62,7 @@ export const App = () => {
           theme="colored"
           transition={Bounce}
         />
-        <Routing mainRef={mainRef} />
+        <Routing/>
       </main>
       <BottomNavbar />
     </div>

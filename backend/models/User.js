@@ -89,6 +89,8 @@ const userSchema = new mongoose.Schema({
     },
   ],
 
+  orderedProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+
   shippingAddressIndex: {
     type: Number,
     default: 1,

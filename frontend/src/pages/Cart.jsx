@@ -14,7 +14,7 @@ import {
 import { getAllAddress } from "../store/thunks/userThunks";
 import { ShippingAddressCard } from "../components/cards/ShippingAddressCard";
 
-export const Cart = ({ mainRef }) => {
+export const Cart = () => {
   const dispatch = useDispatch();
 
   const {
@@ -24,7 +24,6 @@ export const Cart = ({ mainRef }) => {
     cartProducts,
     cartProductsQuantity,
     totalPrice,
-    loading,
     updated,
   } = useSelector((state) => state.cart);
 
@@ -33,10 +32,6 @@ export const Cart = ({ mainRef }) => {
   useEffect(() => {
     dispatch(getAllCartProducts());
     dispatch(getAllAddress());
-
-    mainRef.current.scrollTo({
-      top: 0,
-    });
   }, []);
 
   useEffect(() => {
@@ -87,12 +82,12 @@ export const Cart = ({ mainRef }) => {
           {/* cart items ends */}
 
           {/* price details begins */}
-          <div className="mt-4">
+          {totalPrice>0 && <div className="mt-4">
             <PriceCard
               quanity={cartProductsQuantity}
               price={totalPrice}
             />
-          </div>
+          </div>}
           {/* price details ends */}
         </>
       ) : (

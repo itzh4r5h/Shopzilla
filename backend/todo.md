@@ -1,9 +1,15 @@
-# Backend TODOS
+# TODOS
 
-## Product
-#### Creation
-- Product image upload to imagekit.io when product is created
-#### Deletion
-- Product image delete from imagekit while deleting the product
-#### Updation
-- if admin removed the previous images of product while updating and also adds new one then delete the images in imagekit.io
+### FOR BACKEND
+## USER
+ - if email is verified than delete the cron job for that user
+
+#### FOR FRONTEND
+## PRODUCT
+- create, edit and delete review are pending
+- product filer is pending
+
+### FOR FRONTEND AND BACKEND
+## ADMIN
+- on dashboard home total revenu calculation is pending and revenue based on year for all months
+

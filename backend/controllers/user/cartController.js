@@ -52,7 +52,7 @@ exports.addProductToCartOrUpdateQuantity = catchAsyncErrors(
     } else {
       user.cartProducts.push({
         product: product._id,
-        quantity
+        quantity,
       });
       await user.save({ validateBeforeSave: true });
 
@@ -74,8 +74,10 @@ exports.getAllProductsOfCart = catchAsyncErrors(async (req, res, next) => {
   let totalPrice = 0;
 
   user.cartProducts.forEach((cartProduct) => {
-    cartProductsQuantity += cartProduct.quantity;
-    totalPrice += cartProduct.product.price * cartProduct.quantity;
+    if (cartProduct.product.stock >= cartProduct.quantity) {
+      cartProductsQuantity += cartProduct.quantity;
+      totalPrice += cartProduct.product.price * cartProduct.quantity;
+    }
   });
 
   res.status(200).json({

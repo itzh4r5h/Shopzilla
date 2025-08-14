@@ -7,6 +7,7 @@ import {
 } from "../thunks/cartThunk";
 
 const initialState = {
+  error: undefined,
   success: false,
   message: null,
   loading: false,

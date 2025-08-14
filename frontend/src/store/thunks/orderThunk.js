@@ -76,3 +76,19 @@ export const getMySinglOrder = createAsyncThunk(
 );
 
 
+export const deletePendingOrderAndPaymentOrder = createAsyncThunk(
+  "order/delete_order",
+  async (id, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.delete(`/orders/${id}`);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+
+

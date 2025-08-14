@@ -37,6 +37,7 @@ import {
 import { getAllAddress } from "../store/thunks/userThunks";
 import { ShippingAddressCard } from "../components/cards/ShippingAddressCard";
 import { Checkout } from "./Checkout";
+import { getAllReviewsAndRatings } from "../store/thunks/reviewThunk";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 10,
@@ -56,14 +57,23 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-export const ProductDetails = ({ path, mainRef }) => {
+export const ProductDetails = ({ path }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
-  const { error: productError, product } = useSelector(
-    (state) => state.products
-  );
-  const { isLoggedIn } = useSelector((state) => state.user);
+  const {
+    error: productError,
+    product,
+    loading: productLoading,
+  } = useSelector((state) => state.products);
+  const { isLoggedIn, user } = useSelector((state) => state.user);
+  const {
+    reviews,
+    reviewsCount,
+    allRatings,
+    totalRatings,
+    loading: reviewLoading,
+  } = useSelector((state) => state.review);
   const {
     success,
     message,
@@ -73,10 +83,7 @@ export const ProductDetails = ({ path, mainRef }) => {
   useEffect(() => {
     dispatch(getProductDetails(id));
     dispatch(getAllAddress());
-
-    mainRef.current.scrollTo({
-      top: 0,
-    });
+    dispatch(getAllReviewsAndRatings(id));
   }, []);
 
   useEffect(() => {
@@ -126,11 +133,30 @@ export const ProductDetails = ({ path, mainRef }) => {
     }
   };
 
-  const reviews = 2;
+  const ratingLabels = {
+    0: "Not rated yet",
+    1: "Very Bad",
+    2: "Poor",
+    3: "Average",
+    4: "Good",
+    5: "Excellent",
+  };
+
+  function abbreviateNumber(num) {
+    if (num >= 1_000_000) {
+      return (num / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+    }
+    return num.toString();
+  }
+
+
   return (
     <div>
       <Heading name={"Product Details"} path={path} />
-      {product ? (
+      {!productLoading && !reviewLoading && product ? (
         <article className="w-full min-h-full border border-[var(--black)] bg-[var(--white)] p-2 flex flex-col gap-2 mt-5">
           <Swiper
             loop={product?.images?.length > 1 ? true : false}
@@ -236,12 +262,14 @@ export const ProductDetails = ({ path, mainRef }) => {
           <ShippingAddressCard />
           {/* shipping Address ends */}
 
-         {product.stock > 0  && <div className="grid grid-cols-2 items-center justify-items-center gap-5 mt-4">
-            <span onClick={handleAddToCart} className="w-full">
-              <OutlineButton name={"Add To Cart"} />
-            </span>
-            <Checkout id={product._id} quantity={quantity}/>
-          </div>}
+          {product.stock > 0 && (
+            <div className="grid grid-cols-2 items-center justify-items-center gap-5 mt-4">
+              <span onClick={handleAddToCart} className="w-full">
+                <OutlineButton name={"Add To Cart"} />
+              </span>
+              <Checkout id={product._id} quantity={quantity} />
+            </div>
+          )}
 
           {/* description begins */}
           <h2 className="text-center border-t-1 border-black mt-5 pt-1 text-2xl font-bold">
@@ -255,15 +283,20 @@ export const ProductDetails = ({ path, mainRef }) => {
           {/* Rating and reviews begins */}
 
           <h2 className="text-2xl text-center">Ratings & Reviews</h2>
-          {isLoggedIn && <ReviewModal />}
+          {isLoggedIn &&
+            user.orderedProducts.includes(product._id) && (
+              <ReviewModal />
+            )}
 
           {/* overvall rating begins */}
           <div className="grid grid-rows-3 items-center justify-items-center mt-4 gap-0">
-            <h3 className="text-xl text-[var(--light)] font-bold">Good</h3>
+            <h3 className="text-xl text-[var(--light)] font-bold">
+              {ratingLabels[product.ratings]}
+            </h3>
             <Box sx={{ "& > legend": { mt: 2 } }}>
               <Rating
                 name="simple-controlled"
-                value={4}
+                value={product.ratings}
                 readOnly
                 size="large"
                 sx={{
@@ -272,7 +305,7 @@ export const ProductDetails = ({ path, mainRef }) => {
               />
             </Box>
             <p className="text-md text-[var(--light)] -mt-4">
-              1 rating and 0 reviews
+              {totalRatings} ratings and {reviewsCount} reviews
             </p>
           </div>
           {/* overvall rating ends */}
@@ -280,9 +313,11 @@ export const ProductDetails = ({ path, mainRef }) => {
           {/* rating progressbar begins */}
           <div className="grid grid-rows-5 items-center justify-items-center">
             {[5, 4, 3, 2, 1].map((value, index) => {
+              const maxCount = Math.max(...Object.values(allRatings)) || 1; // avoid divide by 0
+              const percent = (allRatings[value] / maxCount) * 100;
               return (
                 <div
-                  className="grid grid-cols-[1fr_4fr_1.5fr] items-center gap-3 w-full"
+                  className="grid grid-cols-[1fr_4fr_1fr] items-center gap-3 w-full"
                   key={index}
                 >
                   <span className="flex justify-center items-center gap-1">
@@ -291,9 +326,9 @@ export const ProductDetails = ({ path, mainRef }) => {
                     </span>
                     <FaStar className="text-[var(--purpleDark)] text-lg" />
                   </span>
-                  <BorderLinearProgress variant="determinate" value={1.5} />
+                  <BorderLinearProgress variant="determinate" value={percent} />
                   <h4 className="text-lg justify-self-end text-[var(--light)]">
-                    1240
+                    {abbreviateNumber(allRatings[value])}
                   </h4>
                 </div>
               );
@@ -303,12 +338,16 @@ export const ProductDetails = ({ path, mainRef }) => {
 
           {/* reviews begins */}
           <div className="flex flex-col justify-center items-center gap-4 mt-5">
-            {!reviews ? (
+            {reviews?.length > 0 ? (
+              reviews.map((review) => {
+                <div key={review._id}>
+                  <ReviewCard review={review} />
+                </div>;
+              })
+            ) : (
               <h2 className="text-xl my-5 font-bold text-[var(--light)]">
                 No reviews yet
               </h2>
-            ) : (
-              <ReviewCard />
             )}
           </div>
           {/* reviews ends */}
@@ -353,8 +392,8 @@ export const ProductDetails = ({ path, mainRef }) => {
           {/*increase/decrease quanity begins */}
 
           <div className="mt-2">
-             <Skeleton height={30} width={150}/>
-             <Skeleton height={30} width={'100%'}/>
+            <Skeleton height={30} width={150} />
+            <Skeleton height={30} width={"100%"} />
           </div>
 
           <div className="grid grid-cols-2 items-center justify-items-center gap-5 mt-4">
@@ -397,7 +436,7 @@ export const ProductDetails = ({ path, mainRef }) => {
             {[5, 4, 3, 2, 1].map((value, index) => {
               return (
                 <div
-                  className="grid grid-cols-[1fr_4fr_1.5fr] items-center gap-3 w-full"
+                  className="grid grid-cols-[1fr_4fr_1fr] items-center gap-3 w-full"
                   key={index}
                 >
                   <span className="flex justify-center items-center gap-2">

@@ -16,7 +16,7 @@ import { SignInOrSignUp } from "../pages/SignInOrSignUp";
 import { Products } from "../pages/Products";
 import { useSelector } from "react-redux";
 
-export const Routing = ({ mainRef }) => {
+export const Routing = () => {
   const adminDefaultPath = "/admin/dashboard";
   const { isLoggedIn, user } = useSelector((state) => state.user);
   return (
@@ -25,7 +25,7 @@ export const Routing = ({ mainRef }) => {
       <Route path="/products" element={<Products />} />
       <Route
         path="/products/:id"
-        element={<ProductDetails path={"/"} mainRef={mainRef} />}
+        element={<ProductDetails path={"/"} />}
       />
       <Route path="/reset/password" element={<ResetPassword />} />
       <Route path="/reset/password/:token" element={<ResetPassword />} />
@@ -35,7 +35,7 @@ export const Routing = ({ mainRef }) => {
       {/*  user protected routes begins */}
       {isLoggedIn && (
         <>
-          <Route path="/cart" element={<Cart mainRef={mainRef}/>} />
+          <Route path="/cart" element={<Cart/>} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/orders/:id" element={<OrderDetails />} />
           <Route path="/profile" element={<Profile />} />
@@ -70,7 +70,6 @@ export const Routing = ({ mainRef }) => {
             element={
               <ProductDetails
                 path={"/admin/dashboard/products"}
-                mainRef={mainRef}
               />
             }
           />

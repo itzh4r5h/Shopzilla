@@ -8,12 +8,15 @@ import {
   getTotalOrders,
   getTotalProducts,
   getTotalUsers,
+  updateOrderStatus,
   updateProduct,
 } from "../thunks/adminThunks";
 
 const initialState = {
+  error: undefined,
   success: false,
   message: null,
+  updated: undefined,
   loading: false,
   totalProducts: undefined,
   totalUsers: undefined,
@@ -115,9 +118,26 @@ const adminSlice = createSlice({
     handleAsyncThunk(builder, getOrdersByStatus, {
       pending: (state) => {
         state.loading = true;
+        state.updated = undefined;
       },
       fulfilled: (state, action) => {
         state.orders = action.payload.orders;
+        state.loading = false;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      },
+    });
+
+    handleAsyncThunk(builder, updateOrderStatus, {
+      pending: (state) => {
+        state.loading = true;
+      },
+      fulfilled: (state, action) => {
+        state.success = action.payload.success;
+        state.message = action.payload.message;
+        state.updated = true
         state.loading = false;
       },
       rejected: (state, action) => {
@@ -134,5 +154,5 @@ const adminSlice = createSlice({
   },
 });
 
-export const { clearMessage, clearErrors,saveKeyword } = adminSlice.actions;
+export const { clearMessage, clearErrors, saveKeyword } = adminSlice.actions;
 export const adminReducer = adminSlice.reducer;

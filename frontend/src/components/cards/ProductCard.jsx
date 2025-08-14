@@ -26,7 +26,7 @@ export const ProductCard = ({
   orderDetails = false,
 }) => {
   const dispatch = useDispatch();
-  const {product:productRating} = useSelector((state)=>state.products)
+  const { product: productRating } = useSelector((state) => state.products);
 
   const handleUpdateQuantity = () => {
     dispatch(
@@ -37,18 +37,18 @@ export const ProductCard = ({
     );
   };
 
-  useEffect(()=>{
-    if(orderDetails && product){
-      dispatch(getProductDetails(product.product))
+  useEffect(() => {
+    if (orderDetails && product) {
+      dispatch(getProductDetails(product.id));
     }
-  },[orderDetails,product])
+  }, [orderDetails, product]);
 
   const { register, setValue, getValues } = useForm();
 
   return product ? (
     <article
       className={`w-full h-full border border-[var(--black)] bg-[var(--white)] p-2 ${
-        cart ? "grid grid-cols-[2.5fr_4fr] gap-2" : orderDetails ? "" : "pb-1"
+        cart ? "grid grid-cols-[2.5fr_4fr] gap-2" : orderDetails ? "pb-7" : "pb-1"
       }`}
     >
       {/* product image begins */}
@@ -124,9 +124,17 @@ export const ProductCard = ({
 
           {/* rating begins */}
           <div className="flex justify-center items-center gap-1">
-            <FaStar className={`${orderDetails?'text-xl':'text-sm'} text-[var(--purpleDark)]`} />
-            <span className={`${orderDetails?"text-xl":'text-sm'} text-[var(--purpleDark)] font-bold`}>
-              {orderDetails?productRating?.ratings:product.ratings}
+            <FaStar
+              className={`${
+                orderDetails ? "text-xl" : "text-sm"
+              } text-[var(--purpleDark)]`}
+            />
+            <span
+              className={`${
+                orderDetails ? "text-xl" : "text-sm"
+              } text-[var(--purpleDark)] font-bold`}
+            >
+              {orderDetails ? productRating?.ratings : product.ratings}
             </span>
           </div>
           {/* rating ends */}
@@ -136,18 +144,22 @@ export const ProductCard = ({
         {/*increase/decrease quanity and remove from cart begins */}
         {cart && (
           <div className="grid grid-cols-[3fr_2fr] items-center mt-2">
-            <NormalSelect
-              selected={productQuantity}
-              defaultValue={productQuantity}
-              name="quantity"
-              optionsData={Array.from(
-                { length: product.stock },
-                (_, i) => i + 1
-              )}
-              register={register}
-              setValue={setValue}
-              updateFunction={handleUpdateQuantity}
-            />
+            {product.stock >= productQuantity ? (
+              <NormalSelect
+                selected={productQuantity}
+                defaultValue={productQuantity}
+                name="quantity"
+                optionsData={Array.from(
+                  { length: product.stock },
+                  (_, i) => i + 1
+                )}
+                register={register}
+                setValue={setValue}
+                updateFunction={handleUpdateQuantity}
+              />
+            ) : (
+              <p className="text-red-600 font-bold text-xl">Out of Stock</p>
+            )}
 
             <FaTimesCircle
               className="justify-self-center text-2xl active:text-[var(--purpleDark)] transition-colors"
@@ -156,14 +168,6 @@ export const ProductCard = ({
           </div>
         )}
         {/*increase/decrease quanity and remove from cart begins */}
-
-        {/* rate your exprience and return product begins */}
-        {orderDetails && (
-          <div className="mt-3">
-            <ReviewModal />
-          </div>
-        )}
-        {/* rate your exprience and return product ends */}
       </div>
     </article>
   ) : (

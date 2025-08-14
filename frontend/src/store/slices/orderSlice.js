@@ -4,11 +4,13 @@ import {
   createOrderFromBuyNow,
   createOrderFromOfCartProducts,
   createPaymentOrder,
+  deletePendingOrderAndPaymentOrder,
   getMyOrders,
   getMySinglOrder,
 } from "../thunks/orderThunk";
 
 const initialState = {
+  error: undefined,
   success: false,
   message: null,
   loading: false,
@@ -99,6 +101,23 @@ const orderSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       },
+    });
+
+
+    handleAsyncThunk(builder, deletePendingOrderAndPaymentOrder, {
+        pending: (state) => {
+        state.loading = true;
+      },
+      fulfilled: (state, action) => {
+        state.success = action.payload.success
+        state.orderId = undefined
+        state.razorpayOrder = undefined
+        state.loading = false;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      }
     });
   },
 });

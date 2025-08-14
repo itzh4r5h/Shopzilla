@@ -4,6 +4,7 @@ const { Order } = require("../../models/Order");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const { isOnlyDigits } = require("../../utils/helpers");
+const { Payment } = require("../../models/Payment");
 
 // ========================== CREATE NEW ORDER FROM CART PRODUCTS ================================
 exports.createNewOrder = catchAsyncErrors(async (req, res, next) => {
@@ -42,28 +43,41 @@ exports.createNewOrder = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("invalid quantity", 400));
     }
 
+    if (singleProduct.stock < Number(quantity)) {
+      return next(new ErrorHandler("not enough stock", 400));
+    }
+
     const item = {
       name: singleProduct.name,
       price: singleProduct.price,
       quantity: Number(quantity),
       image: singleProduct.images[0].url,
-      product: singleProduct._id,
+      id: singleProduct._id,
     };
 
     orderItems.push(item);
     itemsPrice = singleProduct.price * Number(quantity);
   } else {
+    if (
+      user.cartProducts.length < 2 &&
+      user.cartProducts[0].product.stock < user.cartProducts[0].quantity
+    ) {
+      return next(new ErrorHandler("not enough stock", 400));
+    }
+
     user.cartProducts.forEach((cartProduct) => {
       const { product } = cartProduct;
-      const item = {
-        name: product.name,
-        price: product.price,
-        quantity: cartProduct.quantity,
-        image: product.images[0].url,
-        product: product._id,
-      };
-      orderItems.push(item);
-      itemsPrice += product.price * cartProduct.quantity;
+      if (product.stock >= cartProduct.quantity) {
+        const item = {
+          name: product.name,
+          price: product.price,
+          quantity: cartProduct.quantity,
+          image: product.images[0].url,
+          id: product._id,
+        };
+        orderItems.push(item);
+        itemsPrice += product.price * cartProduct.quantity;
+      }
     });
   }
 
@@ -87,22 +101,26 @@ exports.createNewOrder = catchAsyncErrors(async (req, res, next) => {
 
 // ========================== GET MY ORDER ================================
 exports.getMyOrder = catchAsyncErrors(async (req, res, next) => {
-  const order = await Order.findOne({ user: req.user._id, _id: req.params.id, orderStatus: { $ne: "pending" } });
+  const order = await Order.findOne({
+    user: req.user._id,
+    _id: req.params.id,
+    orderStatus: { $ne: "pending" },
+  });
 
   if (!order) {
     return next(new ErrorHandler("order not exists", 404));
   }
 
-  let orderQuantity = 0
+  let orderQuantity = 0;
 
-  order.orderItems.forEach((item)=>{
-    orderQuantity += item.quantity
-  })
+  order.orderItems.forEach((item) => {
+    orderQuantity += item.quantity;
+  });
 
   res.status(200).json({
     success: true,
     order,
-    orderQuantity
+    orderQuantity,
   });
 });
 
@@ -172,11 +190,6 @@ exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
 
   const { orderStatus } = req.body;
 
-  const orderStatusIndex = orderStatusCodes.indexOf(
-    orderStatus.toString().toLowerCase()
-  );
-  const currentOrderStatusIndex = orderStatusCodes.indexOf(order.orderStatus);
-
   if (!order) {
     return next(new ErrorHandler("order not exists", 404));
   }
@@ -198,6 +211,11 @@ exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
+  const orderStatusIndex = orderStatusCodes.indexOf(
+    orderStatus.toString().toLowerCase()
+  );
+  const currentOrderStatusIndex = orderStatusCodes.indexOf(order.orderStatus);
+
   if (orderStatusIndex < currentOrderStatusIndex) {
     return next(new ErrorHandler("order status cann't be reverted", 400));
   }
@@ -218,29 +236,46 @@ exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
   order.orderStatus = orderStatus;
   await order.save({ validateBeforeSave: true });
 
+  if (order.orderStatus === "delivered") {
+    const user = await User.findById(order.user);
+    const productIds = order.orderItems.map((item) => item.id.toString());
+    const mergeIds = [
+      ...user.orderedProducts.map((id) => id.toString()),
+      ...productIds,
+    ];
+    user.orderedProducts = [...new Set(mergeIds)];
+    await user.save({ validateBeforeSave: true });
+  }
+
   res.status(200).json({
     success: true,
-    order,
+    message: 'order status updated'
   });
 });
 
 // ========================== DELETE ORDER ================================
-exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
-  const order = await Order.findById(req.params.id);
-
-  if (!order) {
-    return next(new ErrorHandler("order not exists", 404));
-  }
-
-  if (order.orderStatus === "pending") {
-    await order.deleteOne();
-    res.status(200).json({
-      success: true,
-      message: "order deleted",
+exports.deleteOrderAndPaymentOrder = catchAsyncErrors(
+  async (req, res, next) => {
+    const paymentOrder = await Payment.findOne({
+      razorpayOrderId: req.params.id,
     });
-  } else {
-    return next(
-      new ErrorHandler("order cann't be deleted because payment is done", 400)
-    );
+
+    if (!paymentOrder) {
+      return next(new ErrorHandler("payment order not exists", 404));
+    }
+
+    const order = await Order.findById(paymentOrder.order);
+
+    if (paymentOrder.status === "pending" && order.orderStatus === "pending") {
+      await paymentOrder.deleteOne();
+      await order.deleteOne();
+      res.status(200).json({
+        success: true,
+      });
+    } else {
+      return next(
+        new ErrorHandler("cann't delete as payment is completed", 400)
+      );
+    }
   }
-});
+);

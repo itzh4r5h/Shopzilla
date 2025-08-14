@@ -71,6 +71,20 @@ export const getOrdersByStatus = createAsyncThunk(
   }
 );
 
+export const updateOrderStatus = createAsyncThunk(
+  "admin/udpate_order_status",
+  async (order, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.patch(`/admin/orders/${order.id}`,{orderStatus:order.status});
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
 export const addProduct = createAsyncThunk(
   "admin/add_product",
   async (productData, thunkAPI) => {
