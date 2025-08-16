@@ -7,36 +7,44 @@ const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 exports.joiValidator = (data) => {
   const schema = Joi.object({
     name: Joi.string().min(2).max(30).trim().required().messages({
-      "string.base": "Product name must be a string",
-      "string.empty": "Product name is required",
-      "string.min": "Product name must be at least {#limit} characters long",
-      "string.max": "Product name cannot be more than {#limit} characters",
-      "any.required": "Product name is required",
+      "string.base": "name must be a string",
+      "string.empty": "name is required",
+      "string.min": "name must be at least {#limit} characters long",
+      "string.max": "name cannot be more than {#limit} characters",
+      "any.required": "name is required",
     }),
 
     description: Joi.string().min(10).max(10000).trim().required().messages({
-      "string.base": "Description must be a string",
-      "string.empty": "Description is required",
-      "string.min": "Description must be at least {#limit} characters long",
-      "string.max": "Description cannot be more than {#limit} characters",
-      "any.required": "Description is required",
+      "string.base": "description must be a string",
+      "string.empty": "description is required",
+      "string.min": "description must be at least {#limit} characters long",
+      "string.max": "description cannot be more than {#limit} characters",
+      "any.required": "description is required",
     }),
 
     price: Joi.number().min(0).required().messages({
-      "number.base": "Price must be a number",
-      "number.min": "Price cannot be negative",
-      "any.required": "Price is required",
+      "number.base": "price must be a number",
+      "number.min": "price cannot be negative",
+      "any.required": "price is required",
+    }),
+
+    brand: Joi.string().min(2).max(50).trim().required().messages({
+      "string.base": "brand must be a string",
+      "string.empty": "brand is required",
+      "string.min": "brand must be at least {#limit} characters long",
+      "string.max": "brand cannot be more than {#limit} characters",
+      "any.required": "brand is required",
     }),
 
     category: Joi.string().trim().required().messages({
-      "string.base": "Category must be a string",
-      "string.empty": "Category is required",
-      "any.required": "Category is required",
+      "string.base": "category must be a string",
+      "string.empty": "category is required",
+      "any.required": "category is required",
     }),
 
     stock: Joi.number().min(0).messages({
-      "number.base": "Stock must be a number",
-      "number.min": "Stock cannot be negative",
+      "number.base": "stock must be a number",
+      "number.min": "stock cannot be negative",
     }),
 
     images: Joi.array()
@@ -58,11 +66,11 @@ exports.joiValidator = (data) => {
       .max(maxImages)
       .required()
       .messages({
-        "array.base": "Images must be in an array format",
-        "array.min": "Please upload at least one image",
-        "array.max": `You can upload a maximum of ${maxImages} images`,
-        "file.type": "Only PNG or JPEG files are allowed",
-        "file.size": `File size must not exceed ${MAX_SIZE_MB}MB`,
+        "array.base": "images must be in an array format",
+        "array.min": "please upload at least one image",
+        "array.max": `you can upload a maximum of ${maxImages} images`,
+        "file.type": "only PNG or JPEG files are allowed",
+        "file.size": `image size must not exceed ${MAX_SIZE_MB}MB`,
       }),
   });
 
@@ -70,27 +78,5 @@ exports.joiValidator = (data) => {
   return error;
 };
 
-exports.joiReviewValidator = (data) => {
-  const schema = Joi.object({
-    ratings: Joi.number().min(0).max(5),
-    reviewsCount: Joi.number(),
-    reviews: Joi.array().items({
-      user: Joi.string().required(),
-      name: Joi.string().required(),
-      rating: Joi.number().min(1).max(5).required().messages({
-        "number.base": "Rating must be a number",
-        "number.min": "Rating is required",
-        "number.max": "Rating cannot be more than 5",
-        "any.required": "Rating is required",
-      }),
 
-      comment: Joi.string().max(5000).optional().messages({
-        "string.base": "Comment must be a text string",
-        "string.max": "Comment cannot exceed 5000 characters",
-      }),
-    }),
-  });
 
-  const { error } = schema.validate(data);
-  return error;
-};

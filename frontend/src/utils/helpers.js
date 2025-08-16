@@ -1,4 +1,4 @@
-import { Country, State, City } from "country-state-city";
+import { Country, State } from "country-state-city";
 
 export const formatTime = (secs) => {
   const min = String(Math.floor(secs / 60)).padStart(2, "0");
@@ -39,3 +39,10 @@ export const formatMongodbDate = (date) => {
 
   return `${day} ${month}, ${year}`;
 };
+
+
+export const formatINR = (amount=0) =>{
+  return new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 0,
+  }).format(amount);
+}

@@ -11,11 +11,11 @@ const passwordObj = {
     )
     .required()
     .messages({
-      "string.empty": "Password is required",
-      "string.min": "Password must be at least 8 characters",
-      "string.max": "Password cann't exceed 20 characters",
+      "string.empty": "password is required",
+      "string.min": "password must be at least 8 characters",
+      "string.max": "password cann't exceed 20 characters",
       "string.pattern.base":
-        "Password must include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (@, #, $, )",
+        "password must include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (@, #, $, )",
     }),
 };
 
@@ -51,23 +51,23 @@ const joiPasswordValidator = (data) => {
 const joiAddressValidator = (data) => {
   const schema = Joi.object({
     address: Joi.string().trim().max(255).required().messages({
-      "string.empty": "Address is required",
-      "string.max": "Address must be at most 255 characters",
+      "string.empty": "address is required",
+      "string.max": "address must be at most 255 characters",
     }),
 
     country: Joi.string().trim().max(85).required().messages({
-      "string.empty": "Country is required",
-      "string.max": "Country must be at most 85 characters",
+      "string.empty": "country is required",
+      "string.max": "country must be at most 85 characters",
     }),
 
     state: Joi.string().trim().max(85).required().messages({
-      "string.empty": "State is required",
-      "string.max": "State must be at most 85 characters",
+      "string.empty": "state is required",
+      "string.max": "state must be at most 85 characters",
     }),
 
     city: Joi.string().trim().max(85).required().messages({
-      "string.empty": "City is required",
-      "string.max": "City must be at most 85 characters",
+      "string.empty": "city is required",
+      "string.max": "city must be at most 85 characters",
     }),
 
     pinCode: Joi.string()
@@ -75,9 +75,9 @@ const joiAddressValidator = (data) => {
       .pattern(/^[0-9]+$/)
       .required()
       .messages({
-        "string.empty": "Pin code is required",
-        "string.length": "Pin code must be exactly 6 digits",
-        "string.pattern.base": "Pin code must contain only digits",
+        "string.empty": "pin code is required",
+        "string.length": "pin code must be exactly 6 digits",
+        "string.pattern.base": "pin code must contain only digits",
       }),
 
     mobileNumber: Joi.string()
@@ -85,9 +85,9 @@ const joiAddressValidator = (data) => {
       .pattern(/^[0-9]+$/)
       .required()
       .messages({
-        "string.empty": "Mobile number is required",
-        "string.length": "Mobile number must be exactly 10 digits",
-        "string.pattern.base": "Mobile number must contain only digits",
+        "string.empty": "mobile number is required",
+        "string.length": "mobile number must be exactly 10 digits",
+        "string.pattern.base": "moile number must contain only digits",
       }),
   });
   const { error } = schema.validate(data);

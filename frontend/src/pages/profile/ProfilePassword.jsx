@@ -119,6 +119,7 @@ export const ProfilePassword = () => {
                 Old Password
               </label>
               <input
+              autoComplete="off"
                 type="password"
                 {...register("oldPassword", { required: true })}
                 id="oldPassword"
@@ -133,6 +134,7 @@ export const ProfilePassword = () => {
                 New Password
               </label>
               <input
+              autoComplete="off"
                 type="password"
                 {...register("newPassword", { required: true })}
                 id="newPassword"

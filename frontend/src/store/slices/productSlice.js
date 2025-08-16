@@ -14,6 +14,30 @@ const productSlice = createSlice({
     product: undefined,
     error: null,
     loading: true,
+    categories :[
+        "smart watch",
+        "mobile",
+        "laptop",
+        "shirt",
+        "jeans",
+        "earphone",
+        "headphone",
+        "earbuds",
+        "watch",
+        "t-shirt",
+        "tablet",
+        "game",
+        "toy",
+        "book",
+        "handbag",
+        "luggage",
+        "camera",
+        "chair",
+        "monitor",
+        "smart television",
+        "washing machine",
+        "pencil"
+      ].sort()
   },
   reducers: {
     saveKeyword: (state, action) => {

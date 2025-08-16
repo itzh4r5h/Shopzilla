@@ -3,7 +3,7 @@ import { axiosInstance } from "../../utils/AxiosInstance";
 
 
 export const getAllProducts = createAsyncThunk(
-  "products/getAll",
+  "products/get_all_products",
   async (keyword='', thunkAPI) => {
     try {
       const link = `/products?keyword=${keyword}`
@@ -17,7 +17,7 @@ export const getAllProducts = createAsyncThunk(
 
 
 export const getProductDetails = createAsyncThunk(
-  "products/getDetails",
+  "products/get_product",
   async (id, thunkAPI) => {
     try {
       const { data } = await axiosInstance.get(`/products/${id}`);

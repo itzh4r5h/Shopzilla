@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import { FaCircleArrowLeft } from "react-icons/fa6";
+import { ProudctFilter } from "../Filters/ProudctFilter";
 
 export const Heading = ({ path, name }) => {
   const navigate = useNavigate();
@@ -10,6 +11,9 @@ export const Heading = ({ path, name }) => {
         className="absolute top-1/2 -translate-y-1/2 left-0 text-2xl z-50 active:text-[var(--purpleDark)] transition-colors"
         onClick={() => navigate(path)}
       />
+      {name.toLowerCase() === 'products' && <span className="absolute top-1/2 -translate-y-1/2 right-0 z-50">
+        <ProudctFilter/>
+      </span> }
     </h1>
   );
 };

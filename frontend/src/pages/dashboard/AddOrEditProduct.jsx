@@ -140,7 +140,7 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
   const { error, success, message, loading } = useSelector(
     (state) => state.admin
   );
-  const { product } = useSelector((state) => state.products);
+  const { product,categories } = useSelector((state) => state.products);
   const { id } = useParams();
   const path = useLocation();
   const navigate = useNavigate()
@@ -200,31 +200,6 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
         setValue('images',product.images)
     }
   }, [product?.images]);
-
-  const categories = [
-    "smart watch",
-    "mobile",
-    "laptop",
-    "shirt",
-    "jeans",
-    "earphone",
-    "headphone",
-    "earbuds",
-    "watch",
-    "t-shirt",
-    "tablet",
-    "game",
-    "toy",
-    "book",
-    "handbag",
-    "luggage",
-    "camera",
-    "chair",
-    "monitor",
-    "smart television",
-    "washing machine",
-    "pencil"
-  ].sort();
 
   useEffect(() => {
     reset();
