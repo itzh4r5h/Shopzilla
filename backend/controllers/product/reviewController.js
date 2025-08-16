@@ -122,8 +122,6 @@ exports.deleteProductReview = catchAsyncErrors(async (req, res, next) => {
     (review) => review.user.toString() !== req.user._id.toString().toString()
   );
 
-  console.log(reviews);
-
   // sum up all the ratings of product
   let totalRatings = 0;
 

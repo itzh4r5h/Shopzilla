@@ -6,6 +6,7 @@ const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const { User } = require("../../models/User");
+const { isOnlyDigits } = require("../../utils/helpers");
 
 // Intance of RazorPay
 const razorpay = new Razorpay({
@@ -108,4 +109,131 @@ exports.verifyPayment = catchAsyncErrors(async (req, res, next) => {
       message: "Invalid Signature",
     });
   }
+});
+
+exports.getYears = catchAsyncErrors(async (req, res, next) => {
+  let years = await Payment.aggregate([
+    // Add a new field "year" extracted from createdAt
+    {
+      $addFields: { year: { $year: "$createdAt" } },
+    },
+
+    //Group by year (this ensures uniqueness)
+    { $group: { _id: "$year" } },
+
+    //reshape output
+    { $project: { _id: 0, year: "$_id" } },
+
+    //sort ascending
+    { $sort: { year: -1 } },
+  ]);
+
+  years = years.map((doc) => doc.year);
+
+  res.status(200).json({
+    success: true,
+    years,
+  });
+});
+
+exports.getTotalRevenue = catchAsyncErrors(async (req, res, next) => {
+  const { year } = req.params;
+
+  const payments = await Payment.aggregate([
+    // Get only completed payments
+    {
+      $match: { status: "completed" },
+    },
+
+    // Add a new field "year" extracted from createdAt
+    {
+      $addFields: { year: { $year: "$createdAt" } },
+    },
+
+    // 3️⃣ Filter by the given year
+    {
+      $match: { year: Number(year) },
+    },
+
+    // Remove helper field if you don’t want it in output
+    {
+      $project: { _id: 0, amount: 1 },
+    },
+  ]);
+
+  let totalRevenue = 0;
+
+  payments.forEach((payment) => {
+    const amt = payment.amount / 100; //for converting into rupees as it in paise
+    totalRevenue += amt;
+  });
+
+  res.status(200).json({
+    success: true,
+    totalRevenue,
+  });
+});
+
+exports.getMonthlyRevenueByYear = catchAsyncErrors(async (req, res, next) => {
+  const { year } = req.params;
+
+  const results = await Payment.aggregate([
+    // Get only completed payments
+    {
+      $match: { status: "completed" },
+    },
+
+    // Add a new field "year" extracted from createdAt
+    {
+      $addFields: {
+        year: { $year: "$createdAt" },
+        month: { $month: "$createdAt" },
+      },
+    },
+
+    // 3️⃣ Filter by the given year
+    {
+      $match: { year: Number(year) },
+    },
+
+    // Group by month, sum all amounts
+    {
+      $group: {
+        _id: "$month",
+        totalAmount: { $sum: "$amount" },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  // Month names
+  const monthNames = [
+    "",
+    "jan",
+    "feb",
+    "mar",
+    "apr",
+    "may",
+    "jun",
+    "jul",
+    "aug",
+    "sep",
+    "oct",
+    "nov",
+    "dec",
+  ];
+
+  // Fill missing months with 0 totalAmount
+  const monthlyRevenue = {}
+  Array.from({ length: 12 }, (_, i) => {
+    const monthNum = i + 1;
+    const match = results.find((r) => r._id === monthNum);
+    // divide by 100 so that amt converts to rs. as it is in paise
+    monthlyRevenue[monthNames[monthNum]] = match ? match.totalAmount / 100 : 0
+  })
+
+  res.status(200).json({
+    success: true,
+    monthlyRevenue,
+  });
 });

@@ -1,6 +1,51 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../utils/AxiosInstance";
 
+export const getAllYears = createAsyncThunk(
+  "admin/get_years",
+  async (_, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.get(`/payments/years`);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+
+export const getTotalRevenue = createAsyncThunk(
+  "admin/total_revenue",
+  async (year, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.get(`/payments/revenue/${year}`);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+
+export const getMonthlyRevenue = createAsyncThunk(
+  "admin/monthly_revenue",
+  async (year, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.get(`/payments/revenue/monthly/${year}`);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+
 export const getTotalProducts = createAsyncThunk(
   "admin/total_products",
   async (_, thunkAPI) => {
@@ -48,6 +93,20 @@ export const getAllUsers = createAsyncThunk(
   async (keyword='', thunkAPI) => {
     try {
       const { data } = await axiosInstance.get(`/admin/users?keyword=${keyword}`);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+export const deleteUser = createAsyncThunk(
+  "admin/delete_user",
+  async (id, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.delete(`/admin/users/${id}`);
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -145,6 +204,21 @@ export const deleteProduct = createAsyncThunk(
   async (id, thunkAPI) => {
     try {
       const { data } = await axiosInstance.delete(`/admin/products/${id}`);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+
+export const getStockStatus = createAsyncThunk(
+  "admin/stock_status",
+  async (id, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.get('/admin/products/stock_status');
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(

@@ -146,6 +146,7 @@ export const ProductCard = ({
           <div className="grid grid-cols-[3fr_2fr] items-center mt-2">
             {product.stock >= productQuantity ? (
               <NormalSelect
+              center={true}
                 selected={productQuantity}
                 defaultValue={productQuantity}
                 name="quantity"

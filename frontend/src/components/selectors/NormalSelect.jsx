@@ -8,6 +8,7 @@ export const NormalSelect = ({
   register,
   setValue,
   optionsData,
+  center=false,
   updateFunction=()=>{}
 }) => {
   const [showOptions, setShowOptions] = useState(false);
@@ -55,7 +56,7 @@ export const NormalSelect = ({
           onBlur={() => setTimeout(() => closeDropDown(), 50)}
           autoComplete="off"
           readOnly
-          className={`${name.toLowerCase()==='quantity' && 'text-center text-xl'} capitalize bg-[var(--grey)] border rounded-md p-1 text-lg outline-none w-full pr-10 cursor-default focus:ring-2 focus:ring-[var(--purpleDark)]`}
+          className={`${center && 'text-center text-xl'} capitalize bg-[var(--grey)] border rounded-md p-1 text-lg outline-none w-full pr-10 cursor-default focus:ring-2 focus:ring-[var(--purpleDark)]`}
         />
         <IoIosArrowDropdownCircle
           ref={dropDownIconRef}
@@ -71,11 +72,11 @@ export const NormalSelect = ({
           {optionsData.map((option, index) => {
             return (
               <li
-                key={index + option}
+                key={index}
                 className="text-lg p-1 active:bg-[var(--grey)] hover:bg-[var(--grey)] transition-colors cursor-pointer rounded-md"
                 data-option={option}
               >
-                <span className={`line-clamp-1 capitalize ${name.toLowerCase()==='quantity' && 'text-center text-xl'}`}>{option}</span>
+                <span className={`line-clamp-1 capitalize ${center && 'text-center text-xl'}`}>{option}</span>
               </li>
             );
           })}

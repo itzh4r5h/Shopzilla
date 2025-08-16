@@ -3,24 +3,35 @@ import { TitleWithSearchBar } from "../../components/Headers/TitleWithSearchBar"
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllUsers } from "../../store/thunks/adminThunks";
+import { deleteUser, getAllUsers } from "../../store/thunks/adminThunks";
 import { useEffect } from "react";
 import { ImageCard } from "../../components/cards/ImageCard";
 import { formatMongodbDate } from "../../utils/helpers";
-import { clearErrors, saveKeyword } from "../../store/slices/adminSlice";
+import {
+  clearErrors,
+  clearMessage,
+  saveKeyword,
+} from "../../store/slices/adminSlice";
 import { toast } from "react-toastify";
 import { DeleteModal } from "../../components/modal/DeleteModal";
 
 export const Users = () => {
   const dispatch = useDispatch();
-  const { loading, users, keyword, error } = useSelector(
-    (state) => state.admin
-  );
+  const { loading, users, keyword, error, success, message, updated } =
+    useSelector((state) => state.admin);
 
   useEffect(() => {
-    dispatch(saveKeyword(""));
-    dispatch(getAllUsers());
-  }, []);
+    if (!users) {
+      dispatch(saveKeyword(""));
+      dispatch(getAllUsers());
+    }
+  }, [users]);
+
+  useEffect(() => {
+    if (updated) {
+      dispatch(getAllUsers());
+    }
+  }, [updated]);
 
   useEffect(() => {
     dispatch(getAllUsers(keyword));
@@ -32,6 +43,13 @@ export const Users = () => {
       dispatch(clearErrors());
     }
   }, [error]);
+
+  useEffect(() => {
+    if (success && message) {
+      toast.success(message);
+      dispatch(clearMessage());
+    }
+  }, [success, message]);
 
   return (
     <div className="h-full relative">
@@ -92,7 +110,9 @@ export const Users = () => {
                   {user.role === "user" && (
                     <span className="absolute top-0 -right-1">
                       <DeleteModal
-                        deleteFunction={() => {}}
+                        deleteFunction={() => {
+                          dispatch(deleteUser(user._id));
+                        }}
                         classes={
                           "text-[1.65rem] justify-self-end active:text-[var(--purpleDark)] transition-colors"
                         }

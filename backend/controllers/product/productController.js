@@ -172,6 +172,66 @@ exports.deleteProduct = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+// ======================= ADMIN -- GET IN STOCK AND OUT OF STOCK PRODUCT COUNT ==============================
+exports.getInStockAndOutOfStockProductCount = catchAsyncErrors(
+  async (req, res, next) => {
+    const result = await Product.aggregate([
+      // Create a flag field based on stock
+      {
+        $addFields: {
+          status: {
+            $cond: [
+              { $gt: ["$stock", 0] }, // condition
+              "in_stock", // if true
+              "out_of_stock", // if false
+            ],
+          },
+        },
+      },
+
+      // Group by status and count
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+
+      // Reshape into single document
+      {
+        $group: {
+          _id: null,
+          in_stock: {
+            $sum: {
+              $cond: [{ $eq: ["$_id", "in_stock"] }, "$count", 0],
+            },
+          },
+          out_of_stock: {
+            $sum: {
+              $cond: [{ $eq: ["$_id", "out_of_stock"] }, "$count", 0],
+            },
+          },
+        },
+      },
+
+      // Clean up
+      {
+        $project: {
+          _id: 0,
+          in_stock: 1,
+          out_of_stock: 1,
+        },
+      },
+    ]);
+
+
+    res.status(200).json({
+      success:true,
+      stockStatus: result[0]
+    })
+  }
+);
+
 // ======================= GET ALL TOTAL NUMBER OF PRODUCTS ==============================
 exports.getTotalNumberOfProducts = catchAsyncErrors(async (req, res) => {
   const totalProducts = await Product.countDocuments();

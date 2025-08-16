@@ -37,50 +37,6 @@ exports.getTotalNumberOfUsers = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// ====================== ADMIN --- GET SINGLE USER =============================
-exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
-  let user = await User.findById(req.params.id);
-
-  if (!user) {
-    return next(new ErrorHandler("user not exists", 400));
-  }
-
-  user = getBasicDetailsOnly(user);
-
-  res.status(200).json({
-    success: true,
-    user,
-  });
-});
-
-// ====================== ADMIN --- UPDATE USER ROLE =============================
-exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
-  const { role } = req.body;
-
-  if (!role || role.toString().trim() === "") {
-    return next(new ErrorHandler("role is required", 400));
-  }
-
-  let user = await User.findById(req.params.id);
-
-  if (!user) {
-    return next(new ErrorHandler("user not exists", 400));
-  }
-
-  await User.findByIdAndUpdate(
-    req.params.id,
-    { role },
-    { runValidators: true, new: true }
-  );
-
-  user = getBasicDetailsOnly(user);
-
-  res.status(200).json({
-    success: true,
-    user,
-  });
-});
-
 // ====================== ADMIN --- DELETE USER =============================
 exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findByIdAndDelete(req.params.id);
@@ -91,7 +47,7 @@ exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
 
   // code to remove imagekit images here
   if (user.profilePic.fileId !== process.env.IMAGE_KIT_DEFAULT_FILE_ID) {
-    await imagekit.deleteFile(user.profilePic.fileId);
+      await imagekit.deleteFile(user.profilePic.fileId);
   }
 
   res.status(200).json({

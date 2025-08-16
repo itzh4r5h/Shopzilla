@@ -9,12 +9,22 @@ import {
   Legend,
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
-import {useDispatch,useSelector} from 'react-redux'
+import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getTotalOrders, getTotalProducts, getTotalUsers } from "../../store/thunks/adminThunks";
+import {
+  getAllYears,
+  getMonthlyRevenue,
+  getStockStatus,
+  getTotalOrders,
+  getTotalProducts,
+  getTotalRevenue,
+  getTotalUsers,
+} from "../../store/thunks/adminThunks";
 
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { NormalSelect } from "../../components/selectors/NormalSelect";
+import { useForm } from "react-hook-form";
 
 // Register Chart.js components
 ChartJS.register(
@@ -27,36 +37,6 @@ ChartJS.register(
 );
 
 // ============================= Bar Chart ==============================
-// Dummy static data (replace later with API)
-const barData = {
-  labels: [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ],
-  datasets: [
-    {
-      label: "Revenue (₹)",
-      data: [
-        12000, 15000, 11000, 20000, 18000, 25000, 23000, 22000, 27000, 30000,
-        32000, 35000,
-      ],
-      backgroundColor: "rgba(75, 192, 192, 0.8)",
-      borderRadius: 6,
-      barThickness: 10, // thinner bars for mobile
-    },
-  ],
-};
-
 const barOptions = {
   responsive: true,
   maintainAspectRatio: false, // allows custom height
@@ -96,19 +76,6 @@ const barOptions = {
 };
 
 // ===================== Doughnut chart ==================================
-// Static dummy data
-const doughnutData = {
-  labels: ["In Stock", "Out of Stock"],
-  datasets: [
-    {
-      label: "Product Status",
-      data: [120, 30], // Replace with dynamic values later
-      backgroundColor: ["#4ade80", "#f87171"], // green & red
-      borderWidth: 1,
-    },
-  ],
-};
-
 const doughnutOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -134,26 +101,99 @@ const doughnutOptions = {
 };
 
 export const Dashboard = () => {
-  const dispatch = useDispatch()
-  const {loading,totalProducts,totalUsers,totalOrders} = useSelector((state)=>state.admin)
+  const dispatch = useDispatch();
+  const {
+    loading,
+    years,
+    totalRevenue,
+    monthlyRevenue,
+    totalProducts,
+    totalUsers,
+    totalOrders,
+    stockStatus
+  } = useSelector((state) => state.admin);
 
-  useEffect(()=>{
-    dispatch(getTotalProducts())
-    dispatch(getTotalUsers())
-    dispatch(getTotalOrders())
-  },[])
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const barData = {
+    labels: months,
+    datasets: [
+      {
+        label: "Revenue (₹)",
+        data: [
+          ...months.map((month) =>
+            monthlyRevenue ? monthlyRevenue[month.toLowerCase()] : 0
+          ),
+        ],
+        backgroundColor: "rgba(75, 192, 192, 0.8)",
+        borderRadius: 6,
+        barThickness: 10, // thinner bars for mobile
+      },
+    ],
+  };
+
+
+  const doughnutData = {
+  labels: ["In Stock", "Out of Stock"],
+  datasets: [
+    {
+      label: "Product Status",
+      data: [stockStatus?.in_stock, stockStatus?.out_of_stock], // Replace with dynamic values later
+      backgroundColor: ["#4ade80", "#f87171"], // green & red
+      borderWidth: 1,
+    },
+  ],
+};
+
+  const { register, setValue, getValues, handleSubmit, reset } = useForm();
 
   const currentYear = new Date().getFullYear();
+
+  useEffect(() => {
+    dispatch(getAllYears());
+    dispatch(getTotalRevenue(currentYear));
+    dispatch(getTotalProducts());
+    dispatch(getTotalUsers());
+    dispatch(getTotalOrders());
+    dispatch(getMonthlyRevenue(currentYear));
+    dispatch(getStockStatus())
+  }, []);
+
   return (
     <div className="flex flex-col gap-4 justify-center items-center">
       {/* revenue begins */}
       <div className="grid grid-rows-2 w-full">
-        <h1 className="text-xl font-bold self-start tracking-widest">
-          Total Revenue
+        <h1 className="text-xl font-bold self-start tracking-widest grid grid-cols-2 items-center mb-2">
+          <span>Total Revenue</span>
+          <span>
+            <NormalSelect
+              center={true}
+              register={register}
+              name="total_revenue_year"
+              setValue={setValue}
+              optionsData={years}
+              selected={currentYear}
+              defaultValue={currentYear}
+              updateFunction={()=>dispatch(getTotalRevenue(getValues('total_revenue_year')))}
+            />
+          </span>
         </h1>
         <h1 className="flex justify-end items-center text-xl font-bold border-b-2 w-full pb-1">
           <BsCurrencyRupee />
-          <span>10000</span>
+          <span>{totalRevenue}</span>
         </h1>
       </div>
       {/* revenue ends */}
@@ -167,9 +207,21 @@ export const Dashboard = () => {
               key={index}
             >
               <h1 className="text-xl font-bold text-center">Total {name}</h1>
-              {name === 'Products' && <h1 className="text-xl font-bold text-center mt-2">{loading?<Skeleton height={25}/>:totalProducts}</h1>}
-              {name === 'Users' && <h1 className="text-xl font-bold text-center mt-2">{loading?<Skeleton height={25}/>:totalUsers}</h1>}
-              {name === 'Orders' && <h1 className="text-xl font-bold text-center mt-2">{loading?<Skeleton height={25}/>:totalOrders}</h1>}
+              {name === "Products" && (
+                <h1 className="text-xl font-bold text-center mt-2">
+                  {loading ? <Skeleton height={25} /> : totalProducts}
+                </h1>
+              )}
+              {name === "Users" && (
+                <h1 className="text-xl font-bold text-center mt-2">
+                  {loading ? <Skeleton height={25} /> : totalUsers}
+                </h1>
+              )}
+              {name === "Orders" && (
+                <h1 className="text-xl font-bold text-center mt-2">
+                  {loading ? <Skeleton height={25} /> : totalOrders}
+                </h1>
+              )}
             </div>
           );
         })}
@@ -178,8 +230,20 @@ export const Dashboard = () => {
 
       {/* Bar chart begins */}
       <div className="p-4 bg-white rounded-xl border border-black">
-        <h2 className="text-lg font-semibold mb-4">
-          Monthly Revenue — {currentYear}
+        <h2 className="text-lg font-semibold mb-4 grid grid-cols-2 items-center">
+          <span>Monthly Revenue</span>
+          <span>
+            <NormalSelect
+              center={true}
+              register={register}
+              name="monthly_revenue_year"
+              setValue={setValue}
+              optionsData={years}
+              selected={currentYear}
+              defaultValue={currentYear}
+              updateFunction={()=>dispatch(getMonthlyRevenue(getValues('monthly_revenue_year')))}
+            />
+          </span>
         </h2>
         <div className="h-100">
           <Bar data={barData} options={barOptions} />
