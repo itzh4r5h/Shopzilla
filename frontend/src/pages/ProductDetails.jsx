@@ -34,11 +34,9 @@ import {
   clearErrors as clearCartErrors,
   clearMessage as clearCartMessage,
 } from "../store/slices/cartSlice";
-import { getAllAddress } from "../store/thunks/userThunks";
 import { ShippingAddressCard } from "../components/cards/ShippingAddressCard";
 import { Checkout } from "./Checkout";
 import { getAllReviewsAndRatings } from "../store/thunks/reviewThunk";
-import { clearMessage, clearErrors as clearReviewError } from "../store/slices/reviewSlice";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 10,
@@ -69,15 +67,12 @@ export const ProductDetails = ({ path }) => {
   } = useSelector((state) => state.products);
   const { isLoggedIn, user } = useSelector((state) => state.user);
   const {
-    error: reviewError,
     reviewed,
     reviews,
     reviewsCount,
     allRatings,
     totalRatings,
     loading: reviewLoading,
-    success: reviewSuccess,
-    message: reviewMessage
   } = useSelector((state) => state.review);
   const {
     success,
@@ -87,7 +82,6 @@ export const ProductDetails = ({ path }) => {
 
   useEffect(() => {
     dispatch(getProductDetails(id));
-    dispatch(getAllAddress());
     dispatch(getAllReviewsAndRatings(id));
   }, []);
 
@@ -108,14 +102,6 @@ export const ProductDetails = ({ path }) => {
 
   useEffect(() => {
     // this shows the error if error exists
-    if (reviewError) {
-      toast.error(reviewError);
-      dispatch(clearReviewError());
-    }
-  }, [reviewError]);
-
-  useEffect(() => {
-    // this shows the error if error exists
     if (cartError) {
       toast.error(cartError);
       dispatch(clearCartErrors());
@@ -130,13 +116,6 @@ export const ProductDetails = ({ path }) => {
     }
   }, [success, message]);
   
-  useEffect(() => {
-    // this shows the error if error exists
-    if (reviewSuccess && reviewMessage) {
-      toast.success(reviewMessage);
-      dispatch(clearMessage());
-    }
-  }, [reviewSuccess, reviewMessage]);
 
   const [quantity, setQuantity] = useState(1);
 
@@ -179,6 +158,8 @@ export const ProductDetails = ({ path }) => {
     }
     return num.toString();
   }
+
+  const isReviewed = reviews?.find((rev)=>rev.user.toString()===user?._id.toString())
 
   return (
     <div>
@@ -310,7 +291,7 @@ export const ProductDetails = ({ path }) => {
           {/* Rating and reviews begins */}
 
           <h2 className="text-2xl text-center">Ratings & Reviews</h2>
-          {isLoggedIn && user.orderedProducts.includes(product._id) && (
+          {isLoggedIn && user.orderedProducts.includes(product._id) && !isReviewed && (
             <ReviewModal id={id} />
           )}
 

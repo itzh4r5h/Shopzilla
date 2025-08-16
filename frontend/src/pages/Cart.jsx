@@ -11,7 +11,6 @@ import {
   clearMessage,
   quantityUpdated,
 } from "../store/slices/cartSlice";
-import { getAllAddress } from "../store/thunks/userThunks";
 import { ShippingAddressCard } from "../components/cards/ShippingAddressCard";
 
 export const Cart = () => {
@@ -31,7 +30,6 @@ export const Cart = () => {
   
   useEffect(() => {
     dispatch(getAllCartProducts());
-    dispatch(getAllAddress());
   }, []);
 
   useEffect(() => {

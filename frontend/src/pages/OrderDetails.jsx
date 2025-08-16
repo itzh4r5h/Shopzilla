@@ -22,6 +22,8 @@ import { formatMongodbDate } from "../utils/helpers";
 import { ReviewModal } from "../components/modal/ReviewModal";
 import { toast } from "react-toastify";
 import { clearErrors } from "../store/slices/orderSlice";
+import { ReviewCard } from "../components/cards/ReviewCard";
+import { getProductDetails } from "../store/thunks/productThunks";
 
 const QontoConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.active}`]: {
@@ -112,6 +114,8 @@ export const OrderDetails = () => {
   const dispatch = useDispatch();
   const { order, loading, orderQuantity,error } = useSelector((state) => state.order);
   const { user } = useSelector((state) => state.user);
+  const { product } = useSelector((state) => state.products);
+  const {reviewed} = useSelector(state=>state.review)
 
   useEffect(()=>{
     if(error){
@@ -123,6 +127,15 @@ export const OrderDetails = () => {
   useEffect(() => {
     dispatch(getMySinglOrder(id));
   }, []);
+
+  useEffect(()=>{
+    if(reviewed){
+      dispatch(getProductDetails(product._id))
+    }
+},[reviewed])
+
+  const isReviewed = product?.reviews?.find((rev)=>rev.user.toString()===user?._id.toString())
+  const review = product?.reviews?.filter((rev)=>rev.user.toString()===user?._id.toString())
 
   return !loading && order ? (
     <div className="h-full w-full">
@@ -136,9 +149,11 @@ export const OrderDetails = () => {
                 <ProductCard product={orderedProduct} orderDetails={true} />
               </Link>
 
-              {user.orderedProducts.includes(orderedProduct.id) && <div className="w-1/2 mx-auto -mt-5">
-                <ReviewModal />
-              </div>}
+              {user.orderedProducts.includes(orderedProduct.id) && !isReviewed ? <div className="mt-1">
+                <ReviewModal id={orderedProduct.id}/>
+              </div>: <div className="bg-white border mt-1 p-2">
+                <ReviewCard review={review[0]} id={orderedProduct.id}/>
+              </div> }
             </div>
           );
         })}

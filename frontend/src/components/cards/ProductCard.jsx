@@ -48,7 +48,7 @@ export const ProductCard = ({
   return product ? (
     <article
       className={`w-full h-full border border-[var(--black)] bg-[var(--white)] p-2 ${
-        cart ? "grid grid-cols-[2.5fr_4fr] gap-2" : orderDetails ? "pb-7" : "pb-1"
+        cart ? "grid grid-cols-[2.5fr_4fr] gap-2" : orderDetails ? "" : "pb-1"
       }`}
     >
       {/* product image begins */}

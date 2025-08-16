@@ -10,12 +10,13 @@ import Joi from "joi";
 import { toast } from "react-toastify";
 import Rating from "@mui/material/Rating";
 import { createOrUpdateReview } from "../../store/thunks/reviewThunk";
+import {clearErrors,clearMessage} from "../../store/slices/reviewSlice"
 
 export const ReviewModal = ({
   edit = false,
   spanClasses = "",
   id,
-  review=undefined
+  review = undefined,
 }) => {
   const schema = useMemo(() => {
     return Joi.object({
@@ -49,8 +50,13 @@ export const ReviewModal = ({
     resolver: joiResolver(schema),
   });
 
+  const { success, message, error } = useSelector((state) => state.review);
+
   const submitForm = (data) => {
-     dispatch(createOrUpdateReview({id,rating:data.rating,comment:data.comment}))
+    dispatch(
+      createOrUpdateReview({ id, rating: data.rating, comment: data.comment })
+    );
+    handleClose()
   };
 
   // this is to remember last error key from joi
@@ -66,15 +72,31 @@ export const ReviewModal = ({
   const handleClose = () => {
     setOpen(false);
     reset();
-    lastErrorKeyRef.current = null
+    lastErrorKeyRef.current = null;
   };
 
-  useEffect(()=>{
-    if(review){
-      setValue('rating',review.rating)
-      setValue('comment',review.comment)
+  useEffect(() => {
+    // this shows the error if error exists
+    if (error) {
+      toast.error(error);
+      dispatch(clearErrors());
     }
-  },[review])
+  }, [error]);
+
+  useEffect(() => {
+    // this shows the error if error exists
+    if (success && message) {
+      toast.success(message);
+      dispatch(clearMessage());
+    }
+  }, [success, message]);
+
+  useEffect(() => {
+    if (review) {
+      setValue("rating", review.rating);
+      setValue("comment", review.comment);
+    }
+  }, [review]);
 
   return (
     <div>
@@ -121,7 +143,7 @@ export const ReviewModal = ({
                 Comment
               </label>
               <textarea
-                {...register("comment",{required:false})}
+                {...register("comment", { required: false })}
                 id="comment"
                 placeholder="optional"
                 className="border box-border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)] h-50"

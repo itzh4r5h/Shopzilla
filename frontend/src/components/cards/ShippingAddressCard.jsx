@@ -17,8 +17,10 @@ export const ShippingAddressCard = () => {
   const [shippingAddress, setShippingAddress] = useState([]);
 
   useEffect(() => {
-    dispatch(getAllAddress());
-  }, []);
+   if(!allShippingAddress){
+     dispatch(getAllAddress());
+   }
+  }, [allShippingAddress]);
 
   useEffect(() => {
     if (updatedAddress) {

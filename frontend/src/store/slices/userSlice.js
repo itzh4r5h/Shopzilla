@@ -348,6 +348,7 @@ const userSlice = createSlice({
     handleAsyncThunk(builder, getAllAddress, {
       pending: (state) => {
         state.allShippingAddress = undefined;
+        state.updatedAddress = undefined
       },
       fulfilled: (state, action) => {
         state.allShippingAddress = action.payload.allShippingAddress;
