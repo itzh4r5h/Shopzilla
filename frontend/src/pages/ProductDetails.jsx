@@ -32,12 +32,13 @@ import { ReviewCard } from "../components/cards/ReviewCard";
 import { addProductToCartOrUpdateQuantity } from "../store/thunks/cartThunk";
 import {
   clearErrors as clearCartErrors,
-  clearMessage,
+  clearMessage as clearCartMessage,
 } from "../store/slices/cartSlice";
 import { getAllAddress } from "../store/thunks/userThunks";
 import { ShippingAddressCard } from "../components/cards/ShippingAddressCard";
 import { Checkout } from "./Checkout";
 import { getAllReviewsAndRatings } from "../store/thunks/reviewThunk";
+import { clearMessage, clearErrors as clearReviewError } from "../store/slices/reviewSlice";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 10,
@@ -68,11 +69,15 @@ export const ProductDetails = ({ path }) => {
   } = useSelector((state) => state.products);
   const { isLoggedIn, user } = useSelector((state) => state.user);
   const {
+    error: reviewError,
+    reviewed,
     reviews,
     reviewsCount,
     allRatings,
     totalRatings,
     loading: reviewLoading,
+    success: reviewSuccess,
+    message: reviewMessage
   } = useSelector((state) => state.review);
   const {
     success,
@@ -87,12 +92,27 @@ export const ProductDetails = ({ path }) => {
   }, []);
 
   useEffect(() => {
+    if (reviewed) {
+      dispatch(getAllReviewsAndRatings(id));
+      dispatch(getProductDetails(id));
+    }
+  }, [reviewed]);
+
+  useEffect(() => {
     // this shows the error if error exists
     if (productError) {
       toast.error(productError);
       dispatch(clearProductErrors());
     }
   }, [productError]);
+
+  useEffect(() => {
+    // this shows the error if error exists
+    if (reviewError) {
+      toast.error(reviewError);
+      dispatch(clearReviewError());
+    }
+  }, [reviewError]);
 
   useEffect(() => {
     // this shows the error if error exists
@@ -106,9 +126,17 @@ export const ProductDetails = ({ path }) => {
     // this shows the error if error exists
     if (success && message) {
       toast.success(message);
-      dispatch(clearMessage());
+      dispatch(clearCartMessage());
     }
   }, [success, message]);
+  
+  useEffect(() => {
+    // this shows the error if error exists
+    if (reviewSuccess && reviewMessage) {
+      toast.success(reviewMessage);
+      dispatch(clearMessage());
+    }
+  }, [reviewSuccess, reviewMessage]);
 
   const [quantity, setQuantity] = useState(1);
 
@@ -152,11 +180,10 @@ export const ProductDetails = ({ path }) => {
     return num.toString();
   }
 
-
   return (
     <div>
       <Heading name={"Product Details"} path={path} />
-      {!productLoading && !reviewLoading && product ? (
+      {!productLoading && !reviewLoading && allRatings && product ? (
         <article className="w-full min-h-full border border-[var(--black)] bg-[var(--white)] p-2 flex flex-col gap-2 mt-5">
           <Swiper
             loop={product?.images?.length > 1 ? true : false}
@@ -259,7 +286,7 @@ export const ProductDetails = ({ path }) => {
           {/*increase/decrease quanity begins */}
 
           {/* shipping Address begins */}
-          <ShippingAddressCard />
+         {isLoggedIn &&  <ShippingAddressCard />}
           {/* shipping Address ends */}
 
           {product.stock > 0 && (
@@ -283,10 +310,9 @@ export const ProductDetails = ({ path }) => {
           {/* Rating and reviews begins */}
 
           <h2 className="text-2xl text-center">Ratings & Reviews</h2>
-          {isLoggedIn &&
-            user.orderedProducts.includes(product._id) && (
-              <ReviewModal />
-            )}
+          {isLoggedIn && user.orderedProducts.includes(product._id) && (
+            <ReviewModal id={id} />
+          )}
 
           {/* overvall rating begins */}
           <div className="grid grid-rows-3 items-center justify-items-center mt-4 gap-0">
@@ -305,7 +331,8 @@ export const ProductDetails = ({ path }) => {
               />
             </Box>
             <p className="text-md text-[var(--light)] -mt-4">
-              {totalRatings} ratings and {reviewsCount} reviews
+              {totalRatings} {totalRatings > 1 ? "ratings" : "rating"} and{" "}
+              {reviewsCount} {reviewsCount > 1 ? "reviews" : "review"}
             </p>
           </div>
           {/* overvall rating ends */}
@@ -340,9 +367,11 @@ export const ProductDetails = ({ path }) => {
           <div className="flex flex-col justify-center items-center gap-4 mt-5">
             {reviews?.length > 0 ? (
               reviews.map((review) => {
-                <div key={review._id}>
-                  <ReviewCard review={review} />
-                </div>;
+                return (
+                  <div key={review._id} className="w-full">
+                    <ReviewCard review={review} id={id} />
+                  </div>
+                );
               })
             ) : (
               <h2 className="text-xl my-5 font-bold text-[var(--light)]">

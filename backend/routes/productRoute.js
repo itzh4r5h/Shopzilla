@@ -16,9 +16,7 @@ router.route('/admin/products/:id').patch(isUserAuthenticated,authorizedRoles('a
 router.route('/products').get(getAllProducts)
 router.route('/products/:id').get(getProduct)
 
-router.route('/products/:id/reviews').patch(isUserAuthenticated,createOrUpdateProductReview).get(getAllReviewsAndRatingsOfAProduct)
-router.route('/products/:productId/reviews/:reviewId').delete(isUserAuthenticated,deleteProductReview)
-
+router.route('/products/:id/reviews').patch(isUserAuthenticated,createOrUpdateProductReview).get(getAllReviewsAndRatingsOfAProduct).delete(isUserAuthenticated,deleteProductReview)
 
 
 module.exports = router

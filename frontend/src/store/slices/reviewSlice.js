@@ -1,16 +1,38 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { handleAsyncThunk } from "../utils/handleAsyncThunk";
-import { getAllReviewsAndRatings } from "../thunks/reviewThunk";
+import { createOrUpdateReview, deleteReview, getAllReviewsAndRatings } from "../thunks/reviewThunk";
 
 const initialState = {
   success: false,
   message: null,
   error: undefined,
   reviews: undefined,
+  review: undefined,
   reviewsCount: undefined,
   allRatings: undefined,
-  totalRatings:undefined
+  totalRatings:undefined,
+  reviewed: undefined,
 };
+
+const commonActions = {
+    pending: (state) => {
+        state.loading = true;
+        state.reviewed = undefined;
+        state.success = false
+        state.message = null
+      },
+      fulfilled: (state, action) => {
+        state.success = action.payload.success;
+        state.message = action.payload.message;
+        state.reviewed = true
+        state.loading = false;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.reviewed = undefined;
+      },
+}
 
 const reviewSlice = createSlice({
   name: "review",
@@ -42,6 +64,12 @@ const reviewSlice = createSlice({
         state.error = action.payload;
       },
     });
+
+    handleAsyncThunk(builder, createOrUpdateReview, {...commonActions});
+
+    handleAsyncThunk(builder, deleteReview, {...commonActions});
+
+
   },
 });
 

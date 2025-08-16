@@ -20,6 +20,8 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { formatMongodbDate } from "../utils/helpers";
 import { ReviewModal } from "../components/modal/ReviewModal";
+import { toast } from "react-toastify";
+import { clearErrors } from "../store/slices/orderSlice";
 
 const QontoConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.active}`]: {
@@ -108,16 +110,19 @@ export const OrderDetails = () => {
   ];
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { order, loading, orderQuantity } = useSelector((state) => state.order);
+  const { order, loading, orderQuantity,error } = useSelector((state) => state.order);
   const { user } = useSelector((state) => state.user);
+
+  useEffect(()=>{
+    if(error){
+      toast.error(error)
+      dispatch(clearErrors())
+    }
+  },[error])
 
   useEffect(() => {
     dispatch(getMySinglOrder(id));
   }, []);
-
-  const makeOrderStatusKey = (text) => {
-    return text.toLowerCase().replaceAll(" ", "_");
-  };
 
   return !loading && order ? (
     <div className="h-full w-full">
@@ -144,7 +149,7 @@ export const OrderDetails = () => {
 
           <Stack sx={{ width: "100%" }} spacing={4}>
             <Stepper
-              activeStep={steps.indexOf(order.orderStatus)}
+              activeStep={steps.indexOf(order.orderStatus)+1}
               connector={<QontoConnector />}
               orientation="vertical"
             >
@@ -157,8 +162,8 @@ export const OrderDetails = () => {
                     <div className="flex justify-between items-center capitalize">
                       <span className="text-lg">{label}</span>
                       <span className="text-[var(--light)] text-md">
-                        {order[makeOrderStatusKey(label)]
-                          ? formatMongodbDate(order[makeOrderStatusKey(label)])
+                        {order[label]
+                          ? formatMongodbDate(order[label])
                           : ""}
                       </span>
                     </div>

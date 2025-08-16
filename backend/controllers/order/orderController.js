@@ -152,7 +152,9 @@ exports.getMyAllOrders = catchAsyncErrors(async (req, res, next) => {
 
 // ========================== ADMIN -- GET TOTAL NUBMER OF ORDERS ================================
 exports.getTotalNumberOfOrders = catchAsyncErrors(async (req, res, next) => {
-  const totalOrders = await Order.countDocuments();
+  const totalOrders = await Order.countDocuments({
+    orderStatus: { $ne: "pending" },
+  });
 
   res.status(200).json({
     success: true,
@@ -249,7 +251,7 @@ exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: 'order status updated'
+    message: "order status updated",
   });
 });
 

@@ -8,13 +8,14 @@ import { showError } from "../../utils/showError";
 import { joiResolver } from "@hookform/resolvers/joi";
 import Joi from "joi";
 import { toast } from "react-toastify";
-import Box from "@mui/material/Box";
 import Rating from "@mui/material/Rating";
+import { createOrUpdateReview } from "../../store/thunks/reviewThunk";
 
 export const ReviewModal = ({
-  deleteFunction,
   edit = false,
   spanClasses = "",
+  id,
+  review=undefined
 }) => {
   const schema = useMemo(() => {
     return Joi.object({
@@ -33,9 +34,9 @@ export const ReviewModal = ({
   }, []);
 
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.user);
 
   const {
+    setValue,
     register,
     control,
     handleSubmit,
@@ -49,7 +50,7 @@ export const ReviewModal = ({
   });
 
   const submitForm = (data) => {
-    console.log(data);
+     dispatch(createOrUpdateReview({id,rating:data.rating,comment:data.comment}))
   };
 
   // this is to remember last error key from joi
@@ -67,6 +68,13 @@ export const ReviewModal = ({
     reset();
     lastErrorKeyRef.current = null
   };
+
+  useEffect(()=>{
+    if(review){
+      setValue('rating',review.rating)
+      setValue('comment',review.comment)
+    }
+  },[review])
 
   return (
     <div>

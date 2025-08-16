@@ -110,7 +110,7 @@ const orderSchema = new mongoose.Schema({
   processing: Date,
   shipped: Date,
   dispatched: Date,
-  out_for_delivery: Date,
+  "out for delivery": Date,
   delivered: Date,
 
   createdAt: {

@@ -1,31 +1,38 @@
-import React from "react";
 import { ReviewModal } from "../modal/ReviewModal";
 import { DeleteModal } from "../modal/DeleteModal";
 import Box from "@mui/material/Box";
 import Rating from "@mui/material/Rating";
 import { useDispatch, useSelector } from "react-redux";
+import { deleteReview } from "../../store/thunks/reviewThunk";
 
-export const ReviewCard = ({review}) => {
-    const dispatch = useDispatch()
-    const {isLoggedIn} = useSelector((state)=>state.user)
+export const ReviewCard = ({ review, id }) => {
+  const dispatch = useDispatch();
+  const { isLoggedIn,user } = useSelector((state) => state.user);
 
-    const handleDeleteReview = ()=>{
-        console.log('delete review');
-    }
+  const handleDeleteReview = () => {
+    dispatch(deleteReview(id))
+  };
 
   return (
-    <div className="flex flex-col gap-0 justify-center">
-      <div className="grid grid-cols-[6fr_1fr_1fr] items-center pr-2">
-        <h3 className="text-lg font-medium">Abhishek singh</h3>
-       {isLoggedIn && <>
-        <ReviewModal edit={true}/>
-        <DeleteModal deleteFunction={handleDeleteReview} classes={'text-[1.65rem] justify-self-end active:text-[var(--purpleDark)] transition-colors'}/>
-        </>}
+    <article>
+      <div className="grid grid-cols-[6fr_1fr_1fr] items-center pr-2 w-full">
+        <h3 className="text-lg font-medium">{review.name}</h3>
+        {isLoggedIn && review.user.toString() === user._id.toString() && (
+          <>
+            <ReviewModal edit={true} id={id} review={review} />
+            <DeleteModal
+              deleteFunction={handleDeleteReview}
+              classes={
+                "text-[1.65rem] justify-self-end active:text-[var(--purpleDark)] transition-colors"
+              }
+            />
+          </>
+        )}
       </div>
       <Box sx={{ "& > legend": { mt: 2 } }}>
         <Rating
           name="simple-controlled"
-          value={4}
+          value={review.rating}
           readOnly
           size="medium"
           sx={{
@@ -33,10 +40,7 @@ export const ReviewCard = ({review}) => {
           }}
         />
       </Box>
-      <p className="text-md">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem,
-        praesentium!
-      </p>
-    </div>
+      {review.comment.length > 0 && <p className="text-md">{review.comment}</p>}
+    </article>
   );
 };

@@ -23,7 +23,9 @@ export const TopNavbar = () => {
   
   const signout = () => {
     localStorage.clear()
-    stopSocketConnection()
+    if(isAdminUser){
+      stopSocketConnection()
+    }
     dispatch(signOutUser());
     navigate("/signin");
   };

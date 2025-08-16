@@ -3,7 +3,10 @@ const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const { uploadToImageKit } = require("../../utils/uploadImages");
 const sendToken = require("../../utils/sendToken");
-const { createHashWithCrypto, getBasicDetailsOnly } = require("../../utils/helpers");
+const {
+  createHashWithCrypto,
+  getBasicDetailsOnly,
+} = require("../../utils/helpers");
 const {
   joiValidator,
   joiPasswordValidator,
@@ -66,7 +69,10 @@ exports.signUpUser = catchAsyncErrors(async (req, res, next) => {
   await deletionQueue.add(
     "delete-user",
     { userId: user._id },
-    { delay: process.env.USER_DELETION_MINUTES * 60 * 1000 + 3000 } // specified minutes
+    {
+      delay: process.env.USER_DELETION_MINUTES * 60 * 1000 + 3000,
+      jobId: `delete-user-${user._id}`,
+    }
   );
 });
 
@@ -132,7 +138,13 @@ exports.verifyUserEmail = catchAsyncErrors(async (req, res, next) => {
   user.resendLinkIn = undefined;
   await user.save({ validateBeforeSave: false });
 
-   user = getBasicDetailsOnly(user)
+  user = getBasicDetailsOnly(user);
+
+  const job = await deletionQueue.getJob(`delete-user-${user._id}`);
+  if (job) {
+    await job.remove();
+    console.log(`Job for user ${user._id} deleted successfully`);
+  }
 
   res.status(200).json({
     success: true,

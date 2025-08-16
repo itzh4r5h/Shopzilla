@@ -37,7 +37,7 @@ const commonActions = {
 };
 
 const orderSlice = createSlice({
-  name: "cart",
+  name: "order",
   initialState,
   reducers: {
     resetState: (state) => {

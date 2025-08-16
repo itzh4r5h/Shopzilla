@@ -40,7 +40,6 @@ export const Checkout = ({ cart = false, id, quantity }) => {
 
 
   useEffect(()=>{
-    dispatch(resetState())
     if(localStorage.getItem('razorpayOrderId')){
       dispatch(deletePendingOrderAndPaymentOrder(localStorage.getItem('razorpayOrderId')))
       localStorage.removeItem('razorpayOrderId')
@@ -70,7 +69,7 @@ export const Checkout = ({ cart = false, id, quantity }) => {
   };
 
   useEffect(() => {
-    if (razorpayOrder) {
+    if (razorpayOrder && user) {
       localStorage.setItem('razorpayOrderId',razorpayOrder.id)
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -92,10 +91,10 @@ export const Checkout = ({ cart = false, id, quantity }) => {
           }
         },
         prefill: {
-          name: user?.name,
-          email: user?.email,
+          name: user.name,
+          email: user.email,
           contact:
-            user?.shippingAddress[user.shippingAddressIndex - 1].mobileNumber,
+            user.shippingAddress[user.shippingAddressIndex - 1].mobileNumber,
         },
         notes: {
           address: "Razorpay Corporate Office",
@@ -108,7 +107,7 @@ export const Checkout = ({ cart = false, id, quantity }) => {
 
       rzp1.open();
     }
-  }, [razorpayOrder]);
+  }, [razorpayOrder,user]);
   return (
     <span className="w-full" onClick={checkout}>
       <FillButton type="button" name={cart ? "Checkout" : "Buy Now"} />

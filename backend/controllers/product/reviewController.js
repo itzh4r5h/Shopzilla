@@ -63,7 +63,7 @@ exports.createOrUpdateProductReview = catchAsyncErrors(
     await product.save({ validateBeforeSave: true });
     res.status(200).json({
       success: true,
-      message: "product reviewed",
+      message: isReviewed?"review updated":"product reviewed",
     });
   }
 );
@@ -85,14 +85,12 @@ exports.getAllReviewsAndRatingsOfAProduct = catchAsyncErrors(
       5: 0,
     };
 
-    const totalRatings = 0
+    let totalRatings = 0
 
     product.reviews.forEach((review) => {
       allRatings[review.rating] = allRatings[review.rating] + 1;
-      totalRatings += allRatings[review.rating] + 1
+      totalRatings += allRatings[review.rating]
     });
-
-    
 
     res.status(200).json({
       success: true,
@@ -106,14 +104,14 @@ exports.getAllReviewsAndRatingsOfAProduct = catchAsyncErrors(
 
 // ======================= DELETE PRODUCT REVIEW ==============================
 exports.deleteProductReview = catchAsyncErrors(async (req, res, next) => {
-  const product = await Product.findById(req.params.productId);
+  const product = await Product.findById(req.params.id);
 
   if (!product) {
     return next(new ErrorHandler("product not exists", 404));
   }
 
   const isReviewExists = product.reviews.find(
-    (review) => review._id.toString() === req.params.reviewId.toString()
+    (review) => review.user.toString() === req.user._id.toString().toString()
   );
 
   if (!isReviewExists) {
@@ -121,8 +119,10 @@ exports.deleteProductReview = catchAsyncErrors(async (req, res, next) => {
   }
 
   const reviews = product.reviews.filter(
-    (review) => review._id.toString() !== req.params.reviewId.toString()
+    (review) => review.user.toString() !== req.user._id.toString().toString()
   );
+
+  console.log(reviews);
 
   // sum up all the ratings of product
   let totalRatings = 0;
@@ -131,14 +131,14 @@ exports.deleteProductReview = catchAsyncErrors(async (req, res, next) => {
     totalRatings += review.rating;
   });
 
-  const reviewsCount = reviews.length;
+  const reviewsCount = reviews.filter((review)=>review.comment !== '').length
+  const ratingsCount = reviews.length || 1
 
   // overall rating of product
-  const ratings =
-    totalRatings === 0 && reviewsCount === 0 ? 0 : totalRatings / reviewsCount;
+  const ratings = totalRatings / ratingsCount;
 
   await Product.findByIdAndUpdate(
-    req.params.productId,
+    req.params.id,
     { ratings, reviews, reviewsCount },
     { new: true, runValidators: true }
   );
