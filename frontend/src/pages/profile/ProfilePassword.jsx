@@ -4,11 +4,10 @@ import { FillButton } from "../../components/buttons/FillButton";
 import { useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import Joi from "joi";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
-import { showError } from "../../utils/showError";
 import { createPassword, updatePassword } from "../../store/thunks/userThunks";
+import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 
 export const ProfilePassword = () => {
   const { updated, isPasswordExists } = useSelector((state) => state.user);
@@ -74,13 +73,7 @@ export const ProfilePassword = () => {
     formState: { errors },
   } = useForm({ resolver: joiResolver(schema) });
 
-  // this is to remember last error key from joi
-  const lastErrorKeyRef = useRef(null);
-
-  useEffect(() => {
-    // this shows forms errors based on joi validation
-    showError(errors, lastErrorKeyRef, toast);
-  }, [errors]);
+  useValidationErrorToast(errors)
 
   useEffect(() => {
     if (updated) {

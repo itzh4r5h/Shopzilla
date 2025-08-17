@@ -10,9 +10,9 @@ import { getAllProducts } from "../../store/thunks/productThunks";
 import { DeleteModal } from "../../components/modal/DeleteModal";
 import { MdEditSquare } from "react-icons/md";
 import { deleteProduct } from "../../store/thunks/adminThunks";
-import { toast } from "react-toastify";
-import { clearErrors, clearMessage } from "../../store/slices/adminSlice";
 import { saveKeyword } from "../../store/slices/productSlice";
+import { useToastNotify } from "../../hooks/useToastNotify";
+import { clearAdminError,clearAdminMessage } from "../../store/slices/adminSlice";
 
 export const AllProducts = () => {
   const adminDefaultPath = "/admin/dashboard";
@@ -39,22 +39,8 @@ export const AllProducts = () => {
     dispatch(getAllProducts(keyword));
   }, [keyword]);
 
-  useEffect(() => {
-    // this shows the error if error exists
-    if (error) {
-      toast.error(error);
-      dispatch(clearErrors());
-    }
-  }, [error]);
 
-  // show the success message when both success and message are defined
-  useEffect(() => {
-    if (success && message) {
-      dispatch(getAllProducts());
-      toast.success(message);
-      dispatch(clearMessage());
-    }
-  }, [success, message]);
+  useToastNotify(error,success,message,clearAdminError,clearAdminMessage,dispatch)
 
   const handleDeleteProduct = (id) => {
     dispatch(deleteProduct(id));

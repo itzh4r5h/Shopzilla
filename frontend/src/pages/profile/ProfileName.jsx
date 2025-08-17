@@ -1,13 +1,12 @@
 import { useForm } from "react-hook-form";
-import { toast } from "react-toastify";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
 import Joi from "joi";
-import { showError } from "../../utils/showError";
 import { useDispatch, useSelector } from "react-redux";
 import { FaCheckSquare } from "react-icons/fa";
 import { updateName } from "../../store/thunks/userThunks";
 import { MdEditSquare } from "react-icons/md";
+import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 
 export const ProfileName = () => {
   const schema = useMemo(() => {
@@ -41,13 +40,7 @@ export const ProfileName = () => {
     }
   };
 
-  // this is to remember last error key from joi
-  const lastErrorKeyRef = useRef(null);
-
-  useEffect(() => {
-    // this shows forms errors based on joi validation
-    showError(errors, lastErrorKeyRef, toast);
-  }, [errors]);
+  useValidationErrorToast(errors)
 
   const resetInputStateOnBlur = () => {
     if (!readOnly) {

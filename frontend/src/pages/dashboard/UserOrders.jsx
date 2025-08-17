@@ -1,4 +1,4 @@
-import { NavLink, useLocation, useParams } from "react-router";
+import { NavLink, useParams } from "react-router";
 import { BsCurrencyRupee } from "react-icons/bs";
 import { OutlineButton } from "../../components/buttons/OutlineButton";
 import { useDispatch, useSelector } from "react-redux";
@@ -18,8 +18,8 @@ import {
 } from "../../store/thunks/adminThunks";
 import { formatMongodbDate } from "../../utils/helpers";
 import { ImageCard } from "../../components/cards/ImageCard";
-import { toast } from "react-toastify";
-import { clearErrors, clearMessage } from "../../store/slices/adminSlice";
+import { clearAdminError,clearAdminMessage} from "../../store/slices/adminSlice";
+import { useToastNotify } from "../../hooks/useToastNotify";
 
 export const UserOrders = () => {
   const orderStatus = [
@@ -47,19 +47,7 @@ export const UserOrders = () => {
     }
   }, [updated]);
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(clearErrors());
-    }
-  }, [error]);
-
-  useEffect(() => {
-    if (success && message) {
-      toast.success(message);
-      dispatch(clearMessage());
-    }
-  }, [success, message]);
+ useToastNotify(error,success,message,clearAdminError,clearAdminMessage,dispatch)
 
   return (
     <div className="h-full relative">

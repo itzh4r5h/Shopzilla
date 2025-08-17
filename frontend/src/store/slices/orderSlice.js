@@ -10,7 +10,7 @@ import {
 } from "../thunks/orderThunk";
 
 const initialState = {
-  error: undefined,
+   error: null,
   success: false,
   message: null,
   loading: false,
@@ -40,14 +40,14 @@ const orderSlice = createSlice({
   name: "order",
   initialState,
   reducers: {
-    resetState: (state) => {
+    resetOrderState: (state) => {
       state.orderId = undefined;
       state.razorpayOrder = undefined;
     },
-    clearErrors: (state) => {
+    clearOrderError: (state) => {
       state.error = null;
     },
-    clearMessage: (state) => {
+    clearOrderMessage: (state) => {
       state.success = false;
       state.message = null;
     },
@@ -122,5 +122,5 @@ const orderSlice = createSlice({
   },
 });
 
-export const { clearMessage, clearErrors ,resetState} = orderSlice.actions;
+export const { clearOrderMessage, clearOrderError ,resetOrderState} = orderSlice.actions;
 export const orderReducer = orderSlice.reducer;

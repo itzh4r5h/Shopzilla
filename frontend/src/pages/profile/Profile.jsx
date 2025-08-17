@@ -1,9 +1,9 @@
 import { FillButton } from "../../components/buttons/FillButton";
 import { Link, useNavigate, useParams, useLocation } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
-import { clearErrors, clearMessage } from "../../store/slices/userSlice";
+import { clearUserError, clearUserMessage } from "../../store/slices/userSlice";
 
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -19,6 +19,7 @@ import { ProfileEmail } from "./ProfileEmail";
 import { ProfilePassword } from "./ProfilePassword";
 import { ProfileAddress } from "./ProfileAddress";
 import { ProfileImage } from "./ProfileImage";
+import { useToastNotify } from "../../hooks/useToastNotify";
 
 export const Profile = () => {
   const dispatch = useDispatch();
@@ -60,23 +61,10 @@ export const Profile = () => {
   useEffect(() => {
     if (googleUser === "true") {
       toast.success("signed in with google");
-      navigate("/profile");
     }
   }, [googleUser]);
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(clearErrors());
-    }
-  }, [error]);
-
-  useEffect(() => {
-    if (success && message) {
-      toast.success(message);
-      dispatch(clearMessage());
-    }
-  }, [success, message]);
+   useToastNotify(error,success,message,clearUserError,clearUserMessage,dispatch)
 
   useEffect(() => {
     if (!user.isVerified) {
@@ -89,16 +77,15 @@ export const Profile = () => {
     if (
       !user.isVerified &&
       // means countdown is over ✅
-      deletionCountdown.secondsLeft === 0 &&
+      deletionCountdown.secondsLeft < 1 &&
       new Date(accountDeletionCountdownExpiresAt).getTime() <= Date.now() // makes sure timer was really active and has expired ✅
     ) {
       dispatch(signOutUser());
       localStorage.clear()
       toast.error("Account is deleted");
-      dispatch(clearErrors());
       navigate("/signup");
     }
-  }, [deletionCountdown.secondsLeft, accountDeletionCountdownExpiresAt, user]);
+  }, [deletionCountdown.secondsLeft, accountDeletionCountdownExpiresAt, user?.isVerified]);
 
   const hasDispatched = useRef(false);
   useEffect(() => {
@@ -207,10 +194,10 @@ export const Profile = () => {
           {/* email ends */}
 
 
-          <ProfilePassword/>
+         {user?.isVerified && <ProfilePassword/>}
 
           {/* address begins */}
-          <ProfileAddress/>
+          {user?.isVerified && <ProfileAddress/>}
           {/* address ends */}
 
           {isAdminUser && (

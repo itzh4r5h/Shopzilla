@@ -10,7 +10,7 @@ import { MdEditSquare } from "react-icons/md";
 
 export const ProfileImage = ({ profilePic }) => {
   const dispatch = useDispatch();
-  const { updated,uploading } = useSelector((state) => state.user);
+  const { updated,uploading,user } = useSelector((state) => state.user);
   const [image, setImage] = useState(undefined);
 
   const chooseImages = (e) => {
@@ -91,7 +91,7 @@ export const ProfileImage = ({ profilePic }) => {
         </div>
       )}
 
-      {!image && (
+      {!image && user?.isVerified && (
         <>
           <label htmlFor="images" className="absolute top-0 right-0 ">
             <MdEditSquare className=" text-2xl active:text-[var(--purpleDark)] transition-colors" />

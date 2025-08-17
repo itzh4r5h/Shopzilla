@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { NormalSelect } from "../selectors/NormalSelect";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { getAllAddress, updateAddressIndex } from "../../store/thunks/userThunks";
 import { AddressModal } from "../modal/AddressModal";
-import { clearErrors, clearMessage } from "../../store/slices/userSlice";
-import { toast } from "react-toastify";
+import { clearUserError, clearUserMessage } from "../../store/slices/userSlice";
+import { useToastNotify } from "../../hooks/useToastNotify";
 
 export const ShippingAddressCard = () => {
   const { register, setValue } = useForm();
@@ -38,19 +38,7 @@ export const ShippingAddressCard = () => {
     }
   }, [allShippingAddress]);
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(clearErrors());
-    }
-  }, [error]);
-
-  useEffect(() => {
-    if (success && message) {
-      toast.success(message);
-      dispatch(clearMessage());
-    }
-  }, [success, message]);
+  useToastNotify(error,success,message,clearUserError,clearUserMessage,dispatch)
 
   return allShippingAddress?.length === 0 ? (
     <div className="mt-3">

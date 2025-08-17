@@ -2,17 +2,16 @@ import { FaTimesCircle } from "react-icons/fa";
 import { OutlineButton } from "../buttons/OutlineButton";
 import { FillButton } from "../buttons/FillButton";
 import { useForm } from "react-hook-form";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SelectCountryStateCity } from "../selectors/SelectCountryStateCity";
 import { Country, State, City } from "country-state-city";
-import { toast } from "react-toastify";
 import { joiResolver } from "@hookform/resolvers/joi";
 import Joi from "joi";
-import { showError } from "../../utils/showError";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { addAddress, updateAddress } from "../../store/thunks/userThunks";
 import { getIsoCode } from "../../utils/helpers";
 import { MdEditSquare } from "react-icons/md";
+import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 
 export const AddressModal = ({
   edit = false,
@@ -64,8 +63,6 @@ export const AddressModal = ({
   }, []);
 
   const dispatch = useDispatch();
-  // const { user } = useSelector((state) => state.user);
-
   const [countryCode, setCountryCode] = useState(undefined);
   const [stateCode, setStateCode] = useState(undefined);
 
@@ -78,14 +75,6 @@ export const AddressModal = ({
     formState: { errors },
   } = useForm({ resolver: joiResolver(schema) });
 
-  // this is to remember last error key from joi
-  const lastErrorKeyRef = useRef(null);
-
-  useEffect(() => {
-    // this shows forms errors based on joi validation
-    showError(errors, lastErrorKeyRef, toast);
-  }, [errors]);
-
   const [open, setOpen] = useState(false);
 
   const handleClose = () => {
@@ -96,16 +85,18 @@ export const AddressModal = ({
   };
 
   const submitForm = (data) => {
-    data.address = data.address.toLowerCase()
+    data.address = data.address.toLowerCase();
     if (edit) {
-      handleClose()
+      handleClose();
       dispatch(updateAddress({ id, address: data }));
     } else {
-      handleClose()
+      handleClose();
       dispatch(addAddress(data));
     }
     handleClose();
   };
+
+  useValidationErrorToast(errors);
 
   useEffect(() => {
     setValue("state", "");

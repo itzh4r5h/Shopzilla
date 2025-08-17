@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { ProductCard } from "../components/cards/ProductCard";
 
 import PropTypes from "prop-types";
@@ -21,7 +21,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { formatMongodbDate } from "../utils/helpers";
 import { ReviewModal } from "../components/modal/ReviewModal";
 import { toast } from "react-toastify";
-import { clearErrors } from "../store/slices/orderSlice";
+import { clearOrderError } from "../store/slices/orderSlice";
 import { ReviewCard } from "../components/cards/ReviewCard";
 import { getProductDetails } from "../store/thunks/productThunks";
 
@@ -112,30 +112,36 @@ export const OrderDetails = () => {
   ];
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { order, loading, orderQuantity,error } = useSelector((state) => state.order);
+  const { order, loading, orderQuantity, error } = useSelector(
+    (state) => state.order
+  );
   const { user } = useSelector((state) => state.user);
   const { product } = useSelector((state) => state.products);
-  const {reviewed} = useSelector(state=>state.review)
+  const { reviewed } = useSelector((state) => state.review);
 
-  useEffect(()=>{
-    if(error){
-      toast.error(error)
-      dispatch(clearErrors())
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(clearOrderError());
     }
-  },[error])
+  }, [error]);
 
   useEffect(() => {
     dispatch(getMySinglOrder(id));
   }, []);
 
-  useEffect(()=>{
-    if(reviewed){
-      dispatch(getProductDetails(product._id))
+  useEffect(() => {
+    if (reviewed) {
+      dispatch(getProductDetails(product._id));
     }
-},[reviewed])
+  }, [reviewed]);
 
-  const isReviewed = product?.reviews?.find((rev)=>rev.user.toString()===user?._id.toString())
-  const review = product?.reviews?.filter((rev)=>rev.user.toString()===user?._id.toString())
+  const isReviewed = product?.reviews?.find(
+    (rev) => rev.user.toString() === user?._id.toString()
+  );
+  const review = product?.reviews?.filter(
+    (rev) => rev.user.toString() === user?._id.toString()
+  );
 
   return !loading && order ? (
     <div className="h-full w-full">
@@ -144,16 +150,23 @@ export const OrderDetails = () => {
       <div className="flex flex-col justify-center gap-4 mt-5">
         {order.orderItems.map((orderedProduct) => {
           return (
-            <div className="mb-5" key={orderedProduct.id}>
+            <div key={orderedProduct.id}>
               <Link to={`/products/${orderedProduct.id}`}>
                 <ProductCard product={orderedProduct} orderDetails={true} />
               </Link>
 
-              {user.orderedProducts.includes(orderedProduct.id) && !isReviewed ? <div className="mt-1">
-                <ReviewModal id={orderedProduct.id}/>
-              </div>: <div className="bg-white border mt-1 p-2">
-                <ReviewCard review={review[0]} id={orderedProduct.id}/>
-              </div> }
+              {isReviewed && (
+                <div className="bg-white border mt-1 p-2">
+                  <ReviewCard review={review[0]} id={orderedProduct.id} />
+                </div>
+              )}
+
+              {user.orderedProducts.includes(orderedProduct.id) &&
+                !Boolean(isReviewed) && (
+                  <div className="mt-1">
+                    <ReviewModal id={orderedProduct.id} />
+                  </div>
+                )}
             </div>
           );
         })}
@@ -164,7 +177,7 @@ export const OrderDetails = () => {
 
           <Stack sx={{ width: "100%" }} spacing={4}>
             <Stepper
-              activeStep={steps.indexOf(order.orderStatus)+1}
+              activeStep={steps.indexOf(order.orderStatus) + 1}
               connector={<QontoConnector />}
               orientation="vertical"
             >
@@ -177,9 +190,7 @@ export const OrderDetails = () => {
                     <div className="flex justify-between items-center capitalize">
                       <span className="text-lg">{label}</span>
                       <span className="text-[var(--light)] text-md">
-                        {order[label]
-                          ? formatMongodbDate(order[label])
-                          : ""}
+                        {order[label] ? formatMongodbDate(order[label]) : ""}
                       </span>
                     </div>
                   </StepLabel>

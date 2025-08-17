@@ -5,7 +5,7 @@ import { formatMongodbDate } from "../../utils/helpers";
 export const OrderCard = ({ order }) => {
   const itemsCount = order.orderItems.length;
   const gridClass =
-    itemsCount === 2 ? "grid-rows-2 grid-cols-1" : "grid-rows-2 grid-cols-2";
+    itemsCount > 2 ? "grid-rows-2 grid-cols-2": "grid-rows-2 grid-cols-1";
 
   return (
     <article className="w-full h-full border border-[var(--black)] bg-[var(--white)] p-2 grid grid-cols-[3fr_4fr] gap-2">

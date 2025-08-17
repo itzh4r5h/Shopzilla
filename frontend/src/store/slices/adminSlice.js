@@ -18,7 +18,7 @@ import {
 } from "../thunks/adminThunks";
 
 const initialState = {
-  error: undefined,
+  error: null,
   success: false,
   message: null,
   updated: undefined,
@@ -58,10 +58,10 @@ const adminSlice = createSlice({
     saveKeyword: (state, action) => {
       state.keyword = action.payload;
     },
-    clearErrors: (state) => {
+    clearAdminError: (state) => {
       state.error = null;
     },
-    clearMessage: (state) => {
+    clearAdminMessage: (state) => {
       state.success = false;
       state.message = null;
     },
@@ -240,5 +240,5 @@ const adminSlice = createSlice({
   },
 });
 
-export const { clearMessage, clearErrors, saveKeyword } = adminSlice.actions;
+export const { clearAdminMessage, clearAdminError, saveKeyword } = adminSlice.actions;
 export const adminReducer = adminSlice.reducer;

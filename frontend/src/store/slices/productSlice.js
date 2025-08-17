@@ -43,7 +43,7 @@ const productSlice = createSlice({
     saveKeyword: (state, action) => {
       state.keyword = action.payload;
     },
-    clearErrors: (state) => {
+    clearProductError: (state) => {
       state.error = null;
     },
     clearProductDetails: (state) => {
@@ -82,5 +82,5 @@ const productSlice = createSlice({
   },
 });
 
-export const { saveKeyword, clearErrors,clearProductDetails } = productSlice.actions;
+export const { saveKeyword, clearProductError,clearProductDetails } = productSlice.actions;
 export const productReducer = productSlice.reducer;

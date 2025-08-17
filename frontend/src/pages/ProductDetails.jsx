@@ -2,7 +2,6 @@ import { BsCurrencyRupee } from "react-icons/bs";
 import { FaStar } from "react-icons/fa";
 import { FaPlusSquare } from "react-icons/fa";
 import { FaMinusSquare } from "react-icons/fa";
-import { FillButton } from "../components/buttons/FillButton";
 import Box from "@mui/material/Box";
 import Rating from "@mui/material/Rating";
 import { OutlineButton } from "../components/buttons/OutlineButton";
@@ -26,17 +25,15 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { ImageCard } from "../components/cards/ImageCard";
 import { toast } from "react-toastify";
-import { clearErrors as clearProductErrors } from "../store/slices/productSlice";
+import { clearProductError } from "../store/slices/productSlice";
 import { ReviewModal } from "../components/modal/ReviewModal";
 import { ReviewCard } from "../components/cards/ReviewCard";
 import { addProductToCartOrUpdateQuantity } from "../store/thunks/cartThunk";
-import {
-  clearErrors as clearCartErrors,
-  clearMessage as clearCartMessage,
-} from "../store/slices/cartSlice";
 import { ShippingAddressCard } from "../components/cards/ShippingAddressCard";
 import { Checkout } from "./Checkout";
 import { getAllReviewsAndRatings } from "../store/thunks/reviewThunk";
+import { useToastNotify } from "../hooks/useToastNotify";
+import { clearCartError, clearCartMessage } from "../store/slices/cartSlice";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 10,
@@ -77,7 +74,7 @@ export const ProductDetails = ({ path }) => {
   const {
     success,
     message,
-    error: cartError,
+    error,
   } = useSelector((state) => state.cart);
 
   useEffect(() => {
@@ -96,25 +93,12 @@ export const ProductDetails = ({ path }) => {
     // this shows the error if error exists
     if (productError) {
       toast.error(productError);
-      dispatch(clearProductErrors());
+      dispatch(clearProductError());
     }
   }, [productError]);
 
-  useEffect(() => {
-    // this shows the error if error exists
-    if (cartError) {
-      toast.error(cartError);
-      dispatch(clearCartErrors());
-    }
-  }, [cartError]);
 
-  useEffect(() => {
-    // this shows the error if error exists
-    if (success && message) {
-      toast.success(message);
-      dispatch(clearCartMessage());
-    }
-  }, [success, message]);
+  useToastNotify(error,success,message,clearCartError, clearCartMessage,dispatch)
   
 
   const [quantity, setQuantity] = useState(1);

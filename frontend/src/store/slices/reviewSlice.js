@@ -3,9 +3,9 @@ import { handleAsyncThunk } from "../utils/handleAsyncThunk";
 import { createOrUpdateReview, deleteReview, getAllReviewsAndRatings } from "../thunks/reviewThunk";
 
 const initialState = {
+  error: null,
   success: false,
   message: null,
-  error: undefined,
   reviews: undefined,
   review: undefined,
   reviewsCount: undefined,
@@ -38,10 +38,10 @@ const reviewSlice = createSlice({
   name: "review",
   initialState,
   reducers: {
-    clearErrors: (state) => {
+    clearReviewError: (state) => {
       state.error = null;
     },
-    clearMessage: (state) => {
+    clearReviewMessage: (state) => {
       state.success = false;
       state.message = null;
     },
@@ -73,5 +73,5 @@ const reviewSlice = createSlice({
   },
 });
 
-export const { clearMessage, clearErrors } = reviewSlice.actions;
+export const { clearReviewMessage, clearReviewError } = reviewSlice.actions;
 export const reviewReducer = reviewSlice.reducer;

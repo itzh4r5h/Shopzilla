@@ -12,15 +12,18 @@ import "swiper/css/pagination";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
 import Joi from "joi";
-import { showError } from "../../utils/showError";
 import { useDispatch, useSelector } from "react-redux";
 import { NormalSelect } from "../../components/selectors/NormalSelect";
-import { toast } from "react-toastify";
-import { clearErrors, clearMessage } from "../../store/slices/adminSlice";
+import {
+  clearAdminError,
+  clearAdminMessage,
+} from "../../store/slices/adminSlice";
 import { addProduct, updateProduct } from "../../store/thunks/adminThunks";
 import { getProductDetails } from "../../store/thunks/productThunks";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { clearProductDetails } from "../../store/slices/productSlice";
+import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
+import { useToastNotify } from "../../hooks/useToastNotify";
 
 export const AddOrEditProduct = ({ edit = false, name }) => {
   const maxImages = Number(import.meta.env.VITE_PRODUCT_MAX_IMAGES);
@@ -68,7 +71,7 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
             if (file.url) {
               return file;
             }
-            const allowedTypes = ["image/png", "image/jpeg","image/webp"];
+            const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
 
             if (!allowedTypes.includes(file.type)) {
               return helpers.error("file.type");
@@ -104,20 +107,31 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
   } = useForm({ defaultValues: { images: [] }, resolver: joiResolver(schema) });
 
   const images = watch("images");
+  const { id } = useParams();
+  const path = useLocation();
+  const navigate = useNavigate();
+  const [removedImagesFileIds, setRemovedImagesFileIds] = useState([]);
+
+  const dispatch = useDispatch();
+  const { error, success, message, loading } = useSelector(
+    (state) => state.admin
+  );
+  const { product, categories } = useSelector((state) => state.products);
 
   const chooseImages = (e) => {
     const selectedImages = Array.from(e.target.files);
     // Optional: filter only jpg/png files
     const validImages = selectedImages.filter(
-      (file) => file.type === "image/png" || file.type === "image/jpeg" || file.type === "image/webp"
+      (file) =>
+        file.type === "image/png" ||
+        file.type === "image/jpeg" ||
+        file.type === "image/webp"
     );
 
     setValue("images", [...(images || []), ...validImages], {
       shouldValidate: true,
     });
   };
-
-  const [removedImagesFileIds,setRemovedImagesFileIds] = useState([]);
 
   const removeImage = (index) => {
     setValue(
@@ -126,7 +140,7 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
         if (i === index) {
           // This is the one we're removing
           if (img.url) {
-            setRemovedImagesFileIds((prev)=>[...prev,img.fileId]);
+            setRemovedImagesFileIds((prev) => [...prev, img.fileId]);
           }
           return false; // exclude from array
         }
@@ -136,52 +150,40 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
     );
   };
 
-  const dispatch = useDispatch();
-  const { error, success, message, loading } = useSelector(
-    (state) => state.admin
-  );
-  const { product,categories } = useSelector((state) => state.products);
-  const { id } = useParams();
-  const path = useLocation();
-  const navigate = useNavigate()
-
+  // this submits the form
   const submitForm = (data) => {
     if (edit) {
-      data.images = data.images.filter((img)=>!img.url)
-      data.removedImagesFileIds = removedImagesFileIds!==0?removedImagesFileIds:[]
-      data.id = product?._id
-      dispatch(updateProduct(data))
-      reset()
-      navigate('/admin/dashboard/products')
+      // as in db we have images array like this
+      // [{url:'image_url',fileId:'file_id',name:'image_name'}]
+      // before submitting data to sever we will remove these from images array as these are already uploaded
+      data.images = data.images.filter((img) => !img.url);
+
+      // store the deleted images fileIds in removedImagesFileIds
+      data.removedImagesFileIds = [...removedImagesFileIds];
+      data.id = product?._id;
+      dispatch(updateProduct(data));
+      reset();
+      navigate("/admin/dashboard/products");
     } else {
       dispatch(addProduct(data));
       reset();
     }
   };
 
-  // this is to remember last error key from joi
-  const lastErrorKeyRef = useRef(null);
-  useEffect(() => {
-    // this shows forms errors based on joi validation
-    showError(errors, lastErrorKeyRef, toast);
-  }, [errors]);
+  // this shows the form validtion related errors
+  useValidationErrorToast(errors);
 
-  useEffect(() => {
-    // this shows the error if error exists
-    if (error) {
-      toast.error(error);
-      dispatch(clearErrors());
-    }
-  }, [error]);
+  // this shows the error and success message received from server
+  useToastNotify(
+    error,
+    success,
+    message,
+    clearAdminError,
+    clearAdminMessage,
+    dispatch
+  );
 
-  // show the success message when both success and message are defined
-  useEffect(() => {
-    if (success && message) {
-      toast.success(message);
-      dispatch(clearMessage());
-    }
-  }, [success, message]);
-
+  // in edit get product details else clear the product details
   useEffect(() => {
     if (edit) {
       dispatch(getProductDetails(id));
@@ -190,17 +192,19 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
     }
   }, [edit]);
 
+  // if page is in edit mode then it sets the form field values
   useEffect(() => {
     if (product) {
-        setValue('name',product.name)
-        setValue('description',product.description)
-        setValue('price',product.price)
-        setValue('stock',product.stock)
-        setValue('category',product.category)
-        setValue('images',product.images)
+      setValue("name", product.name);
+      setValue("description", product.description);
+      setValue("price", product.price);
+      setValue("stock", product.stock);
+      setValue("category", product.category);
+      setValue("images", product.images);
     }
   }, [product?.images]);
 
+  // if url is changed then reset all the field values of form
   useEffect(() => {
     reset();
   }, [path.pathname]);
@@ -317,7 +321,7 @@ export const AddOrEditProduct = ({ edit = false, name }) => {
               onChange={chooseImages}
             />
           </div>
-          {images.length > 0  ? (
+          {images.length > 0 ? (
             <Swiper
               loop={images.length > 1 ? true : false}
               pagination={{ clickable: true }}

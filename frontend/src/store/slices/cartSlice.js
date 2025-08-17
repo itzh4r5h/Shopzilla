@@ -7,14 +7,14 @@ import {
 } from "../thunks/cartThunk";
 
 const initialState = {
-  error: undefined,
+   error: null,
   success: false,
   message: null,
   loading: false,
   cartProducts: undefined,
   cartProductsQuantity: undefined,
   totalPrice: undefined,
-  updated: false,
+  updated: undefined,
 };
 
 const cartSlice = createSlice({
@@ -24,10 +24,10 @@ const cartSlice = createSlice({
     quantityUpdated: (state) => {
       state.updated = true;
     },
-    clearErrors: (state) => {
+    clearCartError: (state) => {
       state.error = null;
     },
-    clearMessage: (state) => {
+    clearCartMessage: (state) => {
       state.success = false;
       state.message = null;
     },
@@ -40,6 +40,7 @@ const cartSlice = createSlice({
       fulfilled: (state, action) => {
         state.success = action.payload.success;
         state.message = action.payload.message;
+        state.updated = action.payload.updated
         state.loading = false;
       },
       rejected: (state, action) => {
@@ -83,5 +84,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { clearMessage, clearErrors, quantityUpdated } = cartSlice.actions;
+export const { clearCartMessage, clearCartError, quantityUpdated } = cartSlice.actions;
 export const cartReducer = cartSlice.reducer;

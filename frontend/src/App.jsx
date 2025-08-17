@@ -7,10 +7,11 @@ import { useDispatch,useSelector } from "react-redux";
 import './css/toastifyCustom.css';
 import { loadUser } from "./store/thunks/userThunks";
 import { startSocketConnection } from "./utils/socketEvents";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 export const App = () => {
   const mainRef = useRef();
+  const navigate = useNavigate()
   const path = useLocation()
   const dispatch = useDispatch()
   const {isLoggedIn,user} = useSelector((state)=>state.user)
@@ -43,6 +44,13 @@ export const App = () => {
       startSocketConnection(user._id,dispatch)
     }
   },[isLoggedIn,user?._id])
+
+
+  useEffect(()=>{
+    if(isLoggedIn && !user?.isVerified){
+      navigate('/profile')
+    }
+  },[isLoggedIn,user?.isVerified,path.pathname])
 
   return (
     <div className="h-full w-full grid grid-rows-[1fr_10fr_1fr] bg-[var(--grey)]">

@@ -3,8 +3,6 @@ import { FaStar } from "react-icons/fa";
 import { FaPlusSquare } from "react-icons/fa";
 import { FaMinusSquare } from "react-icons/fa";
 import { FaTimesCircle } from "react-icons/fa";
-import { OutlineButton } from "../buttons/OutlineButton";
-import { FillButton } from "../buttons/FillButton";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { ImageCard } from "./ImageCard";
@@ -15,7 +13,6 @@ import {
   removeProductFromCart,
 } from "../../store/thunks/cartThunk";
 import { useDispatch, useSelector } from "react-redux";
-import { ReviewModal } from "../modal/ReviewModal";
 import { useEffect } from "react";
 import { getProductDetails } from "../../store/thunks/productThunks";
 

@@ -1,4 +1,7 @@
-export const showError = (errors,lastErrorKeyRef,toast) => {
+import { useEffect, useRef } from "react";
+import { toast } from "react-toastify";
+
+const showError = (errors, lastErrorKeyRef, toast) => {
   const keyArray = Object.keys(errors);
   if (keyArray.length > 0) {
     const key = keyArray[0];
@@ -14,3 +17,13 @@ export const showError = (errors,lastErrorKeyRef,toast) => {
     }
   }
 };
+
+export const useValidationErrorToast = (errors) => {
+  const lastErrorKeyRef = useRef(null);
+
+  useEffect(() => {
+    // this shows forms errors based on joi validation
+    showError(errors, lastErrorKeyRef, toast);
+  }, [errors]);
+};
+

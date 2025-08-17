@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MdEditSquare } from "react-icons/md";
 import { FillButton } from "../buttons/FillButton";
 import { OutlineButton } from "../buttons/OutlineButton";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
-import { showError } from "../../utils/showError";
 import { joiResolver } from "@hookform/resolvers/joi";
 import Joi from "joi";
-import { toast } from "react-toastify";
 import Rating from "@mui/material/Rating";
 import { createOrUpdateReview } from "../../store/thunks/reviewThunk";
-import {clearErrors,clearMessage} from "../../store/slices/reviewSlice"
+import { clearReviewError, clearReviewMessage} from "../../store/slices/reviewSlice"
+import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
+import { useToastNotify } from "../../hooks/useToastNotify";
 
 export const ReviewModal = ({
   edit = false,
@@ -33,8 +33,10 @@ export const ReviewModal = ({
       }),
     });
   }, []);
-
+  
   const dispatch = useDispatch();
+  const { success, message, error } = useSelector((state) => state.review);
+  const [open, setOpen] = useState(false);
 
   const {
     setValue,
@@ -50,7 +52,6 @@ export const ReviewModal = ({
     resolver: joiResolver(schema),
   });
 
-  const { success, message, error } = useSelector((state) => state.review);
 
   const submitForm = (data) => {
     dispatch(
@@ -59,37 +60,17 @@ export const ReviewModal = ({
     handleClose()
   };
 
-  // this is to remember last error key from joi
-  const lastErrorKeyRef = useRef(null);
-
-  useEffect(() => {
-    // this shows forms errors based on joi validation
-    showError(errors, lastErrorKeyRef, toast);
-  }, [errors]);
-
-  const [open, setOpen] = useState(false);
 
   const handleClose = () => {
     setOpen(false);
     reset();
-    lastErrorKeyRef.current = null;
   };
 
-  useEffect(() => {
-    // this shows the error if error exists
-    if (error) {
-      toast.error(error);
-      dispatch(clearErrors());
-    }
-  }, [error]);
 
-  useEffect(() => {
-    // this shows the error if error exists
-    if (success && message) {
-      toast.success(message);
-      dispatch(clearMessage());
-    }
-  }, [success, message]);
+  useValidationErrorToast(errors)
+
+  useToastNotify(error,success,message,clearReviewError,clearReviewMessage,dispatch)
+
 
   useEffect(() => {
     if (review) {

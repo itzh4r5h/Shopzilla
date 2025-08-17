@@ -42,6 +42,8 @@ const addressActions = {
 
 const initialState = {
   error: null,
+  success: false,
+  message: null,
   uploading: false,
   updated: undefined,
   updatedAddress: undefined,
@@ -50,9 +52,7 @@ const initialState = {
   resendLinkIn: undefined,
   accountDeletionCountdownExpiresAt: undefined,
   sending: false,
-  success: false,
   loading: true,
-  message: null,
   isLoggedIn: false,
   isPasswordExists: undefined,
   allShippingAddress: undefined,
@@ -63,10 +63,10 @@ const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    clearErrors: (state) => {
+    clearUserError: (state) => {
       state.error = null;
     },
-    clearMessage: (state) => {
+    clearUserMessage: (state) => {
       state.success = false;
       state.message = null;
     },
@@ -200,6 +200,7 @@ const userSlice = createSlice({
         Object.assign(state, initialState); // reset all fields
         state.loading = false;
         state.user = action.payload.user;
+        state.isPasswordExists = action.payload.isPasswordExists;
         state.isLoggedIn = true;
       },
       rejected: (state, action) => {
@@ -348,7 +349,7 @@ const userSlice = createSlice({
     handleAsyncThunk(builder, getAllAddress, {
       pending: (state) => {
         state.allShippingAddress = undefined;
-        state.updatedAddress = undefined
+        state.updatedAddress = undefined;
       },
       fulfilled: (state, action) => {
         state.allShippingAddress = action.payload.allShippingAddress;
@@ -360,6 +361,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { clearErrors, clearMessage } =
-  userSlice.actions;
+export const { clearUserError, clearUserMessage } = userSlice.actions;
 export const userReducer = userSlice.reducer;

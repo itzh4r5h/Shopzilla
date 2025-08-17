@@ -1,7 +1,6 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 export const NotFound = () => {
-  const dispatch = useDispatch();
   const { loading } = useSelector((state) => state.user);
 
   return (

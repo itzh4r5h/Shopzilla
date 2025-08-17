@@ -1,10 +1,9 @@
 import { useForm } from "react-hook-form";
 import { FillButton } from "../components/buttons/FillButton";
-import { useParams } from "react-router";
+import { useLocation, useParams } from "react-router";
 import { joiResolver } from "@hookform/resolvers/joi";
 import Joi from "joi";
-import { useEffect, useMemo, useRef } from "react";
-import { showError } from "../utils/showError";
+import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
@@ -13,8 +12,10 @@ import {
   resetPassword,
   sendPasswordResetTokenToEmail,
 } from "../store/thunks/userThunks";
-import { clearErrors, clearMessage } from "../store/slices/userSlice";
+import { clearUserError, clearUserMessage } from "../store/slices/userSlice";
 import { useSyncedCountdown } from "../hooks/useSyncedCountdown";
+import { useToastNotify } from "../hooks/useToastNotify";
+import { useValidationErrorToast } from "../hooks/useValidationErrorToast";
 
 export const ResetPassword = () => {
   const { token } = useParams();
@@ -54,12 +55,12 @@ export const ResetPassword = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const path = useLocation()
   const {
     error,
     isLoggedIn,
     success,
     message,
-    loading,
     resendTokenIn,
     sending,
   } = useSelector((state) => state.user);
@@ -81,7 +82,7 @@ export const ResetPassword = () => {
       if (!token) {
         data.email = data.email.toLowerCase();
         dispatch(sendPasswordResetTokenToEmail(data.email));
-        localStorage.setItem('email',data.email)
+        localStorage.setItem("email", data.email);
       } else {
         dispatch(resetPassword({ resetToken: token, password: data.password }));
         reset();
@@ -89,39 +90,33 @@ export const ResetPassword = () => {
     }
   };
 
-  const lastErrorKeyRef = useRef(null);
-  const email = localStorage.getItem('email')
+  useValidationErrorToast(errors)
 
-  useEffect(() => {
-    showError(errors, lastErrorKeyRef, toast);
+  useToastNotify(error,success,message,clearUserError,clearUserMessage,dispatch)
 
-    if (error) {
-      toast.error(error);
-      dispatch(clearErrors());
+  useEffect(()=>{
+    if(resendTokenIn){
+      resendTokenCountdown.reset(resendTokenIn)
     }
-  }, [errors, error]);
-
-  useEffect(() => {
-    if (success && message) {
-      resendTokenCountdown.reset(resendTokenIn);
-      toast.success(message);
-      dispatch(clearMessage());
-    }
-  }, [success, message]);
-
-  useEffect(() => {
-    if (token) {
-     localStorage.clear()
-    }
-  }, [token]);
+  },[resendTokenIn])
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate("/");
-      toast.success("signed in");
+      localStorage.removeItem("resend_token_timer");
+      localStorage.removeItem("email");
       toast.success("password changed");
+      navigate("/");
     }
   }, [isLoggedIn]);
+
+
+  useEffect(()=>{
+    if(resendTokenCountdown.secondsLeft < 1){
+      localStorage.removeItem("resend_token_timer");
+      localStorage.removeItem("email");
+      reset()
+    }
+  },[path.pathname])
 
   return (
     <div>
@@ -141,7 +136,7 @@ export const ResetPassword = () => {
               autoComplete="off"
               type="email"
               {...register("email", { required: true })}
-              defaultValue={email && email}
+              defaultValue={localStorage.getItem("email")}
               id="email"
               className="border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)] lowercase"
             />
@@ -166,7 +161,7 @@ export const ResetPassword = () => {
         )}
         {/* password ends */}
 
-        {((resendTokenCountdown.secondsLeft === 0 && !sending) || token) && (
+        {((resendTokenCountdown.secondsLeft < 1 && !sending) || token) && (
           <FillButton
             name={!token ? "Send Reset Password URL" : "Submit"}
             type="submit"

@@ -3,10 +3,9 @@ import { FillButton } from "../components/buttons/FillButton";
 import { FaGoogle } from "react-icons/fa";
 import { OutlineButton } from "../components/buttons/OutlineButton";
 import { toast } from "react-toastify";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
 import Joi from "joi";
-import { showError } from "../utils/showError";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router";
 import {
@@ -14,7 +13,9 @@ import {
   signInUser,
   signUpUser,
 } from "../store/thunks/userThunks";
-import { clearErrors, clearMessage } from "../store/slices/userSlice";
+import {clearUserError, clearUserMessage } from "../store/slices/userSlice";
+import { useValidationErrorToast } from "../hooks/useValidationErrorToast";
+import { useToastNotify } from "../hooks/useToastNotify";
 
 export const SignInOrSignUp = ({ title }) => {
   const schema = useMemo(() => {
@@ -83,21 +84,17 @@ export const SignInOrSignUp = ({ title }) => {
     }
   };
 
-  // this is to remember last error key from joi
-  const lastErrorKeyRef = useRef(null);
 
-  useEffect(() => {
-    // this shows forms errors based on joi validation
-    showError(errors, lastErrorKeyRef, toast);
-  }, [errors]);
+    const signInSignupWithGoogle = () => {
+    const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL;
+    window.location.href = googleAuthUrl;
+  };
 
-  useEffect(() => {
-    // this shows the error if error exists
-    if (error) {
-      toast.error(error);
-      dispatch(clearErrors());
-    }
-  }, [error]);
+
+  useValidationErrorToast(errors)
+
+  useToastNotify(error,success,message,clearUserError,clearUserMessage,dispatch)
+
 
   useEffect(() => {
     switch (title.toLowerCase()) {
@@ -118,23 +115,13 @@ export const SignInOrSignUp = ({ title }) => {
     }
   }, [title, isLoggedIn, loading, user]);
 
-  // show the success message when both success and message are defined
-  useEffect(() => {
-    if (success && message) {
-      toast.success(message);
-      dispatch(clearMessage());
-    }
-  }, [success, message]);
+
 
   // reset the form fields if url is changed
   useEffect(() => {
     reset();
   }, [path.pathname]);
 
-  const signInSignupWithGoogle = () => {
-    const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL;
-    window.location.href = googleAuthUrl;
-  };
 
   return (
     <div className="bg-white border border-black w-full p-3 flex flex-col justify-center gap-3">

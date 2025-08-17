@@ -10,12 +10,12 @@ import { FillButton } from "../components/buttons/FillButton";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import { axiosInstance } from "../utils/AxiosInstance";
-import { clearErrors, resetState } from "../store/slices/orderSlice";
+import { clearOrderError, resetOrderState } from "../store/slices/orderSlice";
 
 export const Checkout = ({ cart = false, id, quantity }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { orderId, razorpayOrder,error } = useSelector((state) => state.order);
+  const { orderId, razorpayOrder, error } = useSelector((state) => state.order);
   const { isLoggedIn, user } = useSelector((state) => state.user);
 
   const checkout = () => {
@@ -31,20 +31,41 @@ export const Checkout = ({ cart = false, id, quantity }) => {
     }
   };
 
-  useEffect(()=>{
-    if(error){
-      toast.error(error)
-      dispatch(clearErrors())
+  const callbackHandler = async (paymentData) => {
+    try {
+      const { data } = await axiosInstance.post("/payments/verify", {
+        ...paymentData,
+        cart,
+      });
+      dispatch(resetOrderState());
+      localStorage.removeItem("razorpayOrderId");
+      navigate(`/orders/${data.orderId}`);
+    } catch (error) {
+      dispatch(
+        deletePendingOrderAndPaymentOrder(
+          localStorage.getItem("razorpayOrderId") || razorpayOrder.id
+        )
+      );
+      localStorage.removeItem("razorpayOrderId");
+      dispatch(resetOrderState());
+      toast.error("Something Went Wrong, Try Again");
     }
-  },[error])
+  };
 
-
-  useEffect(()=>{
-    if(localStorage.getItem('razorpayOrderId')){
-      dispatch(deletePendingOrderAndPaymentOrder(localStorage.getItem('razorpayOrderId')))
-      localStorage.removeItem('razorpayOrderId')
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(clearOrderError());
     }
-  },[])
+  }, [error]);
+
+  useEffect(() => {
+    const key = localStorage.getItem("razorpayOrderId");
+    if (key) {
+      dispatch(deletePendingOrderAndPaymentOrder(key));
+      localStorage.removeItem("razorpayOrderId");
+    }
+  }, []);
 
   useEffect(() => {
     if (orderId) {
@@ -52,43 +73,28 @@ export const Checkout = ({ cart = false, id, quantity }) => {
     }
   }, [orderId]);
 
-  const callbackHandler = async (paymentData) => {
-    try {
-      const { data } = await axiosInstance.post(
-        "/payments/verify",
-        {...paymentData,cart}
-      );
-      dispatch(resetState())
-      localStorage.removeItem('razorpayOrderId')
-      navigate(`/orders/${data.orderId}`);
-    } catch (error) {
-      dispatch(deletePendingOrderAndPaymentOrder(localStorage.getItem('razorpayOrderId') || razorpayOrder.id))
-      localStorage.removeItem('razorpayOrderId')
-      toast.error('Something Went Wrong, Try Again')
-    }
-  };
-
   useEffect(() => {
     if (razorpayOrder && user) {
-      localStorage.setItem('razorpayOrderId',razorpayOrder.id)
+      localStorage.setItem("razorpayOrderId", razorpayOrder.id);
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
         name: "ShopZilla",
         description: "Test Transaction",
-        image: "https://ik.imagekit.io/hczmohsn7/shopzilla/logo/shopzillaLogo.webp",
+        image:
+          "https://ik.imagekit.io/hczmohsn7/shopzilla/logo/shopzillaLogo.webp",
         order_id: razorpayOrder.id,
-        handler: function(response){
+        handler: function (response) {
           callbackHandler(response);
         },
-        modal:{
-          ondismiss: function(){
-            if(localStorage.getItem('razorpayOrderId')){
-              dispatch(deletePendingOrderAndPaymentOrder(razorpayOrder.id))
-            localStorage.removeItem('razorpayOrderId')
+        modal: {
+          ondismiss: function () {
+            if (localStorage.getItem("razorpayOrderId")) {
+              dispatch(deletePendingOrderAndPaymentOrder(razorpayOrder.id));
+              localStorage.removeItem("razorpayOrderId");
             }
-          }
+          },
         },
         prefill: {
           name: user.name,
@@ -107,7 +113,7 @@ export const Checkout = ({ cart = false, id, quantity }) => {
 
       rzp1.open();
     }
-  }, [razorpayOrder,user]);
+  }, [razorpayOrder, user]);
   return (
     <span className="w-full" onClick={checkout}>
       <FillButton type="button" name={cart ? "Checkout" : "Buy Now"} />

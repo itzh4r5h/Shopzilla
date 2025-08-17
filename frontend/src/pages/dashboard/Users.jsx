@@ -1,4 +1,3 @@
-import { MdDelete } from "react-icons/md";
 import { TitleWithSearchBar } from "../../components/Headers/TitleWithSearchBar";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -8,11 +7,10 @@ import { useEffect } from "react";
 import { ImageCard } from "../../components/cards/ImageCard";
 import { formatMongodbDate } from "../../utils/helpers";
 import {
-  clearErrors,
-  clearMessage,
+  clearAdminError,
+  clearAdminMessage,
   saveKeyword,
 } from "../../store/slices/adminSlice";
-import { toast } from "react-toastify";
 import { DeleteModal } from "../../components/modal/DeleteModal";
 
 export const Users = () => {
@@ -37,19 +35,7 @@ export const Users = () => {
     dispatch(getAllUsers(keyword));
   }, [keyword]);
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(clearErrors());
-    }
-  }, [error]);
-
-  useEffect(() => {
-    if (success && message) {
-      toast.success(message);
-      dispatch(clearMessage());
-    }
-  }, [success, message]);
+   useToastNotify(error,success,message,clearAdminError,clearAdminMessage,dispatch)
 
   return (
     <div className="h-full relative">

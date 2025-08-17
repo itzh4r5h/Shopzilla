@@ -30,19 +30,24 @@ const productSchema = new mongoose.Schema({
     default: 0,
   },
 
-  brand: {
-    type: String,
-    required: [true, "brand is required"],
-    trim: true,
-  },
+  // brand: {
+  //   type: String,
+  //   required: [true, "brand is required"],
+  //   trim: true,
+  // },
+
+  // category: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "Category",
+  //   required: [true, "category is required"],
+  // },
 
   category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Category",
+    type: String,
     required: [true, "category is required"],
   },
 
-  attributes: { type: Map, of: mongoose.Schema.Types.Mixed }, // flexible key-value pairs
+  // attributes: { type: Map, of: mongoose.Schema.Types.Mixed }, // flexible key-value pairs
 
   images: [
     {

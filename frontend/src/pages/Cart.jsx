@@ -2,16 +2,10 @@ import { ProductCard } from "../components/cards/ProductCard";
 import { PriceCard } from "../components/cards/PriceCard";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { toast } from "react-toastify";
-import {
-  getAllCartProducts,
-} from "../store/thunks/cartThunk";
-import {
-  clearErrors as clearCartErrors,
-  clearMessage,
-  quantityUpdated,
-} from "../store/slices/cartSlice";
+import { getAllCartProducts } from "../store/thunks/cartThunk";
+import { clearCartError, clearCartMessage } from "../store/slices/cartSlice";
 import { ShippingAddressCard } from "../components/cards/ShippingAddressCard";
+import { useToastNotify } from "../hooks/useToastNotify";
 
 export const Cart = () => {
   const dispatch = useDispatch();
@@ -26,10 +20,8 @@ export const Cart = () => {
     updated,
   } = useSelector((state) => state.cart);
 
-
-  
   useEffect(() => {
-    dispatch(getAllCartProducts());
+      dispatch(getAllCartProducts());
   }, []);
 
   useEffect(() => {
@@ -38,23 +30,7 @@ export const Cart = () => {
     }
   }, [updated]);
 
-
-  useEffect(() => {
-    // this shows the error if error exists
-    if (error) {
-      toast.error(error);
-      dispatch(clearCartErrors());
-    }
-  }, [error]);
-
-  useEffect(() => {
-    // this shows the error if error exists
-    if (success && message) {
-      dispatch(quantityUpdated());
-      toast.success(message);
-      dispatch(clearMessage());
-    }
-  }, [success, message]);
+  useToastNotify(error, success, message, clearCartError, clearCartMessage,dispatch);
 
   return (
     <div className="w-full h-full relative">
@@ -62,7 +38,7 @@ export const Cart = () => {
 
       {cartProducts?.length > 0 ? (
         <>
-          <ShippingAddressCard/>
+          <ShippingAddressCard />
 
           {/* cart items begins */}
           <div className="grid mt-4 gap-4 items-center justify-items-center">
@@ -80,12 +56,11 @@ export const Cart = () => {
           {/* cart items ends */}
 
           {/* price details begins */}
-          {totalPrice>0 && <div className="mt-4">
-            <PriceCard
-              quanity={cartProductsQuantity}
-              price={totalPrice}
-            />
-          </div>}
+          {totalPrice > 0 && (
+            <div className="mt-4">
+              <PriceCard quanity={cartProductsQuantity} price={totalPrice} />
+            </div>
+          )}
           {/* price details ends */}
         </>
       ) : (

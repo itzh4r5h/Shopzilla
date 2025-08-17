@@ -1,8 +1,7 @@
 import { AddressModal } from "../../components/modal/AddressModal";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { deleteAddress, getAllAddress } from "../../store/thunks/userThunks";
-import { MdDelete } from "react-icons/md";
 import { DeleteModal } from "../../components/modal/DeleteModal";
 
 export const ProfileAddress = () => {

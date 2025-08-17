@@ -1,17 +1,21 @@
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
 import Joi from "joi";
-import { showError } from "../../utils/showError";
 import { useDispatch, useSelector } from "react-redux";
 import { FaCheck, FaExclamation } from "react-icons/fa";
 import Tooltip from "@mui/material/Tooltip";
 import { useSyncedCountdown } from "../../hooks/useSyncedCountdown";
 import { FillButton } from "../../components/buttons/FillButton";
 import { FaTimesCircle } from "react-icons/fa";
-import { cancelUpdateEmail, sendOtpToEmail, updateEmail } from "../../store/thunks/userThunks";
+import {
+  cancelUpdateEmail,
+  sendOtpToEmail,
+  updateEmail,
+} from "../../store/thunks/userThunks";
 import { MdEditSquare } from "react-icons/md";
+import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 
 export const ProfileEmail = () => {
   const { user, resendOtpIn, sending, updated } = useSelector(
@@ -63,12 +67,12 @@ export const ProfileEmail = () => {
 
     switch (buttonValue) {
       case "Send OTP":
-        case "Resend OTP":
-          if (data.email === user.email) {
-            setReadOnly(true);
-            return toast.error("enter new email");
-          } else {
-          localStorage.setItem('email',data.email)
+      case "Resend OTP":
+        if (data.email === user.email) {
+          setReadOnly(true);
+          return toast.error("enter new email");
+        } else {
+          localStorage.setItem("email", data.email);
           dispatch(sendOtpToEmail(data.email));
         }
         break;
@@ -87,44 +91,38 @@ export const ProfileEmail = () => {
     resendCountdown.reset(resendOtpIn);
   }, [resendOtpIn]);
 
-  const key = localStorage.getItem(`otp_resend_timer_${user?._id}`)
+  const key = localStorage.getItem(`otp_resend_timer_${user?._id}`);
   useEffect(() => {
-     if(key){
-      setReadOnly(false)
-     }
+    if (key) {
+      setReadOnly(false);
+    }
   }, [key]);
 
   useEffect(() => {
     if (updated) {
-      localStorage.clear();
-      setReadOnly(true)
+      localStorage.removeItem(`otp_resend_timer_${user?._id}`);
+      localStorage.removeItem("email");
+      setReadOnly(true);
     }
   }, [updated]);
 
-  // this is to remember last error key from joi
-  const lastErrorKeyRef = useRef(null);
+  useValidationErrorToast(errors);
 
-  useEffect(() => {
-    // this shows forms errors based on joi validation
-    showError(errors, lastErrorKeyRef, toast);
-  }, [errors]);
-
-
-  const cancelUpdation = ()=>{
-    const key1 = localStorage.getItem('email')
-    const key2 = localStorage.getItem(`otp_resend_timer_${user?._id}`)
-    if(key1 && key2){
-      localStorage.removeItem('email')
-      localStorage.removeItem(`otp_resend_timer_${user?._id}`)
-      setReadOnly(true)
-      reset()
-      dispatch(cancelUpdateEmail())
-    }else{
-      reset()
-      setReadOnly(true)
+  const cancelUpdation = () => {
+    const key1 = localStorage.getItem("email");
+    const key2 = localStorage.getItem(`otp_resend_timer_${user?._id}`);
+    if (key1 && key2) {
+      localStorage.removeItem("email");
+      localStorage.removeItem(`otp_resend_timer_${user?._id}`);
+      setReadOnly(true);
+      reset();
+      dispatch(cancelUpdateEmail());
+    } else {
+      reset();
+      setReadOnly(true);
     }
-  }
-  
+  };
+
   return (
     <form
       onSubmit={handleSubmit(submitForm)}
@@ -136,7 +134,7 @@ export const ProfileEmail = () => {
             id="email"
             type="email"
             {...register("email", { required: true })}
-            defaultValue={localStorage.getItem('email') || user.email}
+            defaultValue={localStorage.getItem("email") || user.email}
             className={`w-full border rounded-md p-2 text-lg bg-white outline-none ${
               !readOnly &&
               "focus:border-[var(--purpleDark)] focus:ring-2 focus:ring-[var(--purpleDark)]"
@@ -182,7 +180,6 @@ export const ProfileEmail = () => {
           />
         )}
       </div>
-
 
       {!readOnly && (
         <div
