@@ -16,7 +16,7 @@ module.exports = (err, req, res, next) => {
 
   // mongodb duplicate key error
   else if (err.code === 11000) {
-    err = new ErrorHandler(`${Object.keys(err.keyValue)} already exists`, 400);
+    err = new ErrorHandler(`${Object.values(err)[1]["keyValue"][Object.keys(err.keyValue)]} already exists`, 400);
   }
 
   // Wrong JWT Token

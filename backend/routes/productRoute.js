@@ -23,6 +23,9 @@ const {
   updateSubCategoryAttriubtes,
   deleteCategory,
   deleteSubCategory,
+  getAllCategories,
+  getAllSubCategoriesOfSpecifiedCategory,
+  getAllAttributesOfSubCategory,
 } = require("../controllers/product/categoryController");
 const router = express.Router();
 
@@ -55,21 +58,24 @@ router
 
 // ===================================== Admin User Product Category Related Routes ==========================================
 router
-  .route("/admin/products/category")
-  .post(isUserAuthenticated, authorizedRoles("admin"), createCategory);
+  .route("/admin/products/categories")
+  .post(isUserAuthenticated, authorizedRoles("admin"), createCategory)
+  .get(isUserAuthenticated,authorizedRoles('admin'),getAllCategories)
 router
-  .route("/admin/products/category/:id")
+  .route("/admin/products/categories/:id")
   .patch(isUserAuthenticated, authorizedRoles("admin"), updateCategoryName)
-  .delete(isUserAuthenticated, authorizedRoles("admin"), deleteCategory);
+  .delete(isUserAuthenticated, authorizedRoles("admin"), deleteCategory)
 router
-  .route("/admin/products/category/subcategory/:id")
-  .patch(isUserAuthenticated, authorizedRoles("admin"), addSubCategory);
+  .route("/admin/products/categories/:id/subcategories")
+  .patch(isUserAuthenticated, authorizedRoles("admin"), addSubCategory)
+  .get(isUserAuthenticated,authorizedRoles('admin'),getAllSubCategoriesOfSpecifiedCategory)
 router
-  .route("/admin/products/category/subcategory/:id/:subId")
+  .route("/admin/products/categories/:id/subcategories/:subId")
   .patch(isUserAuthenticated, authorizedRoles("admin"), updateSubCategoryName)
   .delete(isUserAuthenticated, authorizedRoles("admin"), deleteSubCategory);
 router
-  .route("/admin/products/category/subcategory/:id/:subId/attriubtes")
+  .route("/admin/products/categories/:id/subcategories/:subId/attributes")
+  .get(isUserAuthenticated,authorizedRoles('admin'),getAllAttributesOfSubCategory)
   .patch(
     isUserAuthenticated,
     authorizedRoles("admin"),

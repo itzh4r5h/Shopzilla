@@ -7,6 +7,7 @@ const {
   nameJoiSchema,
   subcategoryJoiSchema,
 } = require("../../validators/product/categoryValidator");
+const mongoose = require("mongoose");
 
 // =================== CREATE A WHOLE CATEGORY WITH SUBCATORIES AND THEIR ATTRIBUTES ======================================
 exports.createCategory = catchAsyncErrors(async (req, res, next) => {
@@ -31,16 +32,20 @@ exports.createCategory = catchAsyncErrors(async (req, res, next) => {
 exports.updateCategoryName = catchAsyncErrors(async (req, res, next) => {
   const { name } = req.body;
 
-  const { error } = nameJoiSchema.validate(name);
+  const { error } = nameJoiSchema.validate({ name });
 
   if (error) {
     return next(new ErrorHandler(formatJoiErrMessage(error), 400));
   }
 
-  const category = await Category.findByIdAndUpdate(req.params.id, name, {
-    runValidators: true,
-    new: true,
-  });
+  const category = await Category.findByIdAndUpdate(
+    req.params.id,
+    { name },
+    {
+      runValidators: true,
+      new: true,
+    }
+  );
 
   res.status(200).json({
     success: true,
@@ -177,14 +182,15 @@ exports.deleteSubCategory = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("subcategory not exists", 404));
   }
 
-  if(category.subcategories.length > 1){
-      category.subcategories = category.subcategories.filter(
-        (subcategory) => subcategory._id.toString() !== req.params.subId
-      );
-  }else{
-    return next(new ErrorHandler("cann't delete instead delete whole category",400))
+  if (category.subcategories.length > 1) {
+    category.subcategories = category.subcategories.filter(
+      (subcategory) => subcategory._id.toString() !== req.params.subId
+    );
+  } else {
+    return next(
+      new ErrorHandler("cann't delete instead delete whole category", 400)
+    );
   }
-
 
   await category.save({ validateBeforeSave: true });
 
@@ -195,7 +201,6 @@ exports.deleteSubCategory = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-
 // =========================== DELETE CATEGORY ===============================
 exports.deleteCategory = catchAsyncErrors(async (req, res, next) => {
   const category = await Category.findById(req.params.id);
@@ -204,10 +209,91 @@ exports.deleteCategory = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("category not exists", 404));
   }
 
-  await Category.findByIdAndDelete(req.params.id)
+  await Category.findByIdAndDelete(req.params.id);
 
   res.status(200).json({
     success: true,
     message: "category deleted",
   });
 });
+
+// =========================== GET ALL CATEGORIES ======================
+exports.getAllCategories = catchAsyncErrors(async (req, res, next) => {
+  const categories = await Category.find({}, { name: 1 });
+
+  res.status(200).json({
+    success: true,
+    categories,
+  });
+});
+
+// =========================== GET ALL SUB CATEGORIES ======================
+exports.getAllSubCategoriesOfSpecifiedCategory = catchAsyncErrors(
+  async (req, res, next) => {
+    const category = await Category.findById(req.params.id);
+
+    if (!category) {
+      return next(new ErrorHandler("category not exists", 404));
+    }
+
+    const subcategories = await Category.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(req.params.id) },
+      },
+      { $unwind: "$subcategories" },
+      {
+        $project: {
+          _id: "$subcategories._id",
+          name: "$subcategories.name",
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      subcategories,
+    });
+  }
+);
+
+// =========================== GET ALL ATTRIBUTES OF SUB CATEGORY ======================
+exports.getAllAttributesOfSubCategory = catchAsyncErrors(
+  async (req, res, next) => {
+    const category = await Category.findById(req.params.id);
+
+    if (!category) {
+      return next(new ErrorHandler("category not exists", 404));
+    }
+
+    isSubCategoryExists = category.subcategories.find(
+      (subcategory) => subcategory._id.toString() === req.params.subId
+    );
+
+    if (!isSubCategoryExists) {
+      return next(new ErrorHandler("subcategory not exists", 404));
+    }
+
+    const attributes = await Category.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(req.params.id) },
+      },
+      { $unwind: "$subcategories" },
+      {
+        $match: {
+          "subcategories._id": new mongoose.Types.ObjectId(req.params.subId),
+        },
+      },
+      {
+        $unwind: "$subcategories.attributes",
+      },
+      {
+        $replaceRoot: { newRoot: "$subcategories.attributes" },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      attributes,
+    });
+  }
+);
