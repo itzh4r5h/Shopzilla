@@ -16,3 +16,8 @@ exports.getBasicDetailsOnly = (user)=>{
   const { password,otp,otpExpire,resetPasswordToken,resetPasswordTokenExpire,emailVerificationToken,emailVerificationTokenExpire, ...userData } = user._doc
   return userData
 }
+
+
+exports.formatJoiErrMessage = (error)=>{
+  return error.message.replaceAll('"', "");
+}

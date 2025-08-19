@@ -1,19 +1,18 @@
-const { Product } = require("../../models/Product");
-const { joiValidator } = require("../../validators/productValiators");
+const { Product } = require("../../models/product/Product");
+const { joiProductBaseValidator } = require("../../validators/product/productValidator");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const ProductSearchAndFilter = require("../../utils/productSearchAndFilter");
-const { isOnlyDigits } = require("../../utils/helpers");
+const { isOnlyDigits, formatJoiErrMessage } = require("../../utils/helpers");
 const { uploadToImageKit, imagekit } = require("../../utils/uploadImages");
 
 // ======================= ADMIN -- CREATE PRODUCT ==============================
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
   const { images, ...data } = req.body;
 
-  const error = joiValidator({ ...data, images: req.files });
+  const error = joiProductBaseValidator({ ...data, images: req.files });
   if (error) {
-    let msg = error.message.replaceAll('"', "");
-    return next(new ErrorHandler(msg, 400));
+    return next(new ErrorHandler(formatJoiErrMessage(error), 400));
   }
 
   data.user = req.user._id;

@@ -1,4 +1,4 @@
-const { Product } = require("../../models/Product");
+const { Product } = require("../../models/product/Product");
 const { Order } = require("../../models/Order");
 const { Payment } = require("../../models/Payment");
 const ErrorHandler = require("../../utils/errorHandler");

@@ -1,5 +1,5 @@
 const { User } = require("../../models/User");
-const { Product } = require("../../models/Product");
+const { Product } = require("../../models/product/Product");
 const { Order } = require("../../models/Order");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");

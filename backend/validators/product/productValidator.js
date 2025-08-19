@@ -4,7 +4,7 @@ const maxImages = Number(process.env.PRODUCT_MAX_IMAGES);
 const MAX_SIZE_MB = Number(process.env.IMAGE_MAX_SIZE_IN_MB);
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
-exports.joiValidator = (data) => {
+exports.joiProductBaseValidator = (data) => {
   const schema = Joi.object({
     name: Joi.string().min(2).max(30).trim().required().messages({
       "string.base": "name must be a string",

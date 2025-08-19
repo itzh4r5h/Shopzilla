@@ -1,4 +1,4 @@
-const { Product } = require("../../models/Product");
+const { Product } = require("../../models/product/Product");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const { isOnlyDigits } = require("../../utils/helpers");

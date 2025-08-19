@@ -31,14 +31,18 @@ module.exports = (err, req, res, next) => {
 
   // mongodb validation error
   else if (err.name === "ValidationError") {
-    const lastColon = err.message.lastIndexOf(":");
-    const message = err.message.substring(lastColon + 2);
+    // Get the first error object
+    const firstError = Object.values(err.errors)[0];
+    const message = firstError.message;
     err = new ErrorHandler(message, 400);
   }
 
   // multer file exceed limit error
   else if (err.code === "LIMIT_FILE_SIZE") {
-    err = new ErrorHandler(`File size should not exceed ${process.env.IMAGE_MAX_SIZE_IN_MB} MB`,400)
+    err = new ErrorHandler(
+      `File size should not exceed ${process.env.IMAGE_MAX_SIZE_IN_MB} MB`,
+      400
+    );
   }
 
   res.status(err.statusCode).json({
