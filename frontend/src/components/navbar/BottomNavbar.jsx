@@ -1,6 +1,11 @@
 import { NavLink, useLocation } from "react-router";
-import { FaHouse, FaBagShopping, FaBoxOpen, FaUser } from "react-icons/fa6";
-import { FaPlusSquare } from "react-icons/fa";
+import {
+  FaHouse,
+  FaBagShopping,
+  FaBoxOpen,
+  FaUser,
+  FaListUl,
+} from "react-icons/fa6";
 import { BsFillBoxSeamFill } from "react-icons/bs";
 import { FaSignInAlt } from "react-icons/fa";
 import { PiPasswordFill } from "react-icons/pi";
@@ -50,9 +55,9 @@ export const BottomNavbar = () => {
       icon: <FaBoxOpen />,
     },
     {
-      path: `${adminDefaultPath}/product/new`,
-      name: "add",
-      icon: <FaPlusSquare />,
+      path: `${adminDefaultPath}/categories`,
+      name: "Categories",
+      icon: <FaListUl />,
     },
     {
       path: `${adminDefaultPath}/products`,
@@ -62,7 +67,7 @@ export const BottomNavbar = () => {
   ];
 
   return (
-    <nav className="px-4 py-2">
+    <nav className="px-4 py-2 relative">
       {loading ? (
         <ul className="border border-[var(--black)] rounded-2xl bg-[var(--white)] w-full p-2 flex justify-around items-center gap-3">
           <Skeleton height={36} width={44} />

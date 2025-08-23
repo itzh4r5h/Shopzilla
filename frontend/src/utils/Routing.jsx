@@ -15,6 +15,10 @@ import { ResetPassword } from "../pages/ResetPassword";
 import { SignInOrSignUp } from "../pages/SignInOrSignUp";
 import { Products } from "../pages/Products";
 import { useSelector } from "react-redux";
+import { Categories } from "../pages/dashboard/category/Categories";
+import { SubCateogries } from "../pages/dashboard/category/SubCateogries";
+import { Attributes } from "../pages/dashboard/category/Attributes";
+
 
 export const Routing = () => {
   const adminDefaultPath = "/admin/dashboard";
@@ -54,9 +58,21 @@ export const Routing = () => {
             element={<UserOrders />}
           />
           <Route
+            path={`${adminDefaultPath}/categories`}
+            element={<Categories/>}
+          />
+          <Route
+            path={`${adminDefaultPath}/categories/:category/:id`}
+            element={<SubCateogries/>}
+          />
+          <Route
+            path={`${adminDefaultPath}/categories/:category/:id/:subcategory/:subId`}
+            element={<Attributes/>}
+          />
+          {/* <Route
             path={`${adminDefaultPath}/product/new`}
             element={<AddOrEditProduct name="Add New" />}
-          />
+          /> */}
           <Route
             path={`${adminDefaultPath}/products`}
             element={<AllProducts />}

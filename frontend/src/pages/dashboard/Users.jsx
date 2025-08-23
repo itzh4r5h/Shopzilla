@@ -12,6 +12,7 @@ import {
   saveKeyword,
 } from "../../store/slices/adminSlice";
 import { DeleteModal } from "../../components/modal/DeleteModal";
+import { useToastNotify } from "../../hooks/useToastNotify";
 
 export const Users = () => {
   const dispatch = useDispatch();

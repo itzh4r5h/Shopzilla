@@ -12,7 +12,10 @@ import { MdEditSquare } from "react-icons/md";
 import { deleteProduct } from "../../store/thunks/adminThunks";
 import { saveKeyword } from "../../store/slices/productSlice";
 import { useToastNotify } from "../../hooks/useToastNotify";
-import { clearAdminError,clearAdminMessage } from "../../store/slices/adminSlice";
+import {
+  clearAdminError,
+  clearAdminMessage,
+} from "../../store/slices/adminSlice";
 
 export const AllProducts = () => {
   const adminDefaultPath = "/admin/dashboard";
@@ -31,7 +34,7 @@ export const AllProducts = () => {
   } = useSelector((state) => state.admin);
 
   useEffect(() => {
-    dispatch(saveKeyword(''))
+    dispatch(saveKeyword(""));
     dispatch(getAllProducts());
   }, []);
 
@@ -39,8 +42,14 @@ export const AllProducts = () => {
     dispatch(getAllProducts(keyword));
   }, [keyword]);
 
-
-  useToastNotify(error,success,message,clearAdminError,clearAdminMessage,dispatch)
+  useToastNotify(
+    error,
+    success,
+    message,
+    clearAdminError,
+    clearAdminMessage,
+    dispatch
+  );
 
   const handleDeleteProduct = (id) => {
     dispatch(deleteProduct(id));
@@ -80,9 +89,13 @@ export const AllProducts = () => {
           products?.map((product) => {
             return (
               <div key={product._id} className="relative">
+                {/* product card begins */}
                 <Link to={`${adminDefaultPath}/products/${product._id}`}>
                   <ProductCard product={product} />
                 </Link>
+                {/* product card ends */}
+
+                {/* edit product begins */}
                 <Link
                   to={`${adminDefaultPath}/products/${product._id}/update`}
                   className="absolute -top-1 -right-1 cursor-pointer"
@@ -91,7 +104,9 @@ export const AllProducts = () => {
                     <MdEditSquare className="text-xl text-white" />
                   </span>
                 </Link>
+                {/* edit product ends */}
 
+                {/* delete product begins */}
                 <span className="absolute top-8 -right-1">
                   <DeleteModal
                     classes={"text-2xl text-white"}
@@ -101,6 +116,7 @@ export const AllProducts = () => {
                     deleteFunction={() => handleDeleteProduct(product._id)}
                   />
                 </span>
+                {/* delete product ends */}
               </div>
             );
           })}

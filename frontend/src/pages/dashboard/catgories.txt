@@ -1,0 +1,57 @@
+Electronics
+(Mobiles, Laptops, Cameras, Audio, Smart Devices)
+
+Fashion
+(Men, Women, Kids – Clothing, Footwear, Accessories)
+
+Beauty & Personal Care
+(Cosmetics, Skincare, Haircare, Grooming)
+
+Health & Wellness
+(Supplements, Medical Devices, Fitness, Yoga)
+
+Home & Furniture
+(Furniture, Décor, Kitchenware, Storage, Lighting)
+
+Appliances
+(Large: Refrigerators, AC, Washing Machines;
+Small: Mixers, Irons, Coffee Makers)
+
+Sports & Outdoors
+(Fitness Gear, Gym Equipment, Cycling, Camping, Adventure)
+
+Books & Stationery
+(Books, E-books, Study Material, Office Supplies)
+
+Toys, Baby & Kids
+(Toys, Games, Baby Care, Clothing, Education Kits)
+
+Grocery & Food
+(Daily Essentials, Snacks, Beverages, Packaged Foods)
+
+Automotive
+(Car Accessories, Bike Parts, Tools, Oils, Helmets)
+
+Jewelry & Watches
+(Fine Jewelry, Fashion Jewelry, Luxury Watches)
+
+Pet Supplies
+(Food, Toys, Beds, Grooming Products)
+
+Travel & Luggage
+(Bags, Suitcases, Backpacks, Travel Accessories)
+
+Musical Instruments & Hobbies
+(Guitars, Keyboards, Arts & Crafts, Collectibles)
+
+Gaming & Entertainment
+(Consoles, Video Games, Board Games, Movies, Music)
+
+Industrial & Tools
+(DIY, Power Tools, Hardware, Office Equipment)
+
+Real Estate & Services (optional)
+(If your platform supports service/product marketplace)
+
+Seasonal & Festive (optional)
+(Christmas, Diwali, Eid, Halloween, New Year décor)
