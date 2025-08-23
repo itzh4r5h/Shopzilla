@@ -34,6 +34,14 @@ const subcategorySchema = new mongoose.Schema({
     minlength: [2, "subcategory name must be at least 2 characters long"],
     maxlength: [50, "subcategory name must not exceed 50 characters"],
   },
+  subcategory_icon: {
+    type: String,
+    required: [true, "subcategory icon is required"],
+    index: true,
+    trim: true,
+    minlength: [2, "subcategory icon must be at least 2 characters long"],
+    maxlength: [20, "subcategory icon must not exceed 20 characters"],
+  },
   attributes: [attributeDefinitionSchema],
 });
 
@@ -49,6 +57,14 @@ const categorySchema = new mongoose.Schema(
       minlength: [2, "category name must be at least 2 characters long"],
       maxlength: [50, "category name must not exceed 50 characters"],
     },
+    category_icon: {
+    type: String,
+    required: [true, "subcategory icon is required"],
+    index: true,
+    trim: true,
+    minlength: [2, "subcategory icon must be at least 2 characters long"],
+    maxlength: [20, "subcategory icon must not exceed 20 characters"],
+  },
     subcategories: [subcategorySchema],
   },
   { timestamps: true }

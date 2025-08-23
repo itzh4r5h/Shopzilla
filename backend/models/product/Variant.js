@@ -13,27 +13,29 @@ const variantSchema = new mongoose.Schema({
   price: { type: Number, required: true,index:true },
   stock: { type: Number, default: 0,index:true },
   sku: { type: String, unique: true }, // Stock Keeping Unit
-  images: [
-    {
-      url: {
-        type: String,
-        required: [true, "image url is required"],
-      },
-      fileId: {
-        type: String,
-        required: [true, "image file-id is required"],
-      },
-      name: {
-        type: String,
-        required: [true, "image name is required"],
-      },
-    },
-  ], // variant-specific images
+ 
 }, { timestamps: true });
 
 
-variantSchema.index({ "attributes.name": 1, "attributes.value": 1 });
-variantSchema.index({ product: 1, price: 1 });
+// variantSchema.index({ "attributes.name": 1, "attributes.value": 1 });
+// variantSchema.index({ product: 1, price: 1 });
+
+//  images: [
+//     {
+//       url: {
+//         type: String,
+//         required: [true, "image url is required"],
+//       },
+//       fileId: {
+//         type: String,
+//         required: [true, "image file-id is required"],
+//       },
+//       name: {
+//         type: String,
+//         required: [true, "image name is required"],
+//       },
+//     },
+//   ],
 
 const Variant = mongoose.model("Variant", variantSchema);
 
