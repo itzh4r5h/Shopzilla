@@ -6,6 +6,7 @@ import { ImageCard } from "../cards/ImageCard";
 
 export const IconSelector = ({
   name,
+  selected,
   register,
   setValue,
   watch,
@@ -66,6 +67,12 @@ export const IconSelector = ({
       setShowOptions(false);
     }
   };
+
+  useEffect(()=>{
+    if(selected){
+      setValue(name,selected)
+    }
+  },[selected])
 
   return (
     <div className="relative">

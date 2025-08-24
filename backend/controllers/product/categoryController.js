@@ -5,7 +5,8 @@ const { formatJoiErrMessage } = require("../../utils/helpers");
 const {
   categoryJoiSchema,
   nameJoiSchema,
-  subcategoryJoiSchema,
+  attributesJoiSchema,
+  subcategoriesJoiSchema,
 } = require("../../validators/product/categoryValidator");
 const mongoose = require("mongoose");
 
@@ -13,34 +14,37 @@ const mongoose = require("mongoose");
 exports.createCategory = catchAsyncErrors(async (req, res, next) => {
   const { name, category_icon, subcategories } = req.body;
 
-  const { error } = categoryJoiSchema.validate({ name, category_icon, subcategories });
+  const { error } = categoryJoiSchema.validate({
+    name,
+    category_icon,
+    subcategories,
+  });
 
   if (error) {
     return next(new ErrorHandler(formatJoiErrMessage(error), 400));
   }
 
-  const category = await Category.create({ name, subcategories });
+  await Category.create({ name, category_icon, subcategories });
 
   res.status(201).json({
     success: true,
     message: "category created",
-    category,
   });
 });
 
 // ============================ UPDATE MAIN CATEGORY NAME ============================================
 exports.updateCategoryName = catchAsyncErrors(async (req, res, next) => {
-  const { name,category_icon } = req.body;
+  const { name, icon } = req.body;
 
-  const { error } = nameJoiSchema.validate({ name, icon:category_icon });
+  const { error } = nameJoiSchema.validate({ name, icon });
 
   if (error) {
     return next(new ErrorHandler(formatJoiErrMessage(error), 400));
   }
 
-  const category = await Category.findByIdAndUpdate(
+  await Category.findByIdAndUpdate(
     req.params.id,
-    { name,category_icon },
+    { name, category_icon: icon },
     {
       runValidators: true,
       new: true,
@@ -50,13 +54,12 @@ exports.updateCategoryName = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "category name updated",
-    category,
   });
 });
 
 // =========================== ADD SUB CATEGORY UNDER SPECIFIED CATEGORY ==================================
 exports.addSubCategory = catchAsyncErrors(async (req, res, next) => {
-  const { name, subcategory_icon, attributes } = req.body;
+  const { subcategories } = req.body;
 
   const category = await Category.findById(req.params.id);
 
@@ -64,28 +67,26 @@ exports.addSubCategory = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("category not exists", 404));
   }
 
-  const { error } = subcategoryJoiSchema.validate({ name,subcategory_icon, attributes });
+  const { error } = subcategoriesJoiSchema.validate({subcategories});
 
   if (error) {
     return next(new ErrorHandler(formatJoiErrMessage(error), 400));
   }
 
-  const subcategory = { name,subcategory_icon, attributes };
 
-  category.subcategories = [...category.subcategories, subcategory];
+  category.subcategories = [...category.subcategories, ...subcategories];
 
   await category.save({ validateBeforeSave: true });
 
   res.status(201).json({
     success: true,
-    message: "subcategory added",
-    category,
+    message: subcategories.length>1?"subcategories added":'subcategory added',
   });
 });
 
 // ============================= UPDATE SUB-CATEGORY NAME ==============================
 exports.updateSubCategoryName = catchAsyncErrors(async (req, res, next) => {
-  const { name,subcategory_icon } = req.body;
+  const { name, icon } = req.body;
 
   const category = await Category.findById(req.params.id);
 
@@ -101,7 +102,7 @@ exports.updateSubCategoryName = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("subcategory not exists", 404));
   }
 
-  const { error } = nameJoiSchema.validate({name,icon:subcategory_icon});
+  const { error } = nameJoiSchema.validate({ name, icon });
 
   if (error) {
     return next(new ErrorHandler(formatJoiErrMessage(error), 400));
@@ -110,6 +111,7 @@ exports.updateSubCategoryName = catchAsyncErrors(async (req, res, next) => {
   category.subcategories.forEach((subcategory) => {
     if (subcategory._id.toString() === req.params.subId) {
       subcategory.name = name;
+      subcategory.subcategory_icon = icon;
     }
   });
 
@@ -118,7 +120,6 @@ exports.updateSubCategoryName = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "subcategory name updated",
-    category,
   });
 });
 
@@ -141,10 +142,7 @@ exports.updateSubCategoryAttriubtes = catchAsyncErrors(
       return next(new ErrorHandler("subcategory not exists", 404));
     }
 
-    const { error } = subcategoryJoiSchema.validate({
-      name: isSubCategoryExists.name,
-      attributes,
-    });
+    const { error } = attributesJoiSchema.validate({ attributes });
 
     if (error) {
       return next(new ErrorHandler(formatJoiErrMessage(error), 400));
@@ -219,7 +217,7 @@ exports.deleteCategory = catchAsyncErrors(async (req, res, next) => {
 
 // =========================== GET ALL CATEGORIES ======================
 exports.getAllCategories = catchAsyncErrors(async (req, res, next) => {
-  const categories = await Category.find({}, { name: 1 });
+  const categories = await Category.find({}, { name: 1, category_icon: 1 });
 
   res.status(200).json({
     success: true,
@@ -245,6 +243,7 @@ exports.getAllSubCategoriesOfSpecifiedCategory = catchAsyncErrors(
         $project: {
           _id: "$subcategories._id",
           name: "$subcategories.name",
+          icon: "$subcategories.subcategory_icon",
         },
       },
     ]);

@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { handleAsyncThunk } from "../utils/handleAsyncThunk";
-import { getAllCaetgories } from "../thunks/categoryThunk";
+import { addCategory, addSubCategories, deleteCategory, deleteSubCategory, getAllAttributes, getAllCaetgories, getAllSubCaetgories, updateAttributes, updateCategoryName, updateSubCategoryName } from "../thunks/categoryThunk";
 
 
 const initialState = {
@@ -9,16 +9,20 @@ const initialState = {
   message: null,
   categories: undefined,
   subcategories: undefined,
+  attributes: undefined,
+  updated: undefined
 
 };
 
 const commonActions = {
   pending: (state) => {
     state.loading = true;
+    state.updated = undefined
   },
   fulfilled: (state, action) => {
     state.success = action.payload.success;
     state.message = action.payload.message;
+    state.updated = true
     state.loading = false;
   },
   rejected: (state, action) => {
@@ -43,6 +47,7 @@ const categorySlice = createSlice({
     handleAsyncThunk(builder, getAllCaetgories, {
       pending: (state) => {
         state.loading = true;
+        state.updated = undefined
       },
       fulfilled: (state, action) => {
         state.categories = action.payload.categories;
@@ -53,6 +58,50 @@ const categorySlice = createSlice({
         state.error = action.payload;
       },
     });
+
+    handleAsyncThunk(builder, getAllSubCaetgories, {
+      pending: (state) => {
+        state.loading = true;
+         state.updated = undefined
+      },
+      fulfilled: (state, action) => {
+        state.subcategories = action.payload.subcategories;
+        state.loading = false;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      },
+    });
+
+    handleAsyncThunk(builder, getAllAttributes, {
+      pending: (state) => {
+        state.loading = true;
+         state.updated = undefined
+      },
+      fulfilled: (state, action) => {
+        state.attributes = action.payload.attributes;
+        state.loading = false;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      },
+    });
+
+    handleAsyncThunk(builder, addCategory, {...commonActions});
+
+    handleAsyncThunk(builder, updateCategoryName, {...commonActions});
+
+    handleAsyncThunk(builder, deleteCategory, {...commonActions});
+
+    handleAsyncThunk(builder, updateSubCategoryName, {...commonActions});
+
+    handleAsyncThunk(builder, addSubCategories, {...commonActions});
+
+    handleAsyncThunk(builder, deleteSubCategory, {...commonActions});
+
+    handleAsyncThunk(builder, updateAttributes, {...commonActions});
 
     
   },

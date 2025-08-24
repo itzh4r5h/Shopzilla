@@ -46,3 +46,17 @@ export const formatINR = (amount=0) =>{
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+
+export const deepLowercase = (obj) =>{
+  if (Array.isArray(obj)) {
+    return obj.map(deepLowercase); // process each array item
+  } else if (obj && typeof obj === "object") {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, value]) => [key, deepLowercase(value)])
+    );
+  } else if (typeof obj === "string") {
+    return obj.toLowerCase(); // lowercase string
+  }
+  return obj; // leave other types (number, boolean, null) as is
+}
