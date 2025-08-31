@@ -7,16 +7,11 @@ import { FaCheckSquare } from "react-icons/fa";
 import { updateName } from "../../store/thunks/userThunks";
 import { MdEditSquare } from "react-icons/md";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
+import { userNameSchema } from "../../validators/userValidator";
 
 export const ProfileName = () => {
   const schema = useMemo(() => {
-    return Joi.object({
-      name: Joi.string().trim().min(3).max(20).required().messages({
-        "string.empty": "Name is required",
-        "string.min": "Name must be at least 3 characters",
-        "string.max": "Name cann't exceed 20 characters",
-      })
-    });
+    return userNameSchema
   }, []);
 
   const dispatch = useDispatch();

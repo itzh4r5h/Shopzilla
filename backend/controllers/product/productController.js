@@ -1,156 +1,68 @@
 const { Product } = require("../../models/product/Product");
-const { joiProductBaseValidator } = require("../../validators/product/productValidator");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
-const ProductSearchAndFilter = require("../../utils/productSearchAndFilter");
-const { isOnlyDigits, formatJoiErrMessage } = require("../../utils/helpers");
-const { uploadToImageKit, imagekit } = require("../../utils/uploadImages");
+const { formatJoiErrMessage } = require("../../utils/helpers");
+const { Category } = require("../../models/product/Category");
+const {
+  productJoiSchema,
+} = require("../../validators/product/variantValidator");
+const mongoose = require("mongoose");
+const { Variant } = require("../../models/product/Variant");
 
 // ======================= ADMIN -- CREATE PRODUCT ==============================
-exports.createProduct = catchAsyncErrors(async (req, res, next) => {
-  const { images, ...data } = req.body;
+exports.createOrUpdateProduct = catchAsyncErrors(async (req, res, next) => {
+  const { category:categoryId, subcategory, ...data } = req.body;
 
-  const error = joiProductBaseValidator({ ...data, images: req.files });
+  const category = await Category.findById(categoryId);
+
+  if (!category) {
+    return next(new ErrorHandler("category not exists"));
+  }
+
+  isSubCategoryExists = category.subcategories.find(
+    (subcat) => subcat.name === subcategory
+  );
+
+  if (!isSubCategoryExists) {
+    return next(new ErrorHandler("subcategory not exists", 404));
+  }
+
+  const { error } = productJoiSchema.validate({ ...data, subcategory });
+
   if (error) {
     return next(new ErrorHandler(formatJoiErrMessage(error), 400));
   }
 
-  data.user = req.user._id;
+  if (req.params.id) {
+    const product = await Product.findById(req.params.id);
 
-  const fakeImageData = [
-    {
-      url: "fake",
-      fileId: "fake",
-      name: "fake",
-    },
-  ];
-
-  const product = await Product.create({ ...data, images: fakeImageData });
-
-  res.status(201).json({
-    success: true,
-    message: "product creation started",
-  });
-
-  (async () => {
-    const uploadedImages = await Promise.all(
-      req.files.map(async (image) => {
-        const { buffer, originalname } = image;
-
-        const { url, fileId } = await uploadToImageKit(
-          buffer,
-          originalname,
-          `${process.env.PRODUCT_PICS_FOLDER}/${product._id}`
-        );
-
-        return {
-          url,
-          fileId,
-          name: originalname.split(".")[0],
-        };
-      })
-    );
-
-    await Product.findByIdAndUpdate(
-      product._id,
-      { images: uploadedImages, imagesUploaded: true },
-      { new: true, runValidators: true }
-    );
-
-    // Lookup socketId from userId
-    const socketId = global._userSockets[req.user._id];
-    if (socketId && global._io) {
-      global._io.to(socketId).emit("productImagesUploaded", {
-        message: "product created",
-      });
+    if (!product) {
+      return next(new ErrorHandler("Product not found", 404));
     }
-  })();
-});
 
-// ======================= ADMIN -- UPDATE PRODUCT ==============================
-exports.updateProduct = catchAsyncErrors(async (req, res, next) => {
-  const product = await Product.findById(req.params.id);
-
-  if (!product) {
-    return next(new ErrorHandler("Product not found", 404));
-  }
-
-  const { removedImagesFileIds, id, ...data } = req.body;
-
-  // if imagekit image fileids exists
-  if (removedImagesFileIds) {
-    // then convert into array
-    const fileIds = removedImagesFileIds.split(",");
-
-    // after deleting images on imagekit
-    // keep those images whose fileid not in fileIds array
-    const productImages = product.images.filter(
-      (img) => !fileIds.includes(img.fileId)
-    );
-
-    // update product images array
-    product.images = [...productImages];
-    await product.save({ validateBeforeSave: true });
-
-    // run delete function of each imagekit file id
-    await Promise.all(fileIds.map((id) => imagekit.deleteFile(id)));
-  }
-
-  // updating product basic details - name, description, price, stock and category
-  await Product.findByIdAndUpdate(
-    product._id,
-    { ...data, imagesUploaded: req.files.length === 0 },
-    {
+    await Product.findByIdAndUpdate(product._id, req.body, {
       new: true,
       runValidators: true,
-    }
-  );
+    });
 
-  res.status(200).json({
-    success: true,
-    message:
-      req.files.length > 0 ? "product updation started" : "product updated",
-  });
+    res.status(200).json({
+      success: true,
+      message: "product updated",
+    });
+  } else {
+    data.user = req.user._id;
 
-  // this will run in the background if req.files have any file to upload on imagekit
-  (async () => {
-    if (req.files.length > 0) {
-      const uploadedImages = await Promise.all(
-        req.files.map(async (image) => {
-          const { buffer, originalname } = image;
+    await Product.create({
+      ...data,
+      category: categoryId,
+      subcategory,
+    });
 
-          const { url, fileId } = await uploadToImageKit(
-            buffer,
-            originalname,
-            `${process.env.PRODUCT_PICS_FOLDER}/${product._id}`
-          );
-
-          return {
-            url,
-            fileId,
-            name: originalname.split(".")[0],
-          };
-        })
-      );
-
-      await Product.findByIdAndUpdate(
-        product._id,
-        {
-          images: [...product.images, ...uploadedImages],
-          imagesUploaded: true,
-        },
-        { new: true, runValidators: true }
-      );
-
-      // Lookup socketId from userId
-      const socketId = global._userSockets[req.user._id];
-      if (socketId && global._io) {
-        global._io.to(socketId).emit("productImagesUploaded", {
-          message: "product updated",
-        });
-      }
-    }
-  })();
+    res.status(201).json({
+      success: true,
+      message: "product created",
+    });
+  }
 });
 
 // ======================= ADMIN -- DELETE PRODUCT ==============================
@@ -161,119 +73,44 @@ exports.deleteProduct = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Product not found", 404));
   }
 
-  await imagekit.deleteFolder(
-    `${process.env.PRODUCT_PICS_FOLDER}/${product._id}`
-  );
+  //   await imagekit.deleteFolder(
+  //   `${process.env.PRODUCT_PICS_FOLDER}/${product._id}`
+  // );
+
+  await Variant.deleteMany({ product: req.params.id });
 
   res.status(200).json({
     success: true,
-    message: "Product deleted",
+    message: "product deleted",
   });
 });
 
-// ======================= ADMIN -- GET IN STOCK AND OUT OF STOCK PRODUCT COUNT ==============================
-exports.getInStockAndOutOfStockProductCount = catchAsyncErrors(
-  async (req, res, next) => {
-    const result = await Product.aggregate([
-      // Create a flag field based on stock
-      {
-        $addFields: {
-          status: {
-            $cond: [
-              { $gt: ["$stock", 0] }, // condition
-              "in_stock", // if true
-              "out_of_stock", // if false
-            ],
-          },
-        },
-      },
-
-      // Group by status and count
-      {
-        $group: {
-          _id: "$status",
-          count: { $sum: 1 },
-        },
-      },
-
-      // Reshape into single document
-      {
-        $group: {
-          _id: null,
-          in_stock: {
-            $sum: {
-              $cond: [{ $eq: ["$_id", "in_stock"] }, "$count", 0],
-            },
-          },
-          out_of_stock: {
-            $sum: {
-              $cond: [{ $eq: ["$_id", "out_of_stock"] }, "$count", 0],
-            },
-          },
-        },
-      },
-
-      // Clean up
-      {
-        $project: {
-          _id: 0,
-          in_stock: 1,
-          out_of_stock: 1,
-        },
-      },
-    ]);
-
-
-    res.status(200).json({
-      success:true,
-      stockStatus: result[0]
-    })
-  }
-);
-
-// ======================= GET ALL TOTAL NUMBER OF PRODUCTS ==============================
-exports.getTotalNumberOfProducts = catchAsyncErrors(async (req, res) => {
-  const totalProducts = await Product.countDocuments();
-
-  res.status(200).json({
-    success: true,
-    totalProducts,
-  });
-});
-
-// ======================= GET ALL PRODUCTS ==============================
-exports.getAllProducts = catchAsyncErrors(async (req, res) => {
-  const resultPerPage = 10;
-  const productsCount = await Product.countDocuments();
-
-  let products = new ProductSearchAndFilter(Product, req.query)
-    .search()
-    .filter()
-    .pagination(resultPerPage);
-
-  products = await products.query;
-
-  res.status(200).json({
-    success: true,
-    products,
-    productsCount,
-  });
-});
-
-// ======================= GET PRODUCT INFO ==============================
+// ======================= ADMIN GET PRODUCT INFO ==============================
 exports.getProduct = catchAsyncErrors(async (req, res, next) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findById(req.params.id).select("-reviews").populate('category')
+
+  const attributes = product.category.subcategories.find((subcat)=>subcat.name.toLocaleLowerCase()===product.subcategory.toLocaleLowerCase()).attributes
 
   if (!product) {
-    return next(new ErrorHandler("Product not found", 404));
-  }
-
-  if (!product.imagesUploaded) {
-    return new ErrorHandler("Product not found", 404);
+    return next(new ErrorHandler("product not found", 404));
   }
 
   res.status(200).json({
     success: true,
     product,
+    attributes
+  });
+});
+
+// ======================= ADMIN GET PRODUCT INFO ==============================
+exports.getAllProduct = catchAsyncErrors(async (req, res, next) => {
+  const products = await Product.find(
+    {},
+    { name: 1, brand: 1, category: 1, subcategory: 1 }
+  ).populate('category','name');
+
+  res.status(200).json({
+    success: true,
+    products,
   });
 });

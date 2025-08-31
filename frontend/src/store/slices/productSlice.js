@@ -61,7 +61,7 @@ const productSlice = createSlice({
         state.productsCount = action.payload.productsCount;
       },
       rejected: (state, action) => {
-        state.loading = true
+        state.loading = false
         state.error = action.payload;
       },
     });
@@ -75,7 +75,7 @@ const productSlice = createSlice({
         state.product = action.payload.product;
       },
       rejected: (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload;
       },
     });

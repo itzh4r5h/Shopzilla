@@ -121,13 +121,6 @@ categorySchema.pre("save", function (next) {
   next();
 });
 
-// Compound index: subcategory names must be unique within category
-// categorySchema.index({ name: 1, "subcategories.name": 1 });
-
-// Compound index: attribute names must be unique within each subcategory
-// categorySchema.index(
-//   { name: 1, "subcategories.name": 1, "subcategories.attributes.name": 1 }
-// );
 
 const Category = mongoose.model("Category", categorySchema);
 

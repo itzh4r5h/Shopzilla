@@ -165,13 +165,13 @@ export const Dashboard = () => {
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
-    dispatch(getAllYears());
+    // dispatch(getAllYears());
     dispatch(getTotalRevenue(currentYear));
-    dispatch(getTotalProducts());
+    // dispatch(getTotalProducts());
     dispatch(getTotalUsers());
-    dispatch(getTotalOrders());
+    // dispatch(getTotalOrders());
     dispatch(getMonthlyRevenue(currentYear));
-    dispatch(getStockStatus())
+    // dispatch(getStockStatus())
   }, []);
 
   return (

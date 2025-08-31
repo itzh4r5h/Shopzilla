@@ -39,14 +39,14 @@ export const Users = () => {
    useToastNotify(error,success,message,clearAdminError,clearAdminMessage,dispatch)
 
   return (
-    <div className="h-full relative">
+    <div className="h-full relative grid grid-cols-1 grid-rows-[1fr_11fr] gap-y-3">
       <TitleWithSearchBar
         title={"Users"}
         placeholderValue={"search by name or email..."}
         path="/admin/dashboard/users"
       />
 
-      <div className="grid grid-cols-2 gap-2.5 mt-5">
+      <div className="grid grid-cols-2 gap-2.5 overflow-y-auto">
         {loading &&
           [1, 2, 3, 4, 5, 6].map((item, index) => {
             return (
@@ -87,7 +87,7 @@ export const Users = () => {
           users?.map((user, index) => {
             return (
               <article
-                className="bg-white border-black border rounded-xl flex flex-col justify-center p-2"
+                className="bg-white border-black border rounded-xl flex flex-col justify-center p-2 h-fit"
                 key={user._id}
               >
                 <div className="relative">

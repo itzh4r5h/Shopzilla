@@ -79,6 +79,7 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+
 productSchema.index({ category: 1, subcategory: 1, brand: 1 });
 
 

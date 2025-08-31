@@ -67,12 +67,11 @@ exports.addSubCategory = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("category not exists", 404));
   }
 
-  const { error } = subcategoriesJoiSchema.validate({subcategories});
+  const { error } = subcategoriesJoiSchema.validate({ subcategories });
 
   if (error) {
     return next(new ErrorHandler(formatJoiErrMessage(error), 400));
   }
-
 
   category.subcategories = [...category.subcategories, ...subcategories];
 
@@ -80,7 +79,8 @@ exports.addSubCategory = catchAsyncErrors(async (req, res, next) => {
 
   res.status(201).json({
     success: true,
-    message: subcategories.length>1?"subcategories added":'subcategory added',
+    message:
+      subcategories.length > 1 ? "subcategories added" : "subcategory added",
   });
 });
 
@@ -217,7 +217,14 @@ exports.deleteCategory = catchAsyncErrors(async (req, res, next) => {
 
 // =========================== GET ALL CATEGORIES ======================
 exports.getAllCategories = catchAsyncErrors(async (req, res, next) => {
-  const categories = await Category.find({}, { name: 1, category_icon: 1 });
+  const categories = await Category.aggregate([
+    {
+      $project: {
+        name: 1,
+        icon: "$category_icon", // rename field
+      },
+    },
+  ]);
 
   res.status(200).json({
     success: true,

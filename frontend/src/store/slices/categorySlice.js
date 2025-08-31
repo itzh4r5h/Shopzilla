@@ -42,6 +42,9 @@ const categorySlice = createSlice({
       state.success = false;
       state.message = null;
     },
+    clearSubCategories: (state) => {
+     state.subcategories = undefined
+    },
   },
   extraReducers: (builder) => {
     handleAsyncThunk(builder, getAllCaetgories, {
@@ -107,5 +110,5 @@ const categorySlice = createSlice({
   },
 });
 
-export const { clearCategoryMessage, clearCategoryError } = categorySlice.actions;
+export const { clearCategoryMessage, clearCategoryError,clearSubCategories } = categorySlice.actions;
 export const categoryReducer = categorySlice.reducer;

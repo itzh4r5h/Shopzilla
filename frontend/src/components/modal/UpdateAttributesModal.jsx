@@ -26,7 +26,7 @@ const cleanAttributes =(attributes, excludeKeys = ["_id", "required"]) => {
   });
 }
 
-export const UpdateAttributes = ({ attributesData, id, subId }) => {
+export const UpdateAttributesModal = ({ attributesData, id, subId }) => {
   const schema = useMemo(() => {
     return attributesJoiSchema;
   }, []);

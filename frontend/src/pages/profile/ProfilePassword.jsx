@@ -3,56 +3,16 @@ import { OutlineButton } from "../../components/buttons/OutlineButton";
 import { FillButton } from "../../components/buttons/FillButton";
 import { useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
-import Joi from "joi";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createPassword, updatePassword } from "../../store/thunks/userThunks";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
+import { userPasswordSchema } from "../../validators/userValidator";
 
 export const ProfilePassword = () => {
   const { updated, isPasswordExists } = useSelector((state) => state.user);
   const schema = useMemo(() => {
-    const baseSchema = {};
-
-    if (isPasswordExists) {
-      baseSchema.oldPassword = Joi.string()
-        .trim()
-        .min(8)
-        .max(20)
-        .pattern(
-          new RegExp(
-            "^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$"
-          )
-        )
-        .required()
-        .messages({
-          "string.empty": "Old Password is required",
-          "string.min": "Old Password must be at least 8 characters",
-          "string.max": "Old Password cann't exceed 20 characters",
-          "string.pattern.base":
-            "Old Password must include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (@, #, $, )",
-        });
-    }
-
-    baseSchema.newPassword = Joi.string()
-      .trim()
-      .min(8)
-      .max(20)
-      .pattern(
-        new RegExp(
-          "^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$"
-        )
-      )
-      .required()
-      .messages({
-        "string.empty": "New Password is required",
-        "string.min": "New Password must be at least 8 characters",
-        "string.max": "New Password cann't exceed 20 characters",
-        "string.pattern.base":
-          "Old Password must include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (@, #, $, )",
-      });
-
-    return Joi.object(baseSchema);
+   return userPasswordSchema(isPasswordExists)
   }, [isPasswordExists]);
 
   const dispatch = useDispatch();

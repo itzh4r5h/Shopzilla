@@ -69,14 +69,14 @@ export const BottomNavbar = () => {
   return (
     <nav className="px-4 py-2 relative">
       {loading ? (
-        <ul className="border border-[var(--black)] rounded-2xl bg-[var(--white)] w-full p-2 flex justify-around items-center gap-3">
+        <ul className="border border-[var(--black)] rounded-lg bg-[var(--white)] w-full p-2 flex justify-around items-center gap-3">
           <Skeleton height={36} width={44} />
           <Skeleton height={36} width={44} />
           <Skeleton height={36} width={44} />
           <Skeleton height={36} width={44} />
         </ul>
       ) : (
-        <ul className="border border-[var(--black)] rounded-2xl bg-[var(--white)] w-full p-2 flex justify-around items-center gap-5">
+        <ul className="border border-[var(--black)] rounded-lg bg-[var(--white)] w-full p-2 flex justify-around items-center gap-5">
           {/* navigation for not logged in users */}
           {!isLoggedIn &&
             nonProtectedRoutes.map((menu, index) => {

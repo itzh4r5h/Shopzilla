@@ -144,23 +144,65 @@ export const updateOrderStatus = createAsyncThunk(
   }
 );
 
+// export const addProduct = createAsyncThunk(
+//   "admin/add_product",
+//   async (productData, thunkAPI) => {
+//     try {
+//       const formData = new FormData();
+//       Object.keys(productData).forEach((key) => {
+//         if (key === "images") {
+//           // Handle multiple files
+//           productData[key].forEach((file) => {
+//             formData.append('images', file);
+//           });
+//         } else {
+//           formData.append(key, productData[key]);
+//         }
+//       });
+
+//       const { data } = await axiosInstance.post("/admin/products", formData);
+//       return data;
+//     } catch (error) {
+//       return thunkAPI.rejectWithValue(
+//         error.response?.data?.message || "Failed"
+//       );
+//     }
+//   }
+// );
+
 export const addProduct = createAsyncThunk(
   "admin/add_product",
   async (productData, thunkAPI) => {
     try {
-      const formData = new FormData();
-      Object.keys(productData).forEach((key) => {
-        if (key === "images") {
-          // Handle multiple files
-          productData[key].forEach((file) => {
-            formData.append('images', file);
-          });
-        } else {
-          formData.append(key, productData[key]);
-        }
-      });
+      const { data } = await axiosInstance.post("/admin/products", productData);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
 
-      const { data } = await axiosInstance.post("/admin/products", formData);
+export const getProduct = createAsyncThunk(
+  "admin/get_product",
+  async (id, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.get(`/admin/products/${id}`);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+export const getAllProduct = createAsyncThunk(
+  "admin/get_all_product",
+  async (_, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.get(`/admin/products`);
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -218,7 +260,7 @@ export const getStockStatus = createAsyncThunk(
   "admin/stock_status",
   async (id, thunkAPI) => {
     try {
-      const { data } = await axiosInstance.get('/admin/products/stock_status');
+      const { data } = await axiosInstance.get('/admin/product');
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(

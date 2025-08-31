@@ -4,10 +4,12 @@ import {
   addProduct,
   deleteProduct,
   deleteUser,
+  getAllProduct,
   getAllUsers,
   getAllYears,
   getMonthlyRevenue,
   getOrdersByStatus,
+  getProduct,
   getStockStatus,
   getTotalOrders,
   getTotalProducts,
@@ -34,15 +36,20 @@ const initialState = {
   users: undefined,
   userCount: undefined,
   orders: undefined,
+  product: undefined,
+  products: undefined,
+  attributes: undefined,
 };
 
 const commonActions = {
   pending: (state) => {
     state.loading = true;
+    state.updated = undefined
   },
   fulfilled: (state, action) => {
     state.success = action.payload.success;
     state.message = action.payload.message;
+    state.updated = true
     state.loading = false;
   },
   rejected: (state, action) => {
@@ -70,7 +77,7 @@ const adminSlice = createSlice({
     handleAsyncThunk(builder, getAllYears, {
       pending: (state) => {
         state.loading = true;
-        state.updated = undefined
+        state.updated = undefined;
       },
       fulfilled: (state, action) => {
         state.years = action.payload.years;
@@ -85,7 +92,7 @@ const adminSlice = createSlice({
     handleAsyncThunk(builder, getTotalRevenue, {
       pending: (state) => {
         state.loading = true;
-        state.updated = undefined
+        state.updated = undefined;
       },
       fulfilled: (state, action) => {
         state.totalRevenue = action.payload.totalRevenue;
@@ -100,7 +107,7 @@ const adminSlice = createSlice({
     handleAsyncThunk(builder, getMonthlyRevenue, {
       pending: (state) => {
         state.loading = true;
-        state.updated = undefined
+        state.updated = undefined;
       },
       fulfilled: (state, action) => {
         state.monthlyRevenue = action.payload.monthlyRevenue;
@@ -115,7 +122,7 @@ const adminSlice = createSlice({
     handleAsyncThunk(builder, getTotalProducts, {
       pending: (state) => {
         state.loading = true;
-        state.updated = undefined
+        state.updated = undefined;
       },
       fulfilled: (state, action) => {
         state.totalProducts = action.payload.totalProducts;
@@ -170,14 +177,14 @@ const adminSlice = createSlice({
       },
     });
 
-     handleAsyncThunk(builder, deleteUser, {
+    handleAsyncThunk(builder, deleteUser, {
       pending: (state) => {
         state.loading = true;
       },
       fulfilled: (state, action) => {
         state.success = action.payload.success;
         state.message = action.payload.message;
-        state.updated = true
+        state.updated = true;
         state.loading = false;
       },
       rejected: (state, action) => {
@@ -208,7 +215,7 @@ const adminSlice = createSlice({
       fulfilled: (state, action) => {
         state.success = action.payload.success;
         state.message = action.payload.message;
-        state.updated = true
+        state.updated = true;
         state.loading = false;
       },
       rejected: (state, action) => {
@@ -219,6 +226,36 @@ const adminSlice = createSlice({
 
     handleAsyncThunk(builder, addProduct, { ...commonActions });
 
+    handleAsyncThunk(builder, getProduct, {
+      pending: (state) => {
+        state.loading = true;
+      },
+      fulfilled: (state, action) => {
+        state.loading = false;
+        state.product = action.payload.product
+        state.attributes = action.payload.attributes
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      },
+    });
+
+    handleAsyncThunk(builder, getAllProduct, { 
+       pending: (state) => {
+        state.loading = true;
+        state.updated = undefined
+      },
+      fulfilled: (state, action) => {
+        state.loading = false;
+        state.products = action.payload.products
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      },
+     });
+
     handleAsyncThunk(builder, updateProduct, { ...commonActions });
 
     handleAsyncThunk(builder, deleteProduct, { ...commonActions });
@@ -226,7 +263,7 @@ const adminSlice = createSlice({
     handleAsyncThunk(builder, getStockStatus, {
       pending: (state) => {
         state.loading = true;
-        state.updated = undefined
+        state.updated = undefined;
       },
       fulfilled: (state, action) => {
         state.stockStatus = action.payload.stockStatus;
@@ -240,5 +277,6 @@ const adminSlice = createSlice({
   },
 });
 
-export const { clearAdminMessage, clearAdminError, saveKeyword } = adminSlice.actions;
+export const { clearAdminMessage, clearAdminError, saveKeyword } =
+  adminSlice.actions;
 export const adminReducer = adminSlice.reducer;

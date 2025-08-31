@@ -2,7 +2,7 @@ const Joi = require("joi");
 
 // Attribute Joi Schema
 const attributeDefinitionJoiSchema = Joi.object({
-  name: Joi.string().min(2).max(50).required().messages({
+  name: Joi.string().trim().min(2).max(50).required().messages({
     "string.base": "attribute name must be a string",
     "string.empty": "attribute name is required",
     "string.min": "attribute name must be at least 2 characters long",

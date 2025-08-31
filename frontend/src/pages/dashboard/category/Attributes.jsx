@@ -3,9 +3,9 @@ import { Heading } from "../../../components/Headers/Heading";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getAllAttributes } from "../../../store/thunks/categoryThunk";
-import { UpdateAttributes } from "../../../components/modal/UpdateAttributes";
 import { clearCategoryError, clearCategoryMessage } from "../../../store/slices/categorySlice";
 import { useToastNotify } from "../../../hooks/useToastNotify";
+import { UpdateAttributesModal } from "../../../components/modal/UpdateAttributesModal";
 
 export const Attributes = () => {
   const { subcategory, category, id, subId } = useParams();
@@ -34,7 +34,7 @@ export const Attributes = () => {
       />
       {!loading && attributes?.length > 0 && (
         <>
-          <div className="flex flex-col gap-y-3 overflow-y-auto p-1">
+          <div className="flex flex-col gap-y-3 overflow-y-auto pb-1">
             {attributes.map((attr) => {
               return (
                 <div className="bg-white border p-2 rounded-md" key={attr._id}>
@@ -59,7 +59,7 @@ export const Attributes = () => {
             })}
           </div>
 
-         <UpdateAttributes attributesData={attributes} id={id} subId={subId}/>
+         <UpdateAttributesModal attributesData={attributes} id={id} subId={subId}/>
         </>
       )}
     </div>

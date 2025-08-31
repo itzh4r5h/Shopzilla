@@ -19,5 +19,6 @@ exports.getBasicDetailsOnly = (user)=>{
 
 
 exports.formatJoiErrMessage = (error)=>{
-  return error.message.replaceAll('"', "");
+  const msg = error.message.split('.').splice(-1)[0]
+  return msg.replaceAll('"', "");
 }

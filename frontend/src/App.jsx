@@ -55,7 +55,7 @@ export const App = () => {
   return (
     <div className="h-full w-full grid grid-rows-[1fr_10fr_1fr] bg-[var(--grey)]">
       <TopNavbar />
-      <main className="p-4 overflow-y-auto relative" ref={mainRef}>
+      <main className="px-4 pt-3 pb-0 overflow-y-auto relative" ref={mainRef}>
         <ToastContainer
           position="top-center"
           autoClose={3000}

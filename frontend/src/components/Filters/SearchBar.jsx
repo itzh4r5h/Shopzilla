@@ -13,7 +13,8 @@ export const SearchBar = ({placeholderValue,path}) => {
         if(e.key === 'Enter'){
 
           if(path.includes('products')){
-            dispatch(serachProduct(search.trim()))
+            // dispatch(serachProduct(search.trim()))
+            console.log('searching products at SerachBar.jsx');
           }
           else if(path.includes('users')){
             dispatch(searchUser(search.trim()))

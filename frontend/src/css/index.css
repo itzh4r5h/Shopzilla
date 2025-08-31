@@ -1,32 +1,33 @@
 @import "tailwindcss";
 
-:root{
-    --grey: #f4f4f0;
-    --black: #000000;
-    --white: #ffffff;
-    --light: #00000080;
-    --purple: #c490ffd0;
-    --purpleDark: #821afa;
+:root {
+  --grey: #f4f4f0;
+  --black: #000000;
+  --white: #ffffff;
+  --light: #00000080;
+  --purple: #c490ffd0;
+  --purpleDark: #821afa;
 }
 
 @font-face {
-    font-family: 'abc';
-    src: url('../assets/fonts/ABCFavoritRegular.ttf');
+  font-family: "abc";
+  src: url("../assets/fonts/ABCFavoritRegular.ttf");
 }
 
-*{
-    font-family: 'abc';
+* {
+  font-family: "abc";
 }
 
-html,body,#root{
-    height: 100%;
-    width: 100%;
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
 }
 
-*::-webkit-scrollbar{
-  display: none
+*::-webkit-scrollbar {
+  display: none;
 }
-
 
 .swiper {
   width: 100%;
@@ -34,16 +35,29 @@ html,body,#root{
 }
 
 .swiper-pagination-bullet-active {
-  background-color: var(--purpleDark)!important;
+  background-color: var(--purpleDark) !important;
 }
 
 input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button{
+input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
   display: none;
 }
 
-input[type='number']{
+input[type="number"] {
   -moz-appearance: textfield;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 5px;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 5px;
+}
+input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 5px;
 }

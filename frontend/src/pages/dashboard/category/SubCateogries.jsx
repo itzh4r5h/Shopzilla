@@ -12,7 +12,10 @@ import {
 import { DeleteModal } from "../../../components/modal/DeleteModal";
 import { CategoryNameModal } from "../../../components/modal/CategoryNameModal";
 import { useToastNotify } from "../../../hooks/useToastNotify";
-import { clearCategoryError, clearCategoryMessage } from "../../../store/slices/categorySlice";
+import {
+  clearCategoryError,
+  clearCategoryMessage,
+} from "../../../store/slices/categorySlice";
 import { SubCategoryModal } from "../../../components/modal/SubCategoryModal";
 
 export const SubCateogries = () => {
@@ -31,14 +34,20 @@ export const SubCateogries = () => {
     }
   }, [updated]);
 
-
-  useToastNotify(error,success,message,clearCategoryError,clearCategoryMessage,dispatch)
+  useToastNotify(
+    error,
+    success,
+    message,
+    clearCategoryError,
+    clearCategoryMessage,
+    dispatch
+  );
 
   return (
-    <div className="grid grid-cols-1 grid-rows-[1fr_11fr] h-full relative">
+    <div className="grid gap-y-1 grid-cols-1 grid-rows-[1fr_10fr_1fr] h-full relative">
       <Heading name={`${category}`} path={"/admin/dashboard/categories"} />
       {!loading && subcategories?.length > 0 && (
-        <div className="flex flex-col gap-y-3 overflow-y-auto p-1">
+        <div className="flex flex-col gap-y-3 overflow-y-auto pb-1">
           {subcategories.map((subcategory) => {
             return (
               <div className="relative" key={subcategory._id}>
@@ -85,9 +94,7 @@ export const SubCateogries = () => {
         </div>
       )}
 
-       <span className="px-1 absolute -bottom-4 w-full">
-        <SubCategoryModal id={id} />
-      </span>
+      <SubCategoryModal id={id} />
     </div>
   );
 };

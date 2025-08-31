@@ -20,9 +20,9 @@ export const NormalSelect = ({
     setShowOptions(true);
   };
   const closeDropDown = () => {
-    setShowOptions(false);
     dropDownIconRef.current.style.rotate = "0deg";
     dropDownIconRef.current.style.color = "initial";
+    setShowOptions(false);
   };
 
   const chooseValueOnClick = (e) => {

@@ -16,6 +16,7 @@ import {
 } from "../../store/thunks/userThunks";
 import { MdEditSquare } from "react-icons/md";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
+import { emailJoiSchema } from "../../validators/userValidator";
 
 export const ProfileEmail = () => {
   const { user, resendOtpIn, sending, updated } = useSelector(
@@ -23,32 +24,7 @@ export const ProfileEmail = () => {
   );
 
   const schema = useMemo(() => {
-    const baseSchema = {};
-    baseSchema.email = Joi.string()
-      .trim()
-      .email({ tlds: { allow: false } })
-      .required()
-      .messages({
-        "string.empty": "Email is required",
-        "string.email": "Invalid email",
-      });
-
-    if (resendOtpIn) {
-      baseSchema.otp = Joi.string()
-        .alphanum()
-        .trim()
-        .min(6)
-        .max(6)
-        .required()
-        .messages({
-          "string.empty": "OTP is required",
-          "string.min": "OTP must be at least 6 characters",
-          "string.max": "OTP cann't exceed 6 characters",
-          "string.alphanum": "OTP must contain only letters and numbers",
-        });
-    }
-
-    return Joi.object(baseSchema);
+    return emailJoiSchema(resendOtpIn)
   }, [resendOtpIn]);
 
   const dispatch = useDispatch();

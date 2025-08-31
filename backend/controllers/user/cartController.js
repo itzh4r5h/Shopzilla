@@ -74,12 +74,14 @@ exports.getAllProductsOfCart = catchAsyncErrors(async (req, res, next) => {
   let cartProductsQuantity = 0;
   let totalPrice = 0;
 
-  user.cartProducts.forEach((cartProduct) => {
-    if (cartProduct.product.stock >= cartProduct.quantity) {
-      cartProductsQuantity += cartProduct.quantity;
-      totalPrice += cartProduct.product.price * cartProduct.quantity;
-    }
-  });
+  if (user.cartProducts.length > 0) {
+    user.cartProducts.forEach((cartProduct) => {
+      if (cartProduct.product.stock >= cartProduct.quantity) {
+        cartProductsQuantity += cartProduct.quantity;
+        totalPrice += cartProduct.product.price * cartProduct.quantity;
+      }
+    });
+  }
 
   res.status(200).json({
     success: true,

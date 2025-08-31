@@ -9,7 +9,7 @@ import { OrderDetails } from "../pages/OrderDetails";
 import { Dashboard } from "../pages/dashboard/Dashboard";
 import { Users } from "../pages/dashboard/Users";
 import { UserOrders } from "../pages/dashboard/UserOrders";
-import { AllProducts } from "../pages/dashboard/AllProducts";
+import { AllProducts } from "../pages/dashboard/product/AllProducts";
 import { AddOrEditProduct } from "../pages/dashboard/AddOrEditProduct";
 import { ResetPassword } from "../pages/ResetPassword";
 import { SignInOrSignUp } from "../pages/SignInOrSignUp";
@@ -18,6 +18,7 @@ import { useSelector } from "react-redux";
 import { Categories } from "../pages/dashboard/category/Categories";
 import { SubCateogries } from "../pages/dashboard/category/SubCateogries";
 import { Attributes } from "../pages/dashboard/category/Attributes";
+import { SingleProductInfo } from "../pages/dashboard/product/SingleProductInfo";
 
 
 export const Routing = () => {
@@ -84,7 +85,7 @@ export const Routing = () => {
           <Route
             path={`${adminDefaultPath}/products/:id`}
             element={
-              <ProductDetails
+              <SingleProductInfo
                 path={"/admin/dashboard/products"}
               />
             }

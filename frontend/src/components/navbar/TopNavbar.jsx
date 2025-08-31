@@ -32,7 +32,7 @@ export const TopNavbar = () => {
 
 
   return (
-    <nav className="grid grid-cols-[1fr_10fr_1fr] gap-3 items-center p-3 bg-white border-b-1 border-black">
+    <nav className="grid grid-cols-[1fr_10fr_1fr] gap-3 items-center p-3 py-2 bg-white border-b-1 border-black">
       {/* logo begins */}
       <picture className="w-12 h-full block">
         <img

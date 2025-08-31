@@ -6,12 +6,12 @@ import { useEffect, useMemo, useState } from "react";
 import { SelectCountryStateCity } from "../selectors/SelectCountryStateCity";
 import { Country, State, City } from "country-state-city";
 import { joiResolver } from "@hookform/resolvers/joi";
-import Joi from "joi";
 import { useDispatch } from "react-redux";
 import { addAddress, updateAddress } from "../../store/thunks/userThunks";
 import { getIsoCode } from "../../utils/helpers";
 import { MdEditSquare } from "react-icons/md";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
+import { shippingAddressJoiSchema } from "../../validators/userValidator";
 
 export const AddressModal = ({
   edit = false,
@@ -19,47 +19,7 @@ export const AddressModal = ({
   shippingAddress = undefined,
 }) => {
   const schema = useMemo(() => {
-    return Joi.object({
-      address: Joi.string().trim().max(255).required().messages({
-        "string.empty": "Address is required",
-        "string.max": "Address must be at most 255 characters",
-      }),
-
-      country: Joi.string().trim().max(85).required().messages({
-        "string.empty": "Country is required",
-        "string.max": "Country must be at most 85 characters",
-      }),
-
-      state: Joi.string().trim().max(85).required().messages({
-        "string.empty": "State is required",
-        "string.max": "State must be at most 85 characters",
-      }),
-
-      city: Joi.string().trim().max(85).required().messages({
-        "string.empty": "City is required",
-        "string.max": "City must be at most 85 characters",
-      }),
-
-      pinCode: Joi.string()
-        .length(6)
-        .pattern(/^[0-9]+$/)
-        .required()
-        .messages({
-          "string.empty": "Pin code is required",
-          "string.length": "Pin code must be exactly 6 digits",
-          "string.pattern.base": "Pin code must contain only digits",
-        }),
-
-      mobileNumber: Joi.string()
-        .length(10)
-        .pattern(/^[0-9]+$/)
-        .required()
-        .messages({
-          "string.empty": "Mobile number is required",
-          "string.length": "Mobile number must be exactly 10 digits",
-          "string.pattern.base": "Mobile number must contain only digits",
-        }),
-    });
+    return shippingAddressJoiSchema
   }, []);
 
   const dispatch = useDispatch();
@@ -93,7 +53,6 @@ export const AddressModal = ({
       handleClose();
       dispatch(addAddress(data));
     }
-    handleClose();
   };
 
   useValidationErrorToast(errors);
@@ -126,7 +85,7 @@ export const AddressModal = ({
       </span>
       {open && (
         <>
-          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000089] p-2 py-4 overflow-y-auto">
+          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000089] p-2 py-4 overflow-y-auto grid place-items-center">
             <form
               onSubmit={handleSubmit(submitForm)}
               className="bg-white w-full border border-black p-3 flex flex-col justify-center gap-5"

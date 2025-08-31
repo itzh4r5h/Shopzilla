@@ -1,12 +1,9 @@
 const express = require("express");
 const {
-  getAllProducts,
-  createProduct,
-  updateProduct,
+  getAllProduct,
+  createOrUpdateProduct,
   deleteProduct,
   getProduct,
-  getTotalNumberOfProducts,
-  getInStockAndOutOfStockProductCount,
 } = require("../controllers/product/productController");
 const {
   createOrUpdateProductReview,
@@ -27,34 +24,8 @@ const {
   getAllSubCategoriesOfSpecifiedCategory,
   getAllAttributesOfSubCategory,
 } = require("../controllers/product/categoryController");
+const { createNewVariant } = require("../controllers/product/variantController");
 const router = express.Router();
-
-// =================================== Admin User Product Related Routes =======================================
-router
-  .route("/admin/products")
-  .post(
-    isUserAuthenticated,
-    authorizedRoles("admin"),
-    upload.array("images", Number(process.env.PRODUCT_MAX_IMAGES)),
-    createProduct
-  )
-  .get(isUserAuthenticated, authorizedRoles("admin"), getTotalNumberOfProducts);
-router
-  .route("/admin/products/:id")
-  .patch(
-    isUserAuthenticated,
-    authorizedRoles("admin"),
-    upload.array("images", Number(process.env.PRODUCT_MAX_IMAGES)),
-    updateProduct
-  )
-  .delete(isUserAuthenticated, authorizedRoles("admin"), deleteProduct);
-router
-  .route("/admin/products/stock_status")
-  .get(
-    isUserAuthenticated,
-    authorizedRoles("admin"),
-    getInStockAndOutOfStockProductCount
-  );
 
 // ===================================== Admin User Product Category Related Routes ==========================================
 router
@@ -82,10 +53,47 @@ router
     updateSubCategoryAttriubtes
   );
 
-// =================================== Every User Routes =======================================
-router.route("/products").get(getAllProducts);
-router.route("/products/:id").get(getProduct);
 
+// =================================== Admin User Product Related Routes =======================================
+router
+  .route("/admin/products")
+  .post(
+    isUserAuthenticated,
+    authorizedRoles("admin"),
+    createOrUpdateProduct
+  ).get(isUserAuthenticated,authorizedRoles('admin'),getAllProduct)
+
+router
+  .route("/admin/products/:id")
+  .put(
+    isUserAuthenticated,
+    authorizedRoles("admin"),
+    createOrUpdateProduct
+  )
+  .delete(isUserAuthenticated, authorizedRoles("admin"), deleteProduct).get(isUserAuthenticated,authorizedRoles('admin'),getProduct)
+
+
+// =================================== Admin User Product Variant Related Routes =======================================
+router
+  .route("/admin/products/variants")
+  .post(
+    isUserAuthenticated,
+    authorizedRoles("admin"),
+    upload.array("images", Number(process.env.PRODUCT_MAX_IMAGES)),
+    createNewVariant
+  )
+
+
+// router
+//   .route("/admin/products/stock_status")
+//   .get(
+//     isUserAuthenticated,
+//     authorizedRoles("admin"),
+//     getInStockAndOutOfStockProductCount
+//   );
+
+
+// =================================== Admin User Product Review Related Routes =======================================
 router
   .route("/products/:id/reviews")
   .patch(isUserAuthenticated, createOrUpdateProductReview)

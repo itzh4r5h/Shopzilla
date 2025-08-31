@@ -43,17 +43,17 @@ export const Categories = () => {
   );
 
   return (
-    <div className="grid gap-y-1 grid-cols-1 grid-rows-[1fr_11fr] h-full relative">
+    <div className="grid gap-y-1 grid-cols-1 grid-rows-[1fr_10fr_1fr] h-full relative">
       <h1 className="text-2xl text-center font-semibold">Categories</h1>
       {!loading && categories?.length > 0 && (
-        <div className="flex flex-col gap-y-3 overflow-y-auto p-1 pt-2 pb-10">
+        <div className="flex flex-col gap-y-3 overflow-y-auto pb-1">
           {categories.map((category) => {
             return (
               <div className="relative" key={category._id}>
                 <div className="absolute right-1 top-1 flex flex-col justify-center items-center gap-2">
                   <CategoryNameModal
                     name={category.name}
-                    icon={category.category_icon}
+                    icon={category.icon}
                     id={category._id}
                   />
 
@@ -74,8 +74,8 @@ export const Categories = () => {
                   <picture className="relative h-10 w-full block overflow-hidden">
                     <ImageCard
                       src={{
-                        url: category_icons[category.category_icon],
-                        name: category.category_icon,
+                        url: category_icons[category.icon],
+                        name: category.icon,
                       }}
                     />
                   </picture>
@@ -97,9 +97,7 @@ export const Categories = () => {
         </p>
       )}
 
-      <span className="px-1 absolute -bottom-4 w-full">
-        <CategoryModal />
-      </span>
+      <CategoryModal />
     </div>
   );
 };
