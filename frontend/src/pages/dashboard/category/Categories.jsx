@@ -61,9 +61,7 @@ export const Categories = () => {
                     deleteFunction={() => {
                       dispatch(deleteCategory(category._id));
                     }}
-                    classes={
-                      "text-3xl active:text-[var(--purpleDark)] transition-colors"
-                    }
+                    textSize={'text-3xl'}
                   />
                 </div>
 

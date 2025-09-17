@@ -13,12 +13,48 @@ const productAttributeJoiSchema = Joi.object({
     "string.max": "attribute name must not exceed 50 characters",
     "any.required": "attribute name is required",
   }),
-  value: Joi.alternatives()
-    .try(Joi.string(), Joi.number(), Joi.boolean(), Joi.array())
+  value: Joi.alternatives().try(Joi.string(), Joi.array()).required().messages({
+    "any.required": "attribute value is required",
+    "alternatives.match": "attribute value must be a valid type",
+  }),
+});
+
+const filesJoiSchema = Joi.object({
+  color: Joi.string().min(3).max(10).required().messages({
+    "string.base": "color must be a string",
+    "string.empty": "color is required",
+    "string.min": "color must be at least 3 characters long",
+    "string.max": "color must not exceed 10 characters",
+    "any.required": "color is required",
+  }),
+  files: Joi.array()
+    .items(
+      Joi.custom((file, helpers) => {
+        const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
+         if (file.url) {
+          return file;
+        }
+
+        if (!allowedTypes.includes(file.mimetype)) {
+          return helpers.error("file.type");
+        }
+
+        if (file.size > MAX_SIZE_BYTES) {
+          return helpers.error("file.size");
+        }
+
+        return file; // valid
+      })
+    )
+    .min(1)
+    .max(maxImages)
     .required()
     .messages({
-      "any.required": "attribute value is required",
-      "alternatives.match": "attribute value must be a valid type",
+      "array.base": "Images must be in an array format",
+      "array.min": "Please upload at least one image",
+      "array.max": `You can upload a maximum of ${maxImages} images`,
+      "file.type": "Only PNG or JPEG or WEBP files are allowed",
+      "file.size": `File size must not exceed ${MAX_SIZE_MB}MB`,
     }),
 });
 
@@ -32,7 +68,7 @@ const variantJoiSchema = Joi.object({
       "array.base": "attributes must be an array",
       "any.required": "attributes are required",
       "array.min": "at least one attribute is required",
-       "object.base": "each attribute must be an object with valid fields",
+      "object.base": "each attribute must be an object with valid fields",
     }),
 
   price: Joi.number().min(0).required().messages({
@@ -44,14 +80,17 @@ const variantJoiSchema = Joi.object({
   stock: Joi.number().min(0).default(0).messages({
     "number.base": "stock must be a number",
     "number.min": "stock cannot be negative",
-  }),
-
-  sku: Joi.string().trim().required().messages({
-    "string.base": "sku must be a string",
-     "any.required": "sku is required",
-  }),
+  })
 });
 
+const imagesJoiSchema = Joi.object({
+  images: Joi.array().items(filesJoiSchema).min(1).required().messages({
+    "array.base": "images must be an array",
+    "any.required": "images are required",
+    "array.min": "at least one image is required",
+    "object.base": "each images must be an object with valid fields",
+  })
+})
 
 const productJoiSchema = Joi.object({
   name: Joi.string().min(2).max(30).trim().required().messages({
@@ -87,30 +126,30 @@ const productJoiSchema = Joi.object({
   }),
 });
 
-// const imagesJoiSchema = Joi.array()
-//       .items(
-//         Joi.custom((file, helpers) => {
-//           const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
-//           if (!allowedTypes.includes(file.mimetype)) {
-//             return helpers.error("file.type");
-//           }
+const baseProductJoiSchema = Joi.object({
+  name: Joi.string().min(2).max(30).trim().required().messages({
+    "string.base": "name must be a string",
+    "string.empty": "name is required",
+    "string.min": "name must be at least {#limit} characters long",
+    "string.max": "name cannot be more than {#limit} characters",
+    "any.required": "name is required",
+  }),
 
-//           if (file.size > MAX_SIZE_BYTES) {
-//             return helpers.error("file.size");
-//           }
+  description: Joi.string().min(10).max(10000).trim().required().messages({
+    "string.base": "description must be a string",
+    "string.empty": "description is required",
+    "string.min": "description must be at least {#limit} characters long",
+    "string.max": "description cannot be more than {#limit} characters",
+    "any.required": "description is required",
+  }),
 
-//           return file; // valid
-//         })
-//       )
-//       .min(1)
-//       .max(maxImages)
-//       .required()
-//       .messages({
-//         "array.base": "images must be in an array format",
-//         "array.min": "please upload at least one image",
-//         "array.max": `you can upload a maximum of ${maxImages} images`,
-//         "file.type": "only PNG or JPEG files are allowed",
-//         "file.size": `image size must not exceed ${MAX_SIZE_MB}MB`,
-//       })
+  brand: Joi.string().min(2).max(50).trim().required().messages({
+    "string.base": "brand must be a string",
+    "string.empty": "brand is required",
+    "string.min": "brand must be at least {#limit} characters long",
+    "string.max": "brand cannot be more than {#limit} characters",
+    "any.required": "brand is required",
+  }),
+});
 
-module.exports = { variantJoiSchema, productJoiSchema };
+module.exports = { variantJoiSchema, productJoiSchema,baseProductJoiSchema,imagesJoiSchema};

@@ -1,10 +1,7 @@
 import { Link } from "react-router";
-import { ProductCard } from "../../../components/cards/ProductCard";
 import { TitleWithSearchBar } from "../../../components/Headers/TitleWithSearchBar";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { DeleteModal } from "../../../components/modal/DeleteModal";
-import { MdEditSquare } from "react-icons/md";
 import {
   deleteProduct,
   getAllProduct,
@@ -14,7 +11,7 @@ import {
   clearAdminError,
   clearAdminMessage,
 } from "../../../store/slices/adminSlice";
-import { CreateOrUpdateProductModal } from "../../../components/modal/CreateOrUpdateProductModal";
+import { ProductModal } from "../../../components/modal/ProductModal";
 import { BaseProductCard } from "../../../components/cards/BaseProductCard";
 
 export const AllProducts = () => {
@@ -88,7 +85,7 @@ export const AllProducts = () => {
         )}
       </div>
 
-      <CreateOrUpdateProductModal />
+      <ProductModal />
     </div>
   );
 };

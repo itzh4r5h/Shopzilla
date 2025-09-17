@@ -1,10 +1,12 @@
 const redis = require("../config/redis");
 const { Worker } = require("bullmq");
 const { User } = require("../models/User");
+const { Variant } = require("../models/product/Variant");
+const { imagekit } = require("../utils/uploadImages");
 
-const startUserDeletionWorker = () => {
+const startDeletionWorker = () => {
   const worker = new Worker(
-    "user-deletion",
+    "deletion",
     async (job) => {
       if (job.name === "delete-user") {
         try {
@@ -15,6 +17,23 @@ const startUserDeletionWorker = () => {
           }
         } catch (error) {
           console.log("[Woker] Error deleting user: " + error.message);
+        }
+      }
+      if (job.name === "delete-images") {
+        try {
+          const variant = await Variant.findOne({
+            _id: job.data.variantId,
+            imagesUploaded: false,
+          });
+          if (variant && !variant.imagesUploaded) {
+            await Variant.findByIdAndDelete(variant._id);
+            await imagekit.deleteFolder(
+              `${process.env.PRODUCT_PICS_FOLDER}/${variant.product._id}/${variant._id}`
+            );
+            console.log(`[Worker] Deleted variant whose images not uploaded`);
+          }
+        } catch (error) {
+          console.log("[Woker] Error deleting variant: " + error.message);
         }
       }
     },
@@ -32,5 +51,4 @@ const startUserDeletionWorker = () => {
   });
 };
 
-
-module.exports = { startUserDeletionWorker };
+module.exports = { startDeletionWorker };

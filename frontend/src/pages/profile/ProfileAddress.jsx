@@ -40,7 +40,7 @@ export const ProfileAddress = () => {
           </div>
           <span className="justify-self-end self-start flex flex-col items-center gap-5">
             <AddressModal edit={true} id={shippingAddress._id} shippingAddress={shippingAddress}/>
-            <DeleteModal deleteFunction={()=>deleteShippingAddress(shippingAddress._id)} classes={'text-3xl justify-self-end active:text-[var(--purpleDark)] transition-colors'}/>
+            <DeleteModal deleteFunction={()=>deleteShippingAddress(shippingAddress._id)} textSize={'text-3xl'}/>
           </span>
         </article>
        })

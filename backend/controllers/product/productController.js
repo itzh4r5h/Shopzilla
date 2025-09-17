@@ -5,13 +5,14 @@ const { formatJoiErrMessage } = require("../../utils/helpers");
 const { Category } = require("../../models/product/Category");
 const {
   productJoiSchema,
+  baseProductJoiSchema,
 } = require("../../validators/product/variantValidator");
 const mongoose = require("mongoose");
 const { Variant } = require("../../models/product/Variant");
 
 // ======================= ADMIN -- CREATE PRODUCT ==============================
-exports.createOrUpdateProduct = catchAsyncErrors(async (req, res, next) => {
-  const { category:categoryId, subcategory, ...data } = req.body;
+exports.createProduct = catchAsyncErrors(async (req, res, next) => {
+  const { category: categoryId, subcategory, ...data } = req.body;
 
   const category = await Category.findById(categoryId);
 
@@ -65,6 +66,31 @@ exports.createOrUpdateProduct = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
+// ======================= ADMIN -- UPDATE PRODUCT ==============================
+exports.updateProduct = catchAsyncErrors(async (req, res, next) => {
+  const product = await Product.findById(req.params.id);
+
+  if (!product) {
+    return next(new ErrorHandler("product not exists", 404));
+  }
+
+  const { error } = baseProductJoiSchema.validate(req.body);
+
+  if (error) {
+    return next(new ErrorHandler(formatJoiErrMessage(error), 400));
+  }
+
+  await Product.findByIdAndUpdate(product._id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "product updated",
+  });
+});
+
 // ======================= ADMIN -- DELETE PRODUCT ==============================
 exports.deleteProduct = catchAsyncErrors(async (req, res, next) => {
   const product = await Product.findByIdAndDelete(req.params.id);
@@ -87,9 +113,15 @@ exports.deleteProduct = catchAsyncErrors(async (req, res, next) => {
 
 // ======================= ADMIN GET PRODUCT INFO ==============================
 exports.getProduct = catchAsyncErrors(async (req, res, next) => {
-  const product = await Product.findById(req.params.id).select("-reviews").populate('category')
+  const product = await Product.findById(req.params.id)
+    .select("-reviews")
+    .populate("category");
 
-  const attributes = product.category.subcategories.find((subcat)=>subcat.name.toLocaleLowerCase()===product.subcategory.toLocaleLowerCase()).attributes
+  const attributes = product.category.subcategories.find(
+    (subcat) =>
+      subcat.name.toLocaleLowerCase() ===
+      product.subcategory.toLocaleLowerCase()
+  ).attributes;
 
   if (!product) {
     return next(new ErrorHandler("product not found", 404));
@@ -98,16 +130,16 @@ exports.getProduct = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     product,
-    attributes
+    attributes,
   });
 });
 
-// ======================= ADMIN GET PRODUCT INFO ==============================
+// ======================= ADMIN GET ALL PRODUCTS ==============================
 exports.getAllProduct = catchAsyncErrors(async (req, res, next) => {
   const products = await Product.find(
     {},
     { name: 1, brand: 1, category: 1, subcategory: 1 }
-  ).populate('category','name');
+  ).populate("category", "name");
 
   res.status(200).json({
     success: true,

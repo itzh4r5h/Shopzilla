@@ -2,10 +2,12 @@ import { createSlice } from "@reduxjs/toolkit";
 import { handleAsyncThunk } from "../utils/handleAsyncThunk";
 import {
   addProduct,
+  addOrUpdateVariant,
   deleteProduct,
   deleteUser,
   getAllProduct,
   getAllUsers,
+  getAllVariants,
   getAllYears,
   getMonthlyRevenue,
   getOrdersByStatus,
@@ -38,18 +40,19 @@ const initialState = {
   orders: undefined,
   product: undefined,
   products: undefined,
+  variants: undefined,
   attributes: undefined,
 };
 
 const commonActions = {
   pending: (state) => {
     state.loading = true;
-    state.updated = undefined
+    state.updated = undefined;
   },
   fulfilled: (state, action) => {
     state.success = action.payload.success;
     state.message = action.payload.message;
-    state.updated = true
+    state.updated = true;
     state.loading = false;
   },
   rejected: (state, action) => {
@@ -111,6 +114,21 @@ const adminSlice = createSlice({
       },
       fulfilled: (state, action) => {
         state.monthlyRevenue = action.payload.monthlyRevenue;
+        state.loading = false;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      },
+    });
+
+    handleAsyncThunk(builder, getStockStatus, {
+      pending: (state) => {
+        state.loading = true;
+        state.updated = undefined;
+      },
+      fulfilled: (state, action) => {
+        state.stockStatus = action.payload.stockStatus;
         state.loading = false;
       },
       rejected: (state, action) => {
@@ -232,8 +250,8 @@ const adminSlice = createSlice({
       },
       fulfilled: (state, action) => {
         state.loading = false;
-        state.product = action.payload.product
-        state.attributes = action.payload.attributes
+        state.product = action.payload.product;
+        state.attributes = action.payload.attributes;
       },
       rejected: (state, action) => {
         state.loading = false;
@@ -241,33 +259,36 @@ const adminSlice = createSlice({
       },
     });
 
-    handleAsyncThunk(builder, getAllProduct, { 
-       pending: (state) => {
-        state.loading = true;
-        state.updated = undefined
-      },
-      fulfilled: (state, action) => {
-        state.loading = false;
-        state.products = action.payload.products
-      },
-      rejected: (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      },
-     });
-
-    handleAsyncThunk(builder, updateProduct, { ...commonActions });
-
-    handleAsyncThunk(builder, deleteProduct, { ...commonActions });
-
-    handleAsyncThunk(builder, getStockStatus, {
+    handleAsyncThunk(builder, getAllProduct, {
       pending: (state) => {
         state.loading = true;
         state.updated = undefined;
       },
       fulfilled: (state, action) => {
-        state.stockStatus = action.payload.stockStatus;
         state.loading = false;
+        state.products = action.payload.products;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      },
+    });
+
+    handleAsyncThunk(builder, updateProduct, { ...commonActions });
+
+    handleAsyncThunk(builder, deleteProduct, { ...commonActions });
+
+    handleAsyncThunk(builder, addOrUpdateVariant, { ...commonActions });
+
+
+    handleAsyncThunk(builder, getAllVariants, {
+      pending: (state) => {
+        state.loading = true;
+        state.updated = undefined;
+      },
+      fulfilled: (state, action) => {
+        state.loading = false;
+        state.variants = action.payload.variants;
       },
       rejected: (state, action) => {
         state.loading = false;

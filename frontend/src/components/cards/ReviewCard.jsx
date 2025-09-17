@@ -7,10 +7,10 @@ import { deleteReview } from "../../store/thunks/reviewThunk";
 
 export const ReviewCard = ({ review, id }) => {
   const dispatch = useDispatch();
-  const { isLoggedIn,user } = useSelector((state) => state.user);
+  const { isLoggedIn, user } = useSelector((state) => state.user);
 
   const handleDeleteReview = () => {
-    dispatch(deleteReview(id))
+    dispatch(deleteReview(id));
   };
 
   return (
@@ -20,12 +20,7 @@ export const ReviewCard = ({ review, id }) => {
         {isLoggedIn && review.user.toString() === user._id.toString() && (
           <>
             <ReviewModal edit={true} id={id} review={review} />
-            <DeleteModal
-              deleteFunction={handleDeleteReview}
-              classes={
-                "text-[1.65rem] justify-self-end active:text-[var(--purpleDark)] transition-colors"
-              }
-            />
+            <DeleteModal deleteFunction={handleDeleteReview} />
           </>
         )}
       </div>

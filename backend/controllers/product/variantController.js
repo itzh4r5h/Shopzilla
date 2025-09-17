@@ -3,19 +3,87 @@ const { Variant } = require("../../models/product/Variant");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const ProductSearchAndFilter = require("../../utils/productSearchAndFilter");
-const { isOnlyDigits, formatJoiErrMessage } = require("../../utils/helpers");
+const {
+  isOnlyDigits,
+  formatJoiErrMessage,
+  generateSKU,
+} = require("../../utils/helpers");
 const { uploadToImageKit, imagekit } = require("../../utils/uploadImages");
 const {
   variantJoiSchema,
+  imagesJoiSchema,
 } = require("../../validators/product/variantValidator");
+const { deletionQueue } = require("../../jobs/queue");
 
-// ======================= ADMIN -- CREATE NEW VARIANT ==============================
-exports.createNewVariant = catchAsyncErrors(async (req, res, next) => {
-  const { variant, productId } = req.body;
+// ======================= ADMIN -- Common Works For Create Variant and Update Variant ==============================
+const formatImages = (files, imgs, edit) => {
+  /*
+      /images\[(\d+)\]\[files\]/ → this regex has one pair of parentheses (\d+).
 
-  if (!productId || productId.toString().trim() === "") {
-    return next(new ErrorHandler("product id is required"));
+      That pair tells JavaScript: capture the digits that appear between images[ and ][files].
+
+      When .match() runs, it returns an array like:
+
+      ["images[3][files]", "3"]
+
+      match[1] = the part captured by (\d+): "3".
+    
+    */
+
+  const grouped = {};
+
+  files.forEach((file) => {
+    const match = file.fieldname.match(/images\[(\d+)\]\[files\]/);
+    if (match) {
+      const index = match[1];
+      if (!grouped[index]) {
+        grouped[index] = {
+          color: imgs[index].color,
+          files: [],
+        };
+      }
+      grouped[index].files.push(file);
+    }
+  });
+
+  let images;
+
+  if (edit) {
+    images = imgs.map((img, index) => {
+      if(img.files){
+        const parsedFiles = img.files.map((file) => JSON.parse(file));
+        if (grouped[index]) {
+          return {
+            color: grouped[index].color,
+            files: [...parsedFiles, ...grouped[index].files],
+          };
+        } else {
+          return {
+            color: img.color,
+            files: parsedFiles,
+          };
+        }
+      }else{
+        return {
+          color: img.color,
+          files: grouped[index].files
+        }
+      }
+    });
+  } else {
+    images = Object.keys(grouped).map((key) => {
+      return { color: grouped[key].color, files: grouped[key].files };
+    });
   }
+  return images;
+};
+
+const contentValidation = async (req, next, edit = false) => {
+  req.body.attributes = JSON.parse(req.body.attributes);
+
+  const { price, stock, attributes } = req.body;
+
+  const { productId } = req.params;
 
   const product = await Product.findById(productId).populate("category");
 
@@ -23,23 +91,34 @@ exports.createNewVariant = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("product not exists", 404));
   }
 
-  const { error } = variantJoiSchema.validate(variant);
+  const { error } = variantJoiSchema.validate({
+    price,
+    stock,
+    attributes,
+  });
 
   if (error) {
     return next(new ErrorHandler(formatJoiErrMessage(error), 400));
+  }
+
+  const images = formatImages(req.files, req.body.images, edit);
+
+  const { error: imagesError } = imagesJoiSchema.validate({ images });
+
+  if (imagesError) {
+    return next(new ErrorHandler(formatJoiErrMessage(imagesError), 400));
   }
 
   const subcategory = product.category.subcategories.find(
     (subcat) => subcat.name === product.subcategory
   );
 
-
-  if(variant.attributes.length !== subcategory.attributes.length){
-    return next(new ErrorHandler('required attriubtes not given'))
+  if (attributes.length !== subcategory.attributes.length) {
+    return next(new ErrorHandler("required attriubtes not given"));
   }
 
   // validates variant attribute with existing subcategory attributes
-  for (const attr of variant.attributes) {
+  for (const attr of attributes) {
     const definedAttr = subcategory.attributes.find(
       (attribute) => attribute.name === attr.name
     );
@@ -47,137 +126,216 @@ exports.createNewVariant = catchAsyncErrors(async (req, res, next) => {
     if (!definedAttr) {
       return next(new ErrorHandler("invalid attribute name"));
     }
-
-    if (definedAttr.type === "number" && typeof attr.value !== "number") {
-      return next(new ErrorHandler(`invalid attribute value - ${attr.value}`));
-    }
     if (definedAttr.type === "string" && typeof attr.value !== "string") {
       return next(new ErrorHandler(`invalid attribute value - ${attr.value}`));
     }
     if (definedAttr.type === "enum" && !Array.isArray(attr.value)) {
       return next(new ErrorHandler(`invalid attribute value - ${attr.value}`));
     }
-
   }
+  return { price, stock, attributes, productId, images };
+};
 
-  const images = [
+const uploadImagesToImageKit = async (images, productId, variantId) => {
+  const uploadedImages = await Promise.all(
+    images.map(async (img) => {
+      const files = await Promise.all(
+        img.files.map(async (file) => {
+          if ("buffer" in file || "mimetype" in file) {
+            const { buffer, originalname } = file;
+
+            const { url, fileId } = await uploadToImageKit(
+              buffer,
+              originalname,
+              `${process.env.PRODUCT_PICS_FOLDER}/${productId}/${variantId}`
+            );
+
+            return {
+              url,
+              fileId,
+              name: originalname.split(".")[0],
+            };
+          } else {
+            return file;
+          }
+        })
+      );
+      return {
+        color: img.color,
+        files,
+      };
+    })
+  );
+
+  return uploadedImages;
+};
+
+// ======================= ADMIN -- CREATE NEW VARIANT ==============================
+exports.createNewVariant = catchAsyncErrors(async (req, res, next) => {
+  const { price, stock, attributes, productId, images } =
+    await contentValidation(req, next);
+
+  const dummyImagesData = [
     {
+      color: "default",
       files: [
         {
-          url: 'fake',
-          fileId: 'fake',
-          name: 'fake'
-        }
-      ]
-    }
-  ]
+          url: "fake",
+          fileId: "fake",
+          name: "fake",
+        },
+      ],
+    },
+  ];
 
-  console.log(req.body,req.files);
+  const sku = generateSKU(productId, attributes);
 
-  // await Variant.create({...variant,images,product:productId});
+  const variant = await Variant.create({
+    price,
+    stock,
+    attributes,
+    sku,
+    images: dummyImagesData,
+    product: productId,
+  });
 
   res.status(201).json({
     success: true,
     message: "variant creation started",
   });
 
-  // (async () => {
-  //   const uploadedImages = await Promise.all(
-  //     req.files.map(async (image) => {
-  //       const { buffer, originalname } = image;
+  // Schedule job to delete variant if there is an error while uploading images after specified minutes
+  await deletionQueue.add(
+    "delete-images",
+    { variantId: variant._id },
+    {
+      delay: process.env.VARIANT_DELETION_MINUTES * 60 * 1000 + 3000,
+      jobId: `delete-images-${variant._id}`,
+    }
+  );
 
-  //       const { url, fileId } = await uploadToImageKit(
-  //         buffer,
-  //         originalname,
-  //         `${process.env.PRODUCT_PICS_FOLDER}/${product._id}`
-  //       );
+  (async () => {
+    const uploadedImages = await uploadImagesToImageKit(
+      images,
+      productId,
+      variant._id
+    );
 
-  //       return {
-  //         url,
-  //         fileId,
-  //         name: originalname.split(".")[0],
-  //       };
-  //     })
-  //   );
+    await Variant.findByIdAndUpdate(
+      variant._id,
+      { images: uploadedImages, imagesUploaded: true },
+      { new: true, runValidators: true }
+    );
 
-  //   await Product.create({ ...data, images: uploadedImages });
+    // if images uploaded successfully then delete the job
+    const job = await deletionQueue.getJob(`delete-images-${variant._id}`);
+    if (job) {
+      await job.remove();
+      console.log(`Job for variant ${variant._id} deleted successfully`);
+    }
 
-  //   // Lookup socketId from userId
-  //   const socketId = global._userSockets[req.user._id];
-  //   if (socketId && global._io) {
-  //     global._io.to(socketId).emit("productImagesUploaded", {
-  //       message: "product created",
-  //     });
-  //   }
-  // })();
+    // Lookup socketId from userId
+    const socketId = global._userSockets[req.user._id];
+    if (socketId && global._io) {
+      global._io.to(socketId).emit("productImagesUploaded", {
+        message: "variant created",
+        id: productId,
+      });
+    }
+  })();
 });
 
+// ======================= ADMIN -- UPDATE VARIANT ==============================
+exports.updateVariant = catchAsyncErrors(async (req, res, next) => {
+  const variant = await Variant.findById(req.params.id);
 
-  // // if imagekit image fileids exists
-  // if (removedImagesFileIds) {
-  //   // then convert into array
-  //   const fileIds = removedImagesFileIds.split(",");
+  if (!variant) {
+    return next(new ErrorHandler("variant not exists", 404));
+  }
 
-  //   // after deleting images on imagekit
-  //   // keep those images whose fileid not in fileIds array
-  //   const productImages = product.images.filter(
-  //     (img) => !fileIds.includes(img.fileId)
-  //   );
+  const { price, stock, attributes, productId, images } =
+    await contentValidation(req, next, true);
 
-  //   // update product images array
-  //   product.images = [...productImages];
-  //   await product.save({ validateBeforeSave: true });
+  const { removedImagesFileIds } = req.body;
 
-  //   // run delete function of each imagekit file id
-  //   await Promise.all(fileIds.map((id) => imagekit.deleteFile(id)));
-  // }
+  // if imagekit image fileids exists
+  if (removedImagesFileIds && removedImagesFileIds !== "") {
+    // convert into array
+    const fileIds = removedImagesFileIds.split(",");
 
+    if (fileIds.length > 0) {
+      // run delete function of each imagekit file id
+      await Promise.all(fileIds.map((id) => imagekit.deleteFile(id)));
+    }
+  }
 
-  // // this will run in the background if req.files have any file to upload on imagekit
-  // (async () => {
-  //   if (req.files.length > 0) {
-  //     const uploadedImages = await Promise.all(
-  //       req.files.map(async (image) => {
-  //         const { buffer, originalname } = image;
+  if (req.files.length > 0) {
+    res.status(200).json({
+      success: true,
+      message: "updating variant...",
+    });
+    // this will run in the background if req.files have any file to upload on imagekit
+    (async () => {
+      const uploadedImages = await uploadImagesToImageKit(
+        images,
+        productId,
+        variant._id
+      );
 
-  //         const { url, fileId } = await uploadToImageKit(
-  //           buffer,
-  //           originalname,
-  //           `${process.env.PRODUCT_PICS_FOLDER}/${product._id}`
-  //         );
+      await Variant.findByIdAndUpdate(
+        variant._id,
+        {
+          price,
+          stock,
+          attributes,
+          images: uploadedImages,
+        },
+        { new: true, runValidators: true }
+      );
 
-  //         return {
-  //           url,
-  //           fileId,
-  //           name: originalname.split(".")[0],
-  //         };
-  //       })
-  //     );
+      // Lookup socketId from userId
+      const socketId = global._userSockets[req.user._id];
+      if (socketId && global._io) {
+        global._io.to(socketId).emit("productImagesUploaded", {
+          message: "variant updated",
+          id: productId,
+        });
+      }
+    })();
+  } else {
+    await Variant.findByIdAndUpdate(
+      variant._id,
+      {
+        price,
+        stock,
+        attributes,
+        images,
+      },
+      { new: true, runValidators: true }
+    );
+    res.status(200).json({
+      success: true,
+      message: "variant updated",
+    });
+  }
+});
 
-  //     await Product.findByIdAndUpdate(
-  //       product._id,
-  //       {
-  //         images: [...product.images, ...uploadedImages],
-  //         imagesUploaded: true,
-  //       },
-  //       { new: true, runValidators: true }
-  //     );
+// ======================= ADMIN -- GET ALL VARIANTS - {imagesUploaded:true} ==============================
+exports.getAllVariants = catchAsyncErrors(async (req, res, next) => {
+  const variants = await Variant.find({
+    product: req.params.productId,
+    imagesUploaded: true,
+  });
 
-  //     // Lookup socketId from userId
-  //     const socketId = global._userSockets[req.user._id];
-  //     if (socketId && global._io) {
-  //       global._io.to(socketId).emit("productImagesUploaded", {
-  //         message: "product updated",
-  //       });
-  //     }
-  //   }
-  // })();
+  res.status(200).json({
+    variants,
+    success: true,
+  });
+});
 
-
-  //   await imagekit.deleteFolder(
-  //   `${process.env.PRODUCT_PICS_FOLDER}/${product._id}`
-  // );
-
+//   await imagekit.deleteFolder(
+//   `${process.env.PRODUCT_PICS_FOLDER}/${product._id}`
+// );
 
 //   // ======================= ADMIN -- GET IN STOCK AND OUT OF STOCK PRODUCT COUNT ==============================
 // exports.getInStockAndOutOfStockProductCount = catchAsyncErrors(

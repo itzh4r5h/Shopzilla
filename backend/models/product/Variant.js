@@ -26,7 +26,6 @@ const variantSchema = new mongoose.Schema(
         color: {
           type: String,
          required: [true, "color is required"],
-         default: 'default'
         },
         files: [
           {

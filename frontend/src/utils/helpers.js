@@ -34,21 +34,19 @@ export const formatMongodbDate = (date) => {
 
   const d = new Date(date);
   const day = String(d.getDate()).padStart(2, "0");
-   const month = d.toLocaleString("en-US", { month: "short" }); // Short month name
+  const month = d.toLocaleString("en-US", { month: "short" }); // Short month name
   const year = d.getFullYear();
 
   return `${day} ${month}, ${year}`;
 };
 
-
-export const formatINR = (amount=0) =>{
+export const formatINR = (amount = 0) => {
   return new Intl.NumberFormat("en-IN", {
     maximumFractionDigits: 0,
   }).format(amount);
-}
+};
 
-
-export const deepLowercase = (obj) =>{
+export const deepLowercase = (obj) => {
   if (Array.isArray(obj)) {
     return obj.map(deepLowercase); // process each array item
   } else if (obj && typeof obj === "object") {
@@ -59,8 +57,7 @@ export const deepLowercase = (obj) =>{
     return obj.toLowerCase(); // lowercase string
   }
   return obj; // leave other types (number, boolean, null) as is
-}
-
+};
 
 // images = product.images from backend
 export const getImagesByColor = (images, color = "default") => {
@@ -68,11 +65,33 @@ export const getImagesByColor = (images, color = "default") => {
 
   // If color exists (Red, Blue, etc.)
   if (color !== "default") {
-    const entry = images.find(img => img.color === color);
+    const entry = images.find((img) => img.color === color);
     return entry ? entry.files : [];
   }
 
   // If "default" mode (no color attribute)
-  const defaultEntry = images.find(img => img.color === "default");
+  const defaultEntry = images.find((img) => img.color === "default");
   return defaultEntry ? defaultEntry.files : [];
+};
+
+export const flatAttributesValueArray = (attrValueArray) => {
+  return attrValueArray.map((attr) => {
+    return attr.value;
+  });
+};
+
+/**
+ * Removes unwanted fields from attributes
+ * @param {Array} attributes - array of attribute objects
+ * @param {Array} excludeKeys - keys to remove (default: ["_id", "required"])
+ * @returns {Array} cleaned attributes
+ */
+export const cleanAttributes =(attributes, excludeKeys = ["_id", "required"]) => {
+  return attributes.map(attr => {
+    const cleaned = { ...attr };
+    excludeKeys.forEach(key => {
+      delete cleaned[key];
+    });
+    return cleaned;
+  });
 }

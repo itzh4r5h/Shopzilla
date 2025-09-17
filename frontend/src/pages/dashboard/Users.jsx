@@ -36,7 +36,14 @@ export const Users = () => {
     dispatch(getAllUsers(keyword));
   }, [keyword]);
 
-   useToastNotify(error,success,message,clearAdminError,clearAdminMessage,dispatch)
+  useToastNotify(
+    error,
+    success,
+    message,
+    clearAdminError,
+    clearAdminMessage,
+    dispatch
+  );
 
   return (
     <div className="h-full relative grid grid-cols-1 grid-rows-[1fr_11fr] gap-y-3">
@@ -100,9 +107,6 @@ export const Users = () => {
                         deleteFunction={() => {
                           dispatch(deleteUser(user._id));
                         }}
-                        classes={
-                          "text-[1.65rem] justify-self-end active:text-[var(--purpleDark)] transition-colors"
-                        }
                       />
                     </span>
                   )}

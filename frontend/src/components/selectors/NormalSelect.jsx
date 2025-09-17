@@ -60,14 +60,14 @@ export const NormalSelect = ({
         />
         <IoIosArrowDropdownCircle
           ref={dropDownIconRef}
-          className="absolute transition-all text-xl top-0 right-0 -translate-x-1/2 duration-400"
+          className="absolute transition-all text-xl top-1/2 right-2 -translate-y-1/2 duration-400"
           onClick={openDropDown}
         />
       </span>
       {showOptions && (
         <ul
           onClick={chooseValueOnClick}
-          className="absolute z-999 bg-white border w-full h-50 rounded-md mt-1 overflow-y-auto p-3 flex flex-col gap-2"
+          className="absolute z-999 bg-white border w-full min-h-10 max-h-50 rounded-md mt-1 overflow-y-auto p-3 flex flex-col gap-2"
         >
           {optionsData.map((option, index) => {
             return (

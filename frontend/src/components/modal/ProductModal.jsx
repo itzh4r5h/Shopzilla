@@ -7,18 +7,19 @@ import { useDispatch, useSelector } from "react-redux";
 import { MdEditSquare } from "react-icons/md";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 import { productJoiSchema } from "../../validators/productValidators";
-import { addProduct } from "../../store/thunks/adminThunks";
+import { addProduct, updateProduct } from "../../store/thunks/adminThunks";
 import { CategorySelector } from "../selectors/CategorySelector";
 import { getAllCaetgories, getAllSubCaetgories } from "../../store/thunks/categoryThunk";
 import { clearSubCategories } from "../../store/slices/categorySlice";
 
-export const CreateOrUpdateProductModal = ({
+export const ProductModal = ({
   edit = false,
   id = undefined,
+  product = undefined
 }) => {
   const schema = useMemo(() => {
-    return productJoiSchema;
-  }, []);
+    return productJoiSchema(edit);
+  }, [edit]);
 
   const dispatch = useDispatch();
   const { categories, subcategories } = useSelector(
@@ -44,9 +45,11 @@ export const CreateOrUpdateProductModal = ({
   };
 
   const submitForm = (data) => {
-    data.category = categoryId
     if (edit) {
+      dispatch(updateProduct({productData:data,id:product._id}))
+      handleClose()
     } else {
+      data.category = categoryId
       dispatch(addProduct(data))
       handleClose();
     }
@@ -66,11 +69,23 @@ export const CreateOrUpdateProductModal = ({
     }
   },[categoryId])
 
+
+  useEffect(()=>{
+    if(product){
+      dispatch(getAllSubCaetgories(product.category._id))
+      reset({
+        name: product.name,
+        description: product.description,
+        brand: product.brand
+      })
+    }
+  },[reset,product])
+
   return (
     <div>
       <span onClick={() => setOpen(true)}>
         {edit ? (
-          <MdEditSquare className="text-2xl justify-self-end active:text-[var(--purpleDark)] transition-colors" />
+          <MdEditSquare className="text-2xl active:text-[var(--purpleDark)] transition-colors" />
         ) : (
           <FillButton name={"Add Product"} />
         )}
@@ -134,21 +149,21 @@ export const CreateOrUpdateProductModal = ({
 
 
                {/* category begins */}
-              <div className="flex flex-col justify-center gap-2">
+             {!edit && <div className="flex flex-col justify-center gap-2">
                 <label htmlFor="category" className="text-xl w-fit">
                   Category
                 </label>
                <CategorySelector optionsData={categories} name={'category'} register={register} setValue={setValue} setId={setCategoryId} watch={watch} />
-              </div>
+              </div>}
               {/* category ends */}
 
                {/* subcategory begins */}
-              <div className="flex flex-col justify-center gap-2">
+              {!edit && <div className="flex flex-col justify-center gap-2">
                 <label htmlFor="subcategory" className="text-xl w-fit">
                   Subcategory
                 </label>
                 <CategorySelector optionsData={subcategories?.length>0?subcategories:[]} name={'subcategory'} register={register} setValue={setValue} watch={watch} />
-              </div>
+              </div>}
               {/* subcategory ends */}
 
               <FillButton type="submit" name={edit ? "Update" : "Add"} />

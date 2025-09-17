@@ -2,7 +2,7 @@ const { Queue } = require('bullmq');
 
 const redis = require('../config/redis')
 
-const deletionQueue = new Queue('user-deletion', {
+const deletionQueue = new Queue('deletion', {
   connection: redis
 });
 

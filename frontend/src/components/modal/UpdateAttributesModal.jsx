@@ -6,25 +6,11 @@ import { joiResolver } from "@hookform/resolvers/joi";
 import { useDispatch } from "react-redux";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 import { attributesJoiSchema } from "../../validators/categoryValidator";
-import { deepLowercase } from "../../utils/helpers";
+import { cleanAttributes, deepLowercase } from "../../utils/helpers";
 import { updateAttributes } from "../../store/thunks/categoryThunk";
 import { AttributeComponent } from "../common/AttributeComponent";
 
-/**
- * Removes unwanted fields from attributes
- * @param {Array} attributes - array of attribute objects
- * @param {Array} excludeKeys - keys to remove (default: ["_id", "required"])
- * @returns {Array} cleaned attributes
- */
-const cleanAttributes =(attributes, excludeKeys = ["_id", "required"]) => {
-  return attributes.map(attr => {
-    const cleaned = { ...attr };
-    excludeKeys.forEach(key => {
-      delete cleaned[key];
-    });
-    return cleaned;
-  });
-}
+
 
 export const UpdateAttributesModal = ({ attributesData, id, subId }) => {
   const schema = useMemo(() => {

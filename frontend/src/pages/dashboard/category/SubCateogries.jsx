@@ -65,9 +65,7 @@ export const SubCateogries = () => {
                         deleteSubCategory({ id, subId: subcategory._id })
                       );
                     }}
-                    classes={
-                      "text-3xl active:text-[var(--purpleDark)] transition-colors"
-                    }
+                    textSize={'text-3xl'}
                   />
                 </div>
                 <Link

@@ -58,7 +58,7 @@ export const AttributeComponent = ({
             name={attributeType}
             register={register}
             setValue={setValue}
-            optionsData={["string", "number", "boolean", "enum"]}
+            optionsData={["string", "enum"]}
           />
         </div>
         {/* attribute name ends */}

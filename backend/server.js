@@ -45,10 +45,10 @@ process.on('uncaughtException',(err)=>{
 const connectDatabase = require('./config/database')
 connectDatabase()
 
-const {startUserDeletionWorker} = require('./jobs/workers')
+const {startDeletionWorker} = require('./jobs/workers')
 
 
 server.listen(process.env.PORT,()=>{
     console.log(`Server is listening on http://localhost:${process.env.PORT}`);
-    startUserDeletionWorker()
+    startDeletionWorker()
 })
