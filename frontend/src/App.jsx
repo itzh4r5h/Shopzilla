@@ -53,7 +53,9 @@ export const App = () => {
   },[isLoggedIn,user?.isVerified,path.pathname])
 
   return (
-    <div className="h-full w-full grid grid-rows-[1fr_10fr_1fr] bg-[var(--grey)]">
+    <>
+    <div className="hidden sm:grid sm:place-content-center sm:h-full sm:w-full sm:text-7xl sm:text-center sm:px-10">Currenlty only availalbe on mobile devices 🙂</div>
+    <div className="h-full w-full grid grid-rows-[1fr_10fr_1fr] bg-[var(--grey)] sm:hidden">
       <TopNavbar />
       <main className="px-4 pt-3 pb-0 overflow-y-auto relative" ref={mainRef}>
         <ToastContainer
@@ -74,5 +76,6 @@ export const App = () => {
       </main>
       <BottomNavbar />
     </div>
+    </>
   );
 };
