@@ -27,8 +27,13 @@ const {
 } = require("../controllers/product/categoryController");
 const {
   createNewVariant,
-  getAllVariants,
   updateVariant,
+  deleteVariant,
+  getVariant,
+  getInStockAndOutOfStockVariantCount,
+  getTotalNumberOfVariants,
+  getAllVariantsOfAProduct,
+  getAllVariants,
 } = require("../controllers/product/variantController");
 const router = express.Router();
 
@@ -66,6 +71,39 @@ router
     updateSubCategoryAttriubtes
   );
 
+// =================================== Admin User Product Variant Related Routes =======================================
+router
+  .route("/admin/products/:productId/variants")
+  .post(
+    isUserAuthenticated,
+    authorizedRoles("admin"),
+    upload.any(),
+    createNewVariant
+  )
+  .get(isUserAuthenticated, authorizedRoles("admin"), getAllVariantsOfAProduct);
+
+router
+  .route("/admin/products/:productId/variants/:id")
+  .put(
+    isUserAuthenticated,
+    authorizedRoles("admin"),
+    upload.any(),
+    updateVariant
+  )
+  .delete(isUserAuthenticated, authorizedRoles("admin"), deleteVariant);
+
+router
+  .route("/admin/products/variants")
+  .get(isUserAuthenticated, authorizedRoles("admin"), getTotalNumberOfVariants);
+
+router
+  .route("/admin/products/variants/stock_status")
+  .get(
+    isUserAuthenticated,
+    authorizedRoles("admin"),
+    getInStockAndOutOfStockVariantCount
+  );
+
 // =================================== Admin User Product Related Routes =======================================
 router
   .route("/admin/products")
@@ -78,35 +116,13 @@ router
   .delete(isUserAuthenticated, authorizedRoles("admin"), deleteProduct)
   .get(isUserAuthenticated, authorizedRoles("admin"), getProduct);
 
-// =================================== Admin User Product Variant Related Routes =======================================
+// =================================== Product Variant Related Routes =======================================
+router.route("/products/variants").get(getAllVariants);
 router
-  .route("/admin/products/:productId/variants")
-  .post(
-    isUserAuthenticated,
-    authorizedRoles("admin"),
-    upload.any(),
-    createNewVariant
-  )
-  .get(isUserAuthenticated, authorizedRoles("admin"), getAllVariants);
+  .route("/products/:productId/variants/:id")
+  .get(isUserAuthenticated, getVariant);
 
-router
-  .route("/admin/products/:productId/variants/:id")
-  .put(
-    isUserAuthenticated,
-    authorizedRoles("admin"),
-    upload.any(),
-    updateVariant
-  );
-
-// router
-//   .route("/admin/products/stock_status")
-//   .get(
-//     isUserAuthenticated,
-//     authorizedRoles("admin"),
-//     getInStockAndOutOfStockProductCount
-//   );
-
-// =================================== Admin User Product Review Related Routes =======================================
+// =================================== Product Review Related Routes =======================================
 router
   .route("/products/:id/reviews")
   .patch(isUserAuthenticated, createOrUpdateProductReview)

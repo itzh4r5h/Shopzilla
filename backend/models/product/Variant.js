@@ -55,6 +55,7 @@ const variantSchema = new mongoose.Schema(
 
 variantSchema.index({ "attributes.name": 1, "attributes.value": 1 });
 variantSchema.index({ product: 1, price: 1 });
+variantSchema.index({ imagesUploaded: 1 });
 
 const Variant = mongoose.model("Variant", variantSchema);
 

@@ -9,6 +9,7 @@ const {
 } = require("../../validators/product/variantValidator");
 const mongoose = require("mongoose");
 const { Variant } = require("../../models/product/Variant");
+const { imagekit } = require("../../utils/uploadImages");
 
 // ======================= ADMIN -- CREATE PRODUCT ==============================
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
@@ -38,7 +39,7 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
     const product = await Product.findById(req.params.id);
 
     if (!product) {
-      return next(new ErrorHandler("Product not found", 404));
+      return next(new ErrorHandler("product not exists", 404));
     }
 
     await Product.findByIdAndUpdate(product._id, req.body, {
@@ -96,14 +97,18 @@ exports.deleteProduct = catchAsyncErrors(async (req, res, next) => {
   const product = await Product.findByIdAndDelete(req.params.id);
 
   if (!product) {
-    return next(new ErrorHandler("Product not found", 404));
+    return next(new ErrorHandler("product not exists", 404));
   }
 
-  //   await imagekit.deleteFolder(
-  //   `${process.env.PRODUCT_PICS_FOLDER}/${product._id}`
-  // );
+  const variant = await Variant.findOne({ product: req.params.id });
 
-  await Variant.deleteMany({ product: req.params.id });
+  if (variant) {
+    await imagekit.deleteFolder(
+      `${process.env.PRODUCT_PICS_FOLDER}/${req.params.id}`
+    );
+
+    await Variant.deleteMany({ product: req.params.id });
+  }
 
   res.status(200).json({
     success: true,
@@ -117,15 +122,15 @@ exports.getProduct = catchAsyncErrors(async (req, res, next) => {
     .select("-reviews")
     .populate("category");
 
+  if (!product) {
+    return next(new ErrorHandler("product not exists", 404));
+  }
+
   const attributes = product.category.subcategories.find(
     (subcat) =>
       subcat.name.toLocaleLowerCase() ===
       product.subcategory.toLocaleLowerCase()
   ).attributes;
-
-  if (!product) {
-    return next(new ErrorHandler("product not found", 404));
-  }
 
   res.status(200).json({
     success: true,

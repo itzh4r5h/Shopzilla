@@ -1,6 +1,6 @@
 const { isOnlyDigits } = require("./helpers")
 
-class ProductSearchAndFilter{
+class VariantSearchAndFilter{
     constructor(query,queryString){
         this.query = query
         this.queryString = queryString
@@ -11,11 +11,10 @@ class ProductSearchAndFilter{
             name: {
                 $regex: this.queryString.keyword,
                 $options: 'i'
-            },
-            imagesUploaded:true
-        }:{imagesUploaded:true}
+            }
+        }:{}
 
-        this.query = this.query.find({...keyword})
+        this.query = this.query.find({imagesUploaded:true}).populate({path:'product',match:{...keyword}})
 
         return this
     }
@@ -61,4 +60,4 @@ class ProductSearchAndFilter{
     }
 }
 
-module.exports = ProductSearchAndFilter
+module.exports = VariantSearchAndFilter
