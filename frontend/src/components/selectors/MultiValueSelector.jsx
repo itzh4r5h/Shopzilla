@@ -87,7 +87,7 @@ export const MultiValueSelector = ({ control, fieldName }) => {
             >
               <ListItemText
                 primary={fieldValue.value}
-                sx={{ pointerEvents: "auto" }}
+                sx={{ pointerEvents: "auto", textTransform:'uppercase' }}
               />
               <FaTimesCircle
                 className="text-lg active:text-[var(--purpleDark)] transition-colors"

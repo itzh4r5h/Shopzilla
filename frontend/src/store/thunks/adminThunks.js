@@ -49,7 +49,7 @@ export const getTotalProducts = createAsyncThunk(
   "admin/total_products",
   async (_, thunkAPI) => {
     try {
-      const { data } = await axiosInstance.get("/admin/products");
+      const { data } = await axiosInstance.get("/admin/products/variants");
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -222,9 +222,9 @@ export const deleteProduct = createAsyncThunk(
 
 export const getStockStatus = createAsyncThunk(
   "admin/stock_status",
-  async (id, thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      const { data } = await axiosInstance.get("/admin/product");
+      const { data } = await axiosInstance.get("/admin/products/variants/stock_status");
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -289,6 +289,23 @@ export const getAllVariants = createAsyncThunk(
     try {
       const { data } = await axiosInstance.get(
         `/admin/products/${id}/variants`
+      );
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+
+export const deleteVariantOfProduct = createAsyncThunk(
+  "admin/delete_variant",
+  async ({productId,variantId}, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.delete(
+        `/admin/products/${productId}/variants/${variantId}`
       );
       return data;
     } catch (error) {

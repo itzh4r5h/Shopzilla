@@ -8,14 +8,13 @@ import { clearUserError, clearUserMessage } from "../../store/slices/userSlice";
 import { useToastNotify } from "../../hooks/useToastNotify";
 
 export const ShippingAddressCard = () => {
-  const { register, setValue } = useForm();
   const dispatch = useDispatch();
-
+  
   const { allShippingAddress, error, success, message, updatedAddress,user } =
-    useSelector((state) => state.user);
-
+  useSelector((state) => state.user);
+  
   const [shippingAddress, setShippingAddress] = useState([]);
-
+  
   useEffect(() => {
    if(!allShippingAddress){
      dispatch(getAllAddress());
@@ -28,19 +27,26 @@ export const ShippingAddressCard = () => {
     }
   }, [updatedAddress]);
 
+      const { register, setValue,control } = useForm({defaultValues:{
+    shippingAddress: ""
+  }});
+
   useEffect(() => {
-    if (allShippingAddress) {
+    if (allShippingAddress && allShippingAddress?.length>0) {
       setShippingAddress(() =>
         allShippingAddress.map((address) =>
           Object.values(address).slice(0, -1).join(", ")
         )
       );
+      setValue('shippingAddress', shippingAddress[user?.shippingAddressIndex-1])
     }
   }, [allShippingAddress]);
 
   useToastNotify(error,success,message,clearUserError,clearUserMessage,dispatch)
 
-  return allShippingAddress?.length === 0 ? (
+
+
+  return allShippingAddress?.length < 1 ? (
     <div className="mt-3">
         <AddressModal />
     </div>
@@ -50,11 +56,8 @@ export const ShippingAddressCard = () => {
         Shipping Address
       </label>
       <NormalSelect
-        selected={shippingAddress[user?.shippingAddressIndex-1]}
         name="shippingAddress"
-        defaultValue={shippingAddress[user?.shippingAddressIndex-1]}
-        register={register}
-        setValue={setValue}
+        control={control}
         optionsData={shippingAddress}
         updateFunction={(i)=>dispatch(updateAddressIndex(i))}
       />

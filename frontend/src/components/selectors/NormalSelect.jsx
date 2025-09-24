@@ -1,87 +1,67 @@
-import { useEffect, useRef, useState } from "react";
-import { IoIosArrowDropdownCircle } from "react-icons/io";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import { Controller } from "react-hook-form";
+
 
 export const NormalSelect = ({
-  selected,
+  control,
   name,
-  defaultValue,
-  register,
-  setValue,
   optionsData,
   center=false,
-  updateFunction=()=>{}
+  uppercase=false,
+  updateFunction = () => {},
 }) => {
-  const [showOptions, setShowOptions] = useState(false);
-  const dropDownIconRef = useRef();
-
-  const openDropDown = () => {
-    dropDownIconRef.current.style.rotate = "180deg";
-    dropDownIconRef.current.style.color = "var(--purpleDark)";
-    setShowOptions(true);
+  const handleUpdateFunction = (value) => {
+    const index = optionsData.indexOf(value);
+    updateFunction(index + 1);
   };
-  const closeDropDown = () => {
-    dropDownIconRef.current.style.rotate = "0deg";
-    dropDownIconRef.current.style.color = "initial";
-    setShowOptions(false);
-  };
-
-  const chooseValueOnClick = (e) => {
-    const target = e.target.closest("li[data-option]"); // in case span is clicked
-    
-    if (target) {
-      const selectedData = target.dataset.option;
-      setValue(name,selectedData,{ shouldValidate: true });
-
-      const index = optionsData.indexOf(selectedData)
-      updateFunction(index+1)
-    }
-    closeDropDown()
-  };
-
-  useEffect(()=>{
-    if(selected){
-      setValue(name,selected)
-    }
-  },[selected])
 
   return (
-    <div className="relative">
-      <span className="relative">
-        <input
-          type="text"
-          id={name}
-           {...register(name, { required: true })}
-          defaultValue={defaultValue}
-          onClick={openDropDown}
-          onBlur={() => setTimeout(() => closeDropDown(), 50)}
-          autoComplete="off"
-          readOnly
-          className={`${center && 'text-center text-xl'} capitalize bg-[var(--grey)] border rounded-md p-1 text-lg outline-none w-full pr-10 cursor-default focus:ring-2 focus:ring-[var(--purpleDark)]`}
-        />
-        <IoIosArrowDropdownCircle
-          ref={dropDownIconRef}
-          className="absolute transition-all text-xl top-1/2 right-2 -translate-y-1/2 duration-400"
-          onClick={openDropDown}
-        />
-      </span>
-      {showOptions && (
-        <ul
-          onClick={chooseValueOnClick}
-          className="absolute z-999 bg-white border w-full min-h-10 max-h-50 rounded-md mt-1 overflow-y-auto p-3 flex flex-col gap-2"
-        >
-          {optionsData.map((option, index) => {
-            return (
-              <li
-                key={index}
-                className="text-lg p-1 active:bg-[var(--grey)] hover:bg-[var(--grey)] transition-colors cursor-pointer rounded-md"
-                data-option={option}
-              >
-                <span className={`line-clamp-1 capitalize ${center && 'text-center text-xl'}`}>{option}</span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
+     <FormControl sx={{minWidth: 120 }} size="small">
+      <Controller
+        defaultValue=""
+        name={name}
+        control={control}
+        render={({ field }) => (
+          <Select
+            {...field}
+            onChange={(e) => {
+              field.onChange(e);
+              handleUpdateFunction(e.target.value);
+            }}
+            id={name + "_select"}
+            className="border bg-[var(--grey)]"
+            sx={{
+              "& .MuiSelect-select": {
+                textAlign: center?"center":'start',
+                padding: "0.2rem", // Tailwind p-1·
+                fontSize: center?"1.3rem":'1.2rem',
+                alignContent: "center",
+                fontWeight: center?"bold":'normal',
+                textTransform: uppercase?'uppercase':'initial'
+              },
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderWidth: "2px",
+                borderColor: "var(--purpleDark)", // focus ring color
+                boxShadow: "0 0 0 1px var(--purpleDark)", // mimic Tailwind ring-2
+              },
+            }}
+          >
+            {optionsData.map((data, index) => {
+              return (
+                <MenuItem
+                  value={data}
+                  key={index}
+                  sx={{ justifyContent: center?"center":'start', fontSize: center?"1.2rem":'1.1rem',overflowX:'auto',textTransform:uppercase?'uppercase':'initial' }}
+                >
+                  {data}
+                </MenuItem>
+              );
+            })}
+          </Select>
+        )}
+      />
+    </FormControl>
   );
 };

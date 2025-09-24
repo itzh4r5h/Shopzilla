@@ -32,8 +32,7 @@ export const ProductModal = ({
     register,
     handleSubmit,
     reset,
-    setValue,
-    watch,
+    control,
     formState: { errors },
   } = useForm({ resolver: joiResolver(schema) });
 
@@ -153,7 +152,7 @@ export const ProductModal = ({
                 <label htmlFor="category" className="text-xl w-fit">
                   Category
                 </label>
-               <CategorySelector optionsData={categories} name={'category'} register={register} setValue={setValue} setId={setCategoryId} watch={watch} />
+               <CategorySelector optionsData={categories} name={'category'} setId={setCategoryId} control={control} />
               </div>}
               {/* category ends */}
 
@@ -162,7 +161,7 @@ export const ProductModal = ({
                 <label htmlFor="subcategory" className="text-xl w-fit">
                   Subcategory
                 </label>
-                <CategorySelector optionsData={subcategories?.length>0?subcategories:[]} name={'subcategory'} register={register} setValue={setValue} watch={watch} />
+                <CategorySelector optionsData={subcategories?.length>0?subcategories:[]} name={'subcategory'} control={control} />
               </div>}
               {/* subcategory ends */}
 

@@ -109,7 +109,7 @@ export const Dashboard = () => {
     years,
     totalRevenue,
     monthlyRevenue,
-    totalProducts,
+    totalVariants,
     totalUsers,
     totalOrders,
     stockStatus
@@ -160,18 +160,21 @@ export const Dashboard = () => {
   ],
 };
 
-  const { register, setValue, getValues, handleSubmit, reset } = useForm();
-
   const currentYear = new Date().getFullYear();
 
+  const { register, setValue, getValues,control, handleSubmit, reset } = useForm({defaultValues:{
+    total_revenue_year: currentYear,
+    monthly_revenue_year: currentYear,
+  }});
+
   useEffect(() => {
-    // dispatch(getAllYears());
+    dispatch(getAllYears());
     dispatch(getTotalRevenue(currentYear));
-    // dispatch(getTotalProducts());
+    dispatch(getTotalProducts());
     dispatch(getTotalUsers());
-    // dispatch(getTotalOrders());
+    dispatch(getTotalOrders());
     dispatch(getMonthlyRevenue(currentYear));
-    // dispatch(getStockStatus())
+    dispatch(getStockStatus())
   }, []);
 
   return (
@@ -183,12 +186,9 @@ export const Dashboard = () => {
           <span>
             <NormalSelect
               center={true}
-              register={register}
+              control={control}
               name="total_revenue_year"
-              setValue={setValue}
-              optionsData={years}
-              selected={currentYear}
-              defaultValue={currentYear}
+              optionsData={years?.length>0?years:[currentYear]}
               updateFunction={()=>dispatch(getTotalRevenue(getValues('total_revenue_year')))}
             />
           </span>
@@ -211,7 +211,7 @@ export const Dashboard = () => {
               <h1 className="text-xl font-bold text-center">Total {name}</h1>
               {name === "Products" && (
                 <h1 className="text-xl font-bold text-center mt-2">
-                  {loading ? <Skeleton height={25} /> : totalProducts}
+                  {loading ? <Skeleton height={25} /> : totalVariants}
                 </h1>
               )}
               {name === "Users" && (
@@ -237,12 +237,9 @@ export const Dashboard = () => {
           <span>
             <NormalSelect
               center={true}
-              register={register}
+              control={control}
               name="monthly_revenue_year"
-              setValue={setValue}
-              optionsData={years}
-              selected={currentYear}
-              defaultValue={currentYear}
+              optionsData={years?.length>0?years:[currentYear]}
               updateFunction={()=>dispatch(getMonthlyRevenue(getValues('monthly_revenue_year')))}
             />
           </span>

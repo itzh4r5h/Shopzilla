@@ -6,7 +6,7 @@ export const getAllProducts = createAsyncThunk(
   "products/get_all_products",
   async (keyword='', thunkAPI) => {
     try {
-      const link = `/products?keyword=${keyword}`
+      const link = `/products/variants?keyword=${keyword}`
       const { data } = await axiosInstance.get(link);
       return data;
     } catch (error) {
@@ -18,9 +18,9 @@ export const getAllProducts = createAsyncThunk(
 
 export const getProductDetails = createAsyncThunk(
   "products/get_product",
-  async (id, thunkAPI) => {
+  async ({productId,variantId}, thunkAPI) => {
     try {
-      const { data } = await axiosInstance.get(`/products/${id}`);
+      const { data } = await axiosInstance.get(`/products/${productId}/variants/${variantId}`);
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");

@@ -56,11 +56,11 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 export const ProductDetails = ({ path }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { productId,variantId } = useParams();
   const {
     error: productError,
-    product,
     loading: productLoading,
+    variant
   } = useSelector((state) => state.products);
   const { isLoggedIn, user } = useSelector((state) => state.user);
   const {
@@ -78,14 +78,14 @@ export const ProductDetails = ({ path }) => {
   } = useSelector((state) => state.cart);
 
   useEffect(() => {
-    dispatch(getProductDetails(id));
-    dispatch(getAllReviewsAndRatings(id));
+    dispatch(getProductDetails({productId,variantId}));
+    dispatch(getAllReviewsAndRatings(productId));
   }, []);
 
   useEffect(() => {
     if (reviewed) {
-      dispatch(getAllReviewsAndRatings(id));
-      dispatch(getProductDetails(id));
+      dispatch(getAllReviewsAndRatings(productId));
+      dispatch(getProductDetails({productId,variantId}));
     }
   }, [reviewed]);
 
@@ -104,7 +104,7 @@ export const ProductDetails = ({ path }) => {
   const [quantity, setQuantity] = useState(1);
 
   const increaseQuantity = () => {
-    if (quantity < product.stock) {
+    if (quantity < variant.stock) {
       setQuantity((prev) => prev + 1);
     }
   };
@@ -148,10 +148,10 @@ export const ProductDetails = ({ path }) => {
   return (
     <div>
       <Heading name={"Product Details"} path={path} />
-      {!productLoading && !reviewLoading && allRatings && product ? (
+      {!productLoading && !reviewLoading && allRatings && variant ? (
         <article className="w-full min-h-full border border-[var(--black)] bg-[var(--white)] p-2 flex flex-col gap-2 mt-5">
           <Swiper
-            loop={product?.images?.length > 1 ? true : false}
+            loop={variant?.images[0].files.length > 1 ? true : false}
             pagination={{ clickable: true }}
             grabCursor={true}
             effect={"creative"}
@@ -167,7 +167,7 @@ export const ProductDetails = ({ path }) => {
             modules={[EffectCreative, Pagination]}
             className="mySwiper"
           >
-            {product.images.map((img) => {
+            {variant.images[0].files.map((img) => {
               return (
                 <SwiperSlide key={img._id}>
                   <picture className="w-full h-55 block relative overflow-hidden bg-white">
@@ -179,8 +179,15 @@ export const ProductDetails = ({ path }) => {
           </Swiper>
 
           {/* product name begins */}
-          <p className="line-clamp-3 text-xl">{product.name}</p>
+          <p className="line-clamp-3 text-xl capitalize">{variant.product.name}</p>
           {/* product name ends */}
+
+          {/* color box begins */}
+          <div className="overflow-x-auto flex gap-3 items-centers">
+             <div className={`h-10 w-10 bg-red-200 rounded-full shrink-0`}></div>
+             
+          </div>
+          {/* color box ends */}
 
           {/* price and rating container begins */}
           <div className="grid grid-cols-[2.5fr_4fr] items-center">
@@ -207,7 +214,7 @@ export const ProductDetails = ({ path }) => {
               {/* price begins */}
               <div className="absolute flex justify-center items-center w-fit top-1/2 -translate-y-1/2 left-1">
                 <BsCurrencyRupee className="text-md" />
-                <span className="text-md font-bold">{product.price}</span>
+                <span className="text-md font-bold">{variant.price}</span>
               </div>
               {/* price ends */}
             </div>
@@ -217,21 +224,21 @@ export const ProductDetails = ({ path }) => {
             <div className="flex justify-end items-center gap-1 pr-2">
               <FaStar className="text-xl text-[var(--purpleDark)]" />
               <span className="text-xl text-[var(--purpleDark)] font-bold">
-                {product.ratings}
+                {variant.product.ratings}
               </span>
             </div>
             {/* rating ends */}
           </div>
           {/* price and rating container ends */}
 
-          {product.stock > 0 ? (
+          {variant.stock > 0 ? (
             <p className="text-green-600 font-bold">In Stock</p>
           ) : (
             <p className="text-red-600 font-bold">Out of Stock</p>
           )}
 
           {/*increase/decrease quanity begins */}
-          {product.stock > 0 && (
+          {variant.stock > 0 && (
             <div className="grid grid-cols-2 items-center justify-items-center">
               <h3 className="justify-self-start text-xl">Quantity</h3>
 
@@ -254,12 +261,12 @@ export const ProductDetails = ({ path }) => {
          {isLoggedIn &&  <ShippingAddressCard />}
           {/* shipping Address ends */}
 
-          {product.stock > 0 && (
+          {variant.stock > 0 && (
             <div className="grid grid-cols-2 items-center justify-items-center gap-5 mt-4">
               <span onClick={handleAddToCart} className="w-full">
                 <OutlineButton name={"Add To Cart"} />
               </span>
-              <Checkout id={product._id} quantity={quantity} />
+              <Checkout id={variant._id} quantity={quantity} />
             </div>
           )}
 
@@ -268,26 +275,26 @@ export const ProductDetails = ({ path }) => {
             Description
           </h2>
           <p className="text-md text-pretty text-center border-b-1 border-black mb-5 pb-5">
-            {product.description}
+            {variant.product.description}
           </p>
           {/* description ends */}
 
           {/* Rating and reviews begins */}
 
           <h2 className="text-2xl text-center">Ratings & Reviews</h2>
-          {isLoggedIn && user.orderedProducts.includes(product._id) && !isReviewed && (
-            <ReviewModal id={id} />
+          {isLoggedIn && user.orderedProducts.includes(variant._id) && !isReviewed && (
+            <ReviewModal id={variant.product._id} />
           )}
 
           {/* overvall rating begins */}
           <div className="grid grid-rows-3 items-center justify-items-center mt-4 gap-0">
             <h3 className="text-xl text-[var(--light)] font-bold">
-              {ratingLabels[product.ratings]}
+              {ratingLabels[variant.product.ratings]}
             </h3>
             <Box sx={{ "& > legend": { mt: 2 } }}>
               <Rating
                 name="simple-controlled"
-                value={product.ratings}
+                value={variant.product.ratings}
                 readOnly
                 size="large"
                 sx={{

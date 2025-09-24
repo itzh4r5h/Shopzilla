@@ -88,7 +88,7 @@ export const UpdateAttributesModal = ({ attributesData, id, subId }) => {
                       addAttribute={() => addAttr({ name: "", type: "string" })}
                       removeAttribute={() => removeAttr(index)}
                       register={register}
-                      setValue={setValue}
+                      control={control}
                       attrIndex={index}
                     />
                   </div>

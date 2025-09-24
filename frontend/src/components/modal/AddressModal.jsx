@@ -19,7 +19,7 @@ export const AddressModal = ({
   shippingAddress = undefined,
 }) => {
   const schema = useMemo(() => {
-    return shippingAddressJoiSchema
+    return shippingAddressJoiSchema;
   }, []);
 
   const dispatch = useDispatch();
@@ -32,6 +32,7 @@ export const AddressModal = ({
     reset,
     setValue,
     watch,
+    control,
     formState: { errors },
   } = useForm({ resolver: joiResolver(schema) });
 
@@ -118,12 +119,10 @@ export const AddressModal = ({
                   Country
                 </label>
                 <SelectCountryStateCity
-                  defaultValue={shippingAddress?.country}
+                  selected={shippingAddress?.country}
                   name="country"
-                  register={register}
-                  setValue={setValue}
+                  control={control}
                   setCode={setCountryCode}
-                  watch={watch}
                   optionsData={Country.getAllCountries()}
                 />
               </div>
@@ -135,12 +134,10 @@ export const AddressModal = ({
                   State
                 </label>
                 <SelectCountryStateCity
-                  defaultValue={shippingAddress?.state}
+                  selected={shippingAddress?.state}
                   name="state"
-                  register={register}
-                  setValue={setValue}
+                  control={control}
                   setCode={setStateCode}
-                  watch={watch}
                   optionsData={
                     countryCode ? State.getStatesOfCountry(countryCode) : []
                   }
@@ -154,11 +151,9 @@ export const AddressModal = ({
                   City
                 </label>
                 <SelectCountryStateCity
-                  defaultValue={shippingAddress?.city}
+                  selected={shippingAddress?.city}
                   name="city"
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
+                  control={control}
                   optionsData={
                     countryCode && stateCode
                       ? City.getCitiesOfState(countryCode, stateCode)

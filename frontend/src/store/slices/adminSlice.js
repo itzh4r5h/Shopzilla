@@ -19,6 +19,7 @@ import {
   getTotalUsers,
   updateOrderStatus,
   updateProduct,
+  deleteVariantOfProduct,
 } from "../thunks/adminThunks";
 
 const initialState = {
@@ -30,7 +31,7 @@ const initialState = {
   years: undefined,
   totalRevenue: undefined,
   monthlyRevenue: undefined,
-  totalProducts: undefined,
+  totalVariants: undefined,
   totalUsers: undefined,
   totalOrders: undefined,
   stockStatus: undefined,
@@ -143,7 +144,7 @@ const adminSlice = createSlice({
         state.updated = undefined;
       },
       fulfilled: (state, action) => {
-        state.totalProducts = action.payload.totalProducts;
+        state.totalVariants = action.payload.totalVariants;
         state.loading = false;
       },
       rejected: (state, action) => {
@@ -276,10 +277,25 @@ const adminSlice = createSlice({
 
     handleAsyncThunk(builder, updateProduct, { ...commonActions });
 
-    handleAsyncThunk(builder, deleteProduct, { ...commonActions });
+    handleAsyncThunk(builder, deleteProduct, {
+      pending: (state) => {
+        state.loading = true;
+        state.updated = undefined;
+      },
+      fulfilled: (state, action) => {
+        state.success = action.payload.success;
+        state.message = action.payload.message;
+        state.loading = false;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      },
+    });
 
     handleAsyncThunk(builder, addOrUpdateVariant, { ...commonActions });
 
+    handleAsyncThunk(builder, deleteVariantOfProduct, { ...commonActions });
 
     handleAsyncThunk(builder, getAllVariants, {
       pending: (state) => {

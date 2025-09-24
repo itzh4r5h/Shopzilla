@@ -8,7 +8,7 @@ export const AttributeComponent = ({
   addAttribute,
   removeAttribute,
   register,
-  setValue,
+  control,
   attrIndex,
 }) => {
   return (
@@ -56,8 +56,9 @@ export const AttributeComponent = ({
           />
           <NormalSelect
             name={attributeType}
-            register={register}
-            setValue={setValue}
+            control={control}
+            center={true}
+            uppercase={true}
             optionsData={["string", "enum"]}
           />
         </div>

@@ -1,8 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Heading } from "../../../components/Headers/Heading";
 import { useEffect } from "react";
-import { getAllVariants, getProduct } from "../../../store/thunks/adminThunks";
-import { useParams } from "react-router";
+import { deleteProduct, deleteVariantOfProduct, getAllVariants, getProduct } from "../../../store/thunks/adminThunks";
+import { useNavigate, useParams } from "react-router";
 import {
   flatAttributesValueArray,
   formatMongodbDate,
@@ -41,7 +41,7 @@ const AttributeSlideComponent = ({ attributes }) => {
           <SwiperSlide key={attr._id} className="pb-8">
             <div className="grid grid-cols-[3fr_4fr] p-2 border-2 border-[var(--purpleDark)]">
               <h2 className="text-lg uppercase">{attr.name}</h2>
-              <p className="text-lg capitalize text-[var(--light)] justify-self-end">
+              <p className="text-lg uppercase text-[var(--light)] justify-self-end">
                 {typeof attr.value === "string"
                   ? attr.value
                   : flatAttributesValueArray(attr.value).join(", ")}
@@ -116,6 +116,7 @@ const ImagesSlideComponent = ({ images }) => {
 
 export const SingleProductInfo = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate()
   const { product, attributes, error, success, message, variants, updated } =
     useSelector((state) => state.admin);
   const { id } = useParams();
@@ -141,9 +142,14 @@ export const SingleProductInfo = () => {
     dispatch
   );
 
+  const handleDeleteProduct = ()=>{
+    dispatch(deleteProduct(id))
+    navigate('/admin/dashboard/products')
+  }
+
   return (
     <div>
-      <Heading path={"/admin/dashboard/products"} name={"product details"} />
+      <Heading path={"/admin/dashboard/products"} name={"product details"} icon={true} iconComponent={<DeleteModal deleteFunction={handleDeleteProduct}/>} />
 
       {product ? (
         <article className="border bg-white p-2 relative mt-5">
@@ -298,7 +304,7 @@ export const SingleProductInfo = () => {
                         attributesData={attributes}
                         variant={variant}
                       />
-                      <DeleteModal />
+                      <DeleteModal deleteFunction={()=>dispatch(deleteVariantOfProduct({productId:id,variantId:variant._id}))}/>
                     </div>
                   </span>
 

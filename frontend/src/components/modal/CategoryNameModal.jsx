@@ -29,8 +29,7 @@ export const CategoryNameModal = ({ name, icon, id, subId = false }) => {
     register,
     handleSubmit,
     reset,
-    setValue,
-    watch,
+    control,
     formState: { errors },
   } = useForm({
     resolver: joiResolver(schema),
@@ -98,11 +97,9 @@ export const CategoryNameModal = ({ name, icon, id, subId = false }) => {
                   </label>
 
                   <IconSelector
-                    selected={icon}
                     name={"icon"}
-                    register={register}
-                    setValue={setValue}
-                    watch={watch}
+                    control={control}
+                    selected={icon}
                   />
                 </div>
                 {/* icon ends */}

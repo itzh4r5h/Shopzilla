@@ -9,35 +9,13 @@ const productSlice = createSlice({
     minPrice: undefined,
     maxPrice: undefined,
     page: 1,
-    products: undefined,
-    productsCount: undefined,
-    product: undefined,
+    variant: undefined,
     error: null,
     loading: true,
-    categories :[
-        "smart watch",
-        "mobile",
-        "laptop",
-        "shirt",
-        "jeans",
-        "earphone",
-        "headphone",
-        "earbuds",
-        "watch",
-        "t-shirt",
-        "tablet",
-        "game",
-        "toy",
-        "book",
-        "handbag",
-        "luggage",
-        "camera",
-        "chair",
-        "monitor",
-        "smart television",
-        "washing machine",
-        "pencil"
-      ].sort()
+    variantsCount: undefined,
+    variants: undefined,
+    filters: undefined,
+    attributes:undefined,
   },
   reducers: {
     saveKeyword: (state, action) => {
@@ -57,8 +35,10 @@ const productSlice = createSlice({
       },
       fulfilled: (state, action) => {
         state.loading = false
-        state.products = action.payload.products;
-        state.productsCount = action.payload.productsCount;
+        state.variants = action.payload.variants;
+        state.variantsCount = action.payload.total;
+        state.filters = action.payload.filters;
+        state.attributes = action.payload.attributes;
       },
       rejected: (state, action) => {
         state.loading = false
@@ -72,13 +52,15 @@ const productSlice = createSlice({
       },
       fulfilled: (state, action) => {
         state.loading = false;
-        state.product = action.payload.product;
+        state.variant = action.payload.variant;
       },
       rejected: (state, action) => {
         state.loading = false;
         state.error = action.payload;
       },
     });
+    
+   
   },
 });
 

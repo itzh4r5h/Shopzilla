@@ -109,9 +109,7 @@ export const CategoryModal = () => {
 
                   <IconSelector
                     name={"category_icon"}
-                    register={register}
-                    setValue={setValue}
-                    watch={watch}
+                    control={control}
                   />
                 </div>
                 {/* icon ends */}
@@ -137,8 +135,6 @@ export const CategoryModal = () => {
                       subcatIndex={index}
                       control={control}
                       register={register}
-                      setValue={setValue}
-                      watch={watch}
                     />
                   </div>
                 );

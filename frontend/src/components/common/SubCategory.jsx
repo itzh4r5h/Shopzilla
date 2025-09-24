@@ -11,8 +11,6 @@ export const SubCategory = ({
   subcatIndex,
   control,
   register,
-  setValue,
-  watch
 }) => {
   // For attributes inside each subcategory
   const {
@@ -72,9 +70,7 @@ export const SubCategory = ({
 
           <IconSelector
             name={`subcategories.${subcatIndex}.subcategory_icon`}
-            register={register}
-            setValue={setValue}
-            watch={watch}
+            control={control}
           />
         </div>
         {/* icon ends */}
@@ -92,7 +88,7 @@ export const SubCategory = ({
               addAttribute={() => addAttr({ name: "", type: "string" })}
               removeAttribute={() => removeAttr(index)}
               register={register}
-              setValue={setValue}
+              control={control}
               attrIndex={index}
             />
           </div>
