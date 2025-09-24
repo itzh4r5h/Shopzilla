@@ -6,7 +6,7 @@ import { getAllProducts } from "../store/thunks/productThunks";
 
 export const Home = () => {
   const dispatch = useDispatch();
-  const { error, products, productsCount, loading } = useSelector(
+  const { error, variants, variantsCount, loading } = useSelector(
     (state) => state.products
   );
 
@@ -23,17 +23,17 @@ export const Home = () => {
           })}
 
         {!loading &&
-          products?.length > 0 &&
-          products?.map((product) => {
+          variants?.length > 0 &&
+          variants?.map((variant) => {
             return (
-              <Link to={`/products/${product._id}`} key={product._id}>
-                <ProductCard product={product} />
+              <Link to={`/products/${variant.product._id}/variants/${variant._id}`} key={variant._id}>
+                <ProductCard variant={variant} />
               </Link>
             );
           })}
       </div>
 
-      {!loading && products?.length === 0 && (
+      {!loading && variants?.length < 1 && (
         <p className="text-center text-xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
           No Products Yet
         </p>

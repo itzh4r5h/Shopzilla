@@ -17,32 +17,34 @@ import { useEffect } from "react";
 import { getProductDetails } from "../../store/thunks/productThunks";
 
 export const ProductCard = ({
-  product,
+  variant,
   cart = false,
   productQuantity = null,
   orderDetails = false,
 }) => {
   const dispatch = useDispatch();
-  const { product: productRating } = useSelector((state) => state.products);
+  const { variant: productRating } = useSelector((state) => state.products);
 
   const handleUpdateQuantity = () => {
     dispatch(
       addProductToCartOrUpdateQuantity({
-        id: product._id,
+        id: variant._id,
         quantity: getValues("quantity"),
       })
     );
   };
 
   useEffect(() => {
-    if (orderDetails && product) {
-      dispatch(getProductDetails(product.id));
+    if (orderDetails && variant) {
+      dispatch(getProductDetails(variant.id));
     }
-  }, [orderDetails, product]);
+  }, [orderDetails, variant]);
 
-  const { register, setValue, getValues } = useForm();
+  const { register, setValue, getValues,control } = useForm({defaultValues:{
+    quantity: 1,
+  }});
 
-  return product ? (
+  return variant ? (
     <article
       className={`w-full h-full border border-[var(--black)] bg-[var(--white)] p-2 ${
         cart ? "grid grid-cols-[2.5fr_4fr] gap-2" : orderDetails ? "" : "pb-1"
@@ -55,9 +57,9 @@ export const ProductCard = ({
         } block relative overflow-hidden`}
       >
         {orderDetails ? (
-          <ImageCard src={{ url: product.image, name: product.name }} />
+          <ImageCard src={{ url: variant.images, name: variant.name }} />
         ) : (
-          <ImageCard src={product.images[0]} />
+          <ImageCard src={variant.images[0].files[0]} />
         )}
       </picture>
       {/* product image ends */}
@@ -67,9 +69,9 @@ export const ProductCard = ({
         <p
           className={`${
             cart ? "line-clamp-2" : orderDetails ? "text-lg" : "line-clamp-1"
-          } text-md my-2`}
+          } text-md my-2 capitalize`}
         >
-          {product.name}
+          {variant.product.name}
         </p>
 
         {/* product name ends */}
@@ -112,7 +114,7 @@ export const ProductCard = ({
               <span
                 className={`${orderDetails ? "text-lg font-bold" : "text-sm"}`}
               >
-                {product.price}
+                {variant.price}
               </span>
             </div>
             {/* price ends */}
@@ -131,7 +133,7 @@ export const ProductCard = ({
                 orderDetails ? "text-xl" : "text-sm"
               } text-[var(--purpleDark)] font-bold`}
             >
-              {orderDetails ? productRating?.ratings : product.ratings}
+              {orderDetails ? productRating?.ratings : variant.product.ratings}
             </span>
           </div>
           {/* rating ends */}
@@ -141,18 +143,14 @@ export const ProductCard = ({
         {/*increase/decrease quanity and remove from cart begins */}
         {cart && (
           <div className="grid grid-cols-[3fr_2fr] items-center mt-2">
-            {product.stock >= productQuantity ? (
+            {variant.stock >= productQuantity ? (
               <NormalSelect
-              center={true}
-                selected={productQuantity}
-                defaultValue={productQuantity}
                 name="quantity"
                 optionsData={Array.from(
-                  { length: product.stock },
+                  { length: variant.stock },
                   (_, i) => i + 1
                 )}
-                register={register}
-                setValue={setValue}
+                control={control}
                 updateFunction={handleUpdateQuantity}
               />
             ) : (
@@ -161,7 +159,7 @@ export const ProductCard = ({
 
             <FaTimesCircle
               className="justify-self-center text-2xl active:text-[var(--purpleDark)] transition-colors"
-              onClick={() => dispatch(removeProductFromCart(product._id))}
+              onClick={() => dispatch(removeProductFromCart(variant._id))}
             />
           </div>
         )}
