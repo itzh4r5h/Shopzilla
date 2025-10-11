@@ -9,16 +9,6 @@ const attributeDefinitionJoiSchema = Joi.object({
     "string.max": "attribute name must not exceed 50 characters",
     "any.required": "attribute name is required",
   }),
-
-  type: Joi.string()
-    .valid("string", "number", "boolean", "enum")
-    .required()
-    .messages({
-      "any.only":
-        "attribute type must be from one of these - string, number, boolean or enum",
-      "any.required": "attribute type is required",
-      "string.base": "attribute type must be a string",
-    }),
 });
 
 // Subcategory Joi Schema
@@ -37,6 +27,11 @@ const subcategoryJoiSchema = Joi.object({
     "string.min": "subcategory icon must be at least 2 characters long",
     "string.max": "subcategory icon must not exceed 20 characters",
     "any.required": "subcategory icon is required",
+  }),
+
+  needSize: Joi.boolean().required().messages({
+    "any.required": "need size is required",
+    "boolean.base": "need size must be true or false",
   }),
 
   attributes: Joi.array()
@@ -128,5 +123,5 @@ module.exports = {
   categoryJoiSchema,
   nameJoiSchema,
   attributesJoiSchema,
-  subcategoriesJoiSchema
+  subcategoriesJoiSchema,
 };

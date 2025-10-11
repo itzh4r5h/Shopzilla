@@ -38,7 +38,8 @@ export const CategoryModal = () => {
         {
           name: "",
           subcategory_icon:'',
-          attributes: [{ name: "", type: "string" }],
+          needSize: "false",
+          attributes: [{ name: "" }],
         },
       ],
     },
@@ -127,7 +128,8 @@ export const CategoryModal = () => {
                         addSubcat({
                           name: "",
                           subcategory_icon: "",
-                          attributes: [{ name: "", type: "string" }],
+                          needSize: "false",
+                          attributes: [{ name: "" }],
                         })
                       }
                       removeSubCategory={() => removeSubcat(index)}

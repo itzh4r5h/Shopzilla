@@ -2,6 +2,7 @@ import { useFieldArray } from "react-hook-form";
 import { FaMinusCircle, FaPlusCircle } from "react-icons/fa";
 import { AttributeComponent } from "./AttributeComponent";
 import { IconSelector } from "../selectors/IconSelector";
+import { NormalSelect } from "../selectors/NormalSelect";
 
 export const SubCategory = ({
   subCategoriesLength,
@@ -76,6 +77,19 @@ export const SubCategory = ({
         {/* icon ends */}
       </div>
 
+      <div className="flex flex-col justify-center gap-2 mt-2">
+          <label htmlFor={`subcategories.${subcatIndex}.needSize`} className="text-xl w-fit">
+            Need Size
+          </label>
+            <NormalSelect
+            name={`subcategories.${subcatIndex}.needSize`}
+            control={control}
+            center={true}
+            uppercase={true}
+            optionsData={["true", "false"]}
+          />
+        </div>
+
       <h3 className="text-2xl mt-2">Attributes</h3>
 
       {attributes.map((attribute, index) => {
@@ -85,7 +99,7 @@ export const SubCategory = ({
               attributesLength={attributes.length}
               attributeName={`subcategories.${subcatIndex}.attributes.${index}.name`}
               attributeType={`subcategories.${subcatIndex}.attributes.${index}.type`}
-              addAttribute={() => addAttr({ name: "", type: "string" })}
+              addAttribute={() => addAttr({ name: "" })}
               removeAttribute={() => removeAttr(index)}
               register={register}
               control={control}

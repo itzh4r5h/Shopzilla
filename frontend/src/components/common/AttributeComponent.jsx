@@ -37,15 +37,10 @@ export const AttributeComponent = ({
           />
         )}
         {/* attribute name begins */}
-        <div className="grid grid-cols-2 gap-x-2">
+        <div className="flex flex-col gap-2">
           <label htmlFor={attributeName} className="text-xl w-fit">
             Name
           </label>
-          <label htmlFor={attributeType} className="text-xl w-fit">
-            Type
-          </label>
-        </div>
-        <div className="grid grid-cols-2 gap-x-2">
           <input
             autoComplete="off"
             {...register(attributeName, {
@@ -53,13 +48,6 @@ export const AttributeComponent = ({
             })}
             id={attributeName}
             className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-          />
-          <NormalSelect
-            name={attributeType}
-            control={control}
-            center={true}
-            uppercase={true}
-            optionsData={["string", "enum"]}
           />
         </div>
         {/* attribute name ends */}

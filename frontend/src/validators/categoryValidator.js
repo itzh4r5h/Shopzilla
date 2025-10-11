@@ -8,16 +8,7 @@ const attributeDefinitionJoiSchema = Joi.object({
     "string.min": "attribute name must be at least 2 characters long",
     "string.max": "attribute name must not exceed 50 characters",
     "any.required": "attribute name is required",
-  }),
-
-  type: Joi.string()
-    .valid("string", "number", "boolean", "enum")
-    .required()
-    .messages({
-      "any.only": "attribute type must be from one of these - string, number, boolean or enum",
-      "any.required": "attribute type is required",
-      "string.base": "attribute type must be a string",
-    }),
+  })
 });
 
 // Subcategory Joi Schema
@@ -30,12 +21,17 @@ const subcategoryJoiSchema = Joi.object({
     "any.required": "subcategory name is required",
   }),
 
-  subcategory_icon:Joi.string().min(2).max(20).required().messages({
+  subcategory_icon: Joi.string().min(2).max(20).required().messages({
     "string.base": "subcategory icon must be a string",
     "string.empty": "subcategory icon is required",
     "string.min": "subcategory icon must be at least 2 characters long",
     "string.max": "subcategory icon must not exceed 20 characters",
     "any.required": "subcategory icon is required",
+  }),
+
+  needSize: Joi.boolean().required().messages({
+    "any.required": "need size is required",
+    "boolean.base": "need size must be true or false",
   }),
 
   attributes: Joi.array()
@@ -48,7 +44,7 @@ const subcategoryJoiSchema = Joi.object({
       "array.min": "please add at least one attribute",
       "array.max": "maximum limit reached, cann't add",
       "any.required": "attributes are required",
-       "object.base": "each attribute must be an object with valid fields",
+      "object.base": "each attribute must be an object with valid fields",
     }),
 });
 
@@ -61,7 +57,7 @@ export const categoryJoiSchema = Joi.object({
     "string.max": "category name must not exceed 50 characters",
     "any.required": "category name is required",
   }),
-  category_icon:Joi.string().min(2).max(20).required().messages({
+  category_icon: Joi.string().min(2).max(20).required().messages({
     "string.base": "category icon must be a string",
     "string.empty": "category icon is required",
     "string.min": "category icon must be at least 2 characters long",
@@ -77,7 +73,7 @@ export const categoryJoiSchema = Joi.object({
       "array.min": "please add at least one subcategory",
       "object.base": "each subcategory must be an object with valid fields",
     }),
-})
+});
 
 // Category  Name Joi Schema
 export const nameJoiSchema = Joi.object({
@@ -88,7 +84,7 @@ export const nameJoiSchema = Joi.object({
     "string.max": "name must not exceed 50 characters",
     "any.required": "name is required",
   }),
-    icon:Joi.string().min(2).max(20).required().messages({
+  icon: Joi.string().min(2).max(20).required().messages({
     "string.base": "icon must be a string",
     "string.empty": "icon is required",
     "string.min": "icon must be at least 2 characters long",
@@ -97,9 +93,8 @@ export const nameJoiSchema = Joi.object({
   }),
 });
 
-
 export const attributesJoiSchema = Joi.object({
-   attributes: Joi.array()
+  attributes: Joi.array()
     .items(attributeDefinitionJoiSchema)
     .min(1)
     .max(20)
@@ -109,10 +104,9 @@ export const attributesJoiSchema = Joi.object({
       "array.min": "please add at least one attribute",
       "array.max": "maximum limit reached, cann't add",
       "any.required": "attributes are required",
-       "object.base": "each attribute must be an object with valid fields",
+      "object.base": "each attribute must be an object with valid fields",
     }),
-})
-
+});
 
 export const subcategoriesJoiSchema = Joi.object({
   subcategories: Joi.array()
@@ -124,4 +118,4 @@ export const subcategoriesJoiSchema = Joi.object({
       "array.min": "please add at least one subcategory",
       "object.base": "each subcategory must be an object with valid fields",
     }),
-})
+});

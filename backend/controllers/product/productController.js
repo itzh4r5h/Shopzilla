@@ -126,15 +126,24 @@ exports.getProduct = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("product not exists", 404));
   }
 
+  
+
   const attributes = product.category.subcategories.find(
     (subcat) =>
       subcat.name.toLocaleLowerCase() ===
       product.subcategory.toLocaleLowerCase()
   ).attributes;
 
+  const needSize = product.category.subcategories.find(
+    (subcat) =>
+      subcat.name.toLocaleLowerCase() ===
+      product.subcategory.toLocaleLowerCase()
+  ).needSize;
+
   res.status(200).json({
     success: true,
     product,
+    needSize,
     attributes,
   });
 });

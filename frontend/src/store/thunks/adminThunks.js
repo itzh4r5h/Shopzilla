@@ -224,7 +224,9 @@ export const getStockStatus = createAsyncThunk(
   "admin/stock_status",
   async (_, thunkAPI) => {
     try {
-      const { data } = await axiosInstance.get("/admin/products/variants/stock_status");
+      const { data } = await axiosInstance.get(
+        "/admin/products/variants/stock_status"
+      );
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -236,7 +238,7 @@ export const getStockStatus = createAsyncThunk(
 
 export const addOrUpdateVariant = createAsyncThunk(
   "admin/add_update_variant",
-  async ({ edit, variant, id,variantId }, thunkAPI) => {
+  async ({ edit, variant, id, variantId }, thunkAPI) => {
     try {
       const formData = new FormData();
 
@@ -251,16 +253,43 @@ export const addOrUpdateVariant = createAsyncThunk(
       formData.append("attributes", JSON.stringify(variant.attributes));
 
       // Handle images (nested objects)
+      // images loop start
       variant.images.forEach((img, index) => {
         formData.append(`images[${index}][color]`, img.color);
+        formData.append(`images[${index}][price]`, img.price);
+
+        // if true
+        if (variant.needSize) {
+          // sizes loop start
+          img.sizes.forEach((sz, szIndex) => {
+            formData.append(
+              `images[${index}][sizes][${szIndex}][size]`,
+              sz.size
+            );
+            formData.append(
+              `images[${index}][sizes][${szIndex}][stock]`,
+              sz.stock
+            );
+          });
+          // sizes loop end
+        } else {
+          formData.append(`images[${index}][stock]`, img.stock);
+        }
+
+        // files loop start
         img.files.forEach((file, fileIndex) => {
           if (file instanceof File || file instanceof Blob) {
-            formData.append(`images[${index}][files][${fileIndex}]`, file)
-          }else{
-            formData.append(`images[${index}][files][${fileIndex}]`, JSON.stringify(file))
+            formData.append(`images[${index}][files][${fileIndex}]`, file);
+          } else {
+            formData.append(
+              `images[${index}][files][${fileIndex}]`,
+              JSON.stringify(file)
+            );
           }
         });
+        // files loop end
       });
+      // images loop end
 
       if (edit) {
         const { data } = await axiosInstance.put(
@@ -299,10 +328,9 @@ export const getAllVariants = createAsyncThunk(
   }
 );
 
-
 export const deleteVariantOfProduct = createAsyncThunk(
   "admin/delete_variant",
-  async ({productId,variantId}, thunkAPI) => {
+  async ({ productId, variantId }, thunkAPI) => {
     try {
       const { data } = await axiosInstance.delete(
         `/admin/products/${productId}/variants/${variantId}`

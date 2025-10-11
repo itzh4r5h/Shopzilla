@@ -117,7 +117,7 @@ const ImagesSlideComponent = ({ images }) => {
 export const SingleProductInfo = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate()
-  const { product, attributes, error, success, message, variants, updated } =
+  const { product,needSize, attributes, error, success, message, variants, updated } =
     useSelector((state) => state.admin);
   const { id } = useParams();
 
@@ -270,7 +270,7 @@ export const SingleProductInfo = () => {
       {attributes?.length > 0 ? (
         <div className="grid grid-cols-2 items-center mt-5">
           <h1 className="font-semibold text-3xl">Variants</h1>
-          <VariantModal id={id} attributesData={attributes} />
+          <VariantModal id={id} attributesData={attributes} needSize={needSize}/>
         </div>
       ) : (
         <div className="grid grid-cols-2 items-center gap-3 mt-5">
@@ -284,7 +284,7 @@ export const SingleProductInfo = () => {
       {variants?.length > 0 ? (
         <Swiper
           loop={variants.length > 1 ? true : false}
-          pagination={{ clickable: true }}
+          pagination={{ clickable: true,type: 'fraction' }}
           grabCursor={true}
           modules={[Pagination]}
           className="mySwiper"
@@ -303,6 +303,7 @@ export const SingleProductInfo = () => {
                         id={id}
                         attributesData={attributes}
                         variant={variant}
+                        needSize={needSize}
                       />
                       <DeleteModal deleteFunction={()=>dispatch(deleteVariantOfProduct({productId:id,variantId:variant._id}))}/>
                     </div>

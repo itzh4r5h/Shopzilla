@@ -1,7 +1,7 @@
 import { FaMinusCircle, FaPlusCircle, FaTimesCircle } from "react-icons/fa";
 import { FillButton } from "../buttons/FillButton";
 import { useFieldArray, useForm } from "react-hook-form";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
 import { useDispatch } from "react-redux";
 import { MdEditSquare, MdOutlineFileUpload } from "react-icons/md";
@@ -17,13 +17,114 @@ import { ImageCard } from "../cards/ImageCard";
 import { variantJoiSchema } from "../../validators/productValidators";
 import { cleanAttributes, deepLowercase } from "../../utils/helpers";
 import { addOrUpdateVariant } from "../../store/thunks/adminThunks";
-import { MultiValueSelector } from "../selectors/MultiValueSelector";
+
+const SizesSlideComponent = ({ control, imgIndex, register }) => {
+  // For attributes inside each subcategory
+  const {
+    fields: sizes,
+    append: addSize,
+    remove: removeSize,
+  } = useFieldArray({
+    control,
+    name: `images.${imgIndex}.sizes`,
+  });
+
+  const swiperRef = useRef(null);
+
+  // Whenever sizes change, refresh Swiper
+  useEffect(() => {
+    if (swiperRef.current) {
+      swiperRef.current.update();
+      swiperRef.current.slideTo(sizes.length - 1); // go to last added
+    }
+  }, [sizes]);
+
+  return (
+    <Swiper
+      onSwiper={(swiper) => (swiperRef.current = swiper)}
+      loop={sizes.length > 1 ? true : false}
+      pagination={{ clickable: true, type: 'fraction', }}
+      grabCursor={true}
+      modules={[Pagination]}
+      className="mySwiper"
+      spaceBetween={10}
+    >
+      {sizes.map((data, index) => {
+        return (
+          <SwiperSlide key={data.id} className="pb-10 px-2">
+            <div className="grid grid-cols-2 gap-x-2 relative">
+              {sizes.length > 1 && (
+                <div className="flex items-center absolute top-2 right-0 gap-x-2">
+                  <FaMinusCircle
+                    className="text-xl active:text-[var(--purpleDark)] transition-colors"
+                    onClick={() => removeSize(index)}
+                  />
+                  {index + 1 === sizes.length && (
+                    <FaPlusCircle
+                      className="text-xl active:text-[var(--purpleDark)] transition-colors"
+                      onClick={() => addSize({ size: "", stock: 0 })}
+                    />
+                  )}
+                </div>
+              )}
+
+              {sizes.length < 2 && (
+                <FaPlusCircle
+                  className="text-xl active:text-[var(--purpleDark)] transition-colors absolute top-2 right-0"
+                  onClick={() => addSize({ size: "", stock: 0 })}
+                />
+              )}
+
+              {/* size begins */}
+              <div className="flex flex-col justify-center gap-2">
+                <label
+                  htmlFor={`images.${imgIndex}.sizes.${index}.size`}
+                  className="text-xl w-fit"
+                >
+                  Size
+                </label>
+                <input
+                  autoComplete="off"
+                  {...register(`images.${imgIndex}.sizes.${index}.size`, {
+                    required: true,
+                  })}
+                  id={`images.${imgIndex}.sizes.${index}.size`}
+                  className="uppercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+                />
+              </div>
+              {/* size ends */}
+              {/* stock begins */}
+              <div className="flex flex-col justify-center gap-2">
+                <label
+                  htmlFor={`images.${imgIndex}.sizes.${index}.stock`}
+                  className="text-xl w-fit"
+                >
+                  Stock
+                </label>
+                <input
+                  autoComplete="off"
+                  {...register(`images.${imgIndex}.sizes.${index}.stock`, {
+                    required: true,
+                  })}
+                  id={`images.${imgIndex}.sizes.${index}.stock`}
+                  className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+                />
+              </div>
+              {/* stock ends */}
+            </div>
+          </SwiperSlide>
+        );
+      })}
+    </Swiper>
+  );
+};
 
 export const VariantModal = ({
   edit = false,
   variant = undefined,
   attributesData = [],
   id,
+  needSize = false,
 }) => {
   const schema = useMemo(() => {
     return variantJoiSchema;
@@ -35,9 +136,8 @@ export const VariantModal = ({
       const attrs = cleanAttributes(variant.attributes);
 
       return {
-        price: variant.price,
-        stock: variant.stock,
         attributes: attrs,
+        needSize:needSize,
         images: variant.images.map(({ _id, ...rest }) => ({
           ...rest,
           files: rest.files.map(({ _id, ...fileRest }) => fileRest),
@@ -47,15 +147,21 @@ export const VariantModal = ({
 
     // Creating new variant
     return {
-      price: 0,
-      stock: 0,
       attributes: [
         ...attributesData.map((attr) => ({
           name: attr.name,
-          value: attr.type.toLowerCase() === "enum" ? [] : "",
+          value: "",
         })),
       ],
-      images: [{ color: "#000000", files: [] }],
+      needSize:needSize,
+      images: [
+        {
+          color: "#000000",
+          price: 0,
+          ...(needSize ? { sizes: [{ size: "", stock: 0 }] } : { stock: 0 }),
+          files: [],
+        },
+      ],
     };
   };
 
@@ -137,12 +243,17 @@ export const VariantModal = ({
     if (edit) {
       variantData.removedImagesFileIds = removedImagesFileIds;
       dispatch(
-        addOrUpdateVariant({edit:true, variant: variantData, id, variantId: variant._id })
+        addOrUpdateVariant({
+          edit: true,
+          variant: variantData,
+          id,
+          variantId: variant._id,
+        })
       );
     } else {
       dispatch(addOrUpdateVariant({ variant: variantData, id }));
     }
-    setRemovedImagesFileIds([])
+    setRemovedImagesFileIds([]);
     handleClose();
   };
 
@@ -155,10 +266,10 @@ export const VariantModal = ({
   const handleRemoveImagesBox = (index, images) => {
     if (edit) {
       images[index].files.forEach((file) => {
-          if (file.fileId) {
-            setRemovedImagesFileIds((prev) => [...prev, file.fileId]);
-          }
-        });
+        if (file.fileId) {
+          setRemovedImagesFileIds((prev) => [...prev, file.fileId]);
+        }
+      });
     }
     removeImagesBox(index);
   };
@@ -187,44 +298,13 @@ export const VariantModal = ({
 
                 <h1 className="text-center text-3xl -mt-5">Variant Details</h1>
 
-                <div className="grid grid-cols-2 gap-x-3">
-                  {/* price begins */}
-                  <div className="flex flex-col justify-center gap-2">
-                    <label htmlFor="price" className="text-xl w-fit">
-                      Price
-                    </label>
-                    <input
-                      type="number"
-                      autoComplete="off"
-                      {...register("price", { required: true })}
-                      id="price"
-                      className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-                    />
-                  </div>
-                  {/* price ends */}
-
-                  {/* stock begins */}
-                  <div className="flex flex-col justify-center gap-2">
-                    <label htmlFor="stock" className="text-xl w-fit">
-                      Stock
-                    </label>
-                    <input
-                      type="number"
-                      autoComplete="off"
-                      {...register("stock", { required: true })}
-                      id="stock"
-                      className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-                    />
-                  </div>
-                  {/* stock ends */}
-                </div>
-
                 {/* attributes begins */}
                 <div className="flex flex-col justify-center gap-y-2">
                   <h1 className="text-2xl">Attributes</h1>
                   {attributes.map((attr, index) => {
                     const attrName = `attributes.${index}.name`;
                     const attrValue = `attributes.${index}.value`;
+
                     return (
                       <div
                         className="flex flex-col justify-center gap-y-2"
@@ -241,22 +321,14 @@ export const VariantModal = ({
                             className="uppercase text-lg outline-none pointer-events-none"
                           />
 
-                          {attributesData[index].type.toLowerCase() ===
-                          "enum" ? (
-                            <MultiValueSelector
-                              control={control}
-                              fieldName={attrValue}
-                            />
-                          ) : (
-                            <input
-                              autoComplete="off"
-                              {...register(attrValue, {
-                                required: true,
-                              })}
-                              id={attrValue}
-                              className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-                            />
-                          )}
+                          <input
+                            autoComplete="off"
+                            {...register(attrValue, {
+                              required: true,
+                            })}
+                            id={attrValue}
+                            className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+                          />
                         </div>
                       </div>
                     );
@@ -266,10 +338,10 @@ export const VariantModal = ({
 
                 {/* images begins */}
                 <div className="flex flex-col justify-center gap-y-3">
-                  <h1 className="text-2xl capitalize">Images As Per Color</h1>
-
                   {images.map((imgData, index) => {
-                    const name = `images.${index}.color`;
+                    const color = `images.${index}.color`;
+                    const price = `images.${index}.price`;
+                    const stock = `images.${index}.stock`;
                     const fileName = `images.${index}.files`;
 
                     return (
@@ -289,7 +361,14 @@ export const VariantModal = ({
                               <FaPlusCircle
                                 className="text-xl active:text-[var(--purpleDark)] transition-colors"
                                 onClick={() =>
-                                  addImagesBox({ color: "#000000", files: [] })
+                                  addImagesBox({
+                                    color: "#000000",
+                                    price: 0,
+                                    ...(needSize
+                                      ? { sizes: [{ size: "", stock: 0 }] }
+                                      : { stock: 0 }),
+                                    files: [],
+                                  })
                                 }
                               />
                             )}
@@ -306,22 +385,68 @@ export const VariantModal = ({
                         )}
 
                         <div className="grid grid-cols-2 gap-x-2">
-                          <label htmlFor={name} className="text-xl w-fit">
+                          <label htmlFor={color} className="text-xl w-fit">
                             Color
                           </label>
                           <input
                             type="color"
                             autoComplete="off"
-                            {...register(name, {
+                            {...register(color, {
                               required: true,
                             })}
-                            id={name}
+                            id={color}
                             className="h-full w-20"
                           />
                         </div>
 
+                        {/* price begins */}
+                        <div className="grid grid-cols-2 gap-x-2">
+                          <label htmlFor={price} className="text-xl w-fit">
+                            Price
+                          </label>
+                          <input
+                            type="number"
+                            autoComplete="off"
+                            {...register(price, { required: true })}
+                            id={price}
+                            className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+                          />
+                        </div>
+                        {/* price ends */}
+
+                        {/* stock begins */}
+                        {!needSize && (
+                          <div className="grid grid-cols-2 gap-x-2 mb-4">
+                            <label htmlFor={stock} className="text-xl w-fit">
+                              Stock
+                            </label>
+                            <input
+                              type="number"
+                              autoComplete="off"
+                              {...register(stock, { required: true })}
+                              id={stock}
+                              className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+                            />
+                          </div>
+                        )}
+                        {/* stock ends */}
+
+                        {needSize && (
+                          <div>
+                            <h1 className="capitalize text-2xl">Sizes</h1>
+
+                            <div className="grid w-full">
+                              <SizesSlideComponent
+                                imgIndex={index}
+                                control={control}
+                                register={register}
+                              />
+                            </div>
+                          </div>
+                        )}
+
                         {/* images box begins */}
-                        <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="flex flex-col items-center justify-center gap-2 -mt-4">
                           {/* images label and choose images begins */}
                           <div className="grid grid-cols-2 items-center w-full">
                             <h1 className="capitalize text-xl">Images</h1>

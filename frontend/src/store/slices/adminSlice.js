@@ -40,6 +40,7 @@ const initialState = {
   userCount: undefined,
   orders: undefined,
   product: undefined,
+  needSize: undefined,
   products: undefined,
   variants: undefined,
   attributes: undefined,
@@ -253,6 +254,7 @@ const adminSlice = createSlice({
         state.loading = false;
         state.product = action.payload.product;
         state.attributes = action.payload.attributes;
+        state.needSize = action.payload.needSize;
       },
       rejected: (state, action) => {
         state.loading = false;

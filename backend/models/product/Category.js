@@ -10,18 +10,6 @@ const attributeDefinitionSchema = new mongoose.Schema({
     minlength: [2, "attribute name must be at least 2 characters long"],
     maxlength: [50, "attribute name must not exceed 50 characters"],
   },
-  type: {
-    type: String,
-    required: [true, "attribute type is required"],
-    enum: {
-      values: ["string", "number", "boolean", "enum"],
-      message: "attribute type must be string, number, boolean or enum",
-    },
-  },
-  required: {
-    type: Boolean,
-    default: true,
-  },
 });
 
 // Subcategory Schema
@@ -42,6 +30,7 @@ const subcategorySchema = new mongoose.Schema({
     minlength: [2, "subcategory icon must be at least 2 characters long"],
     maxlength: [20, "subcategory icon must not exceed 20 characters"],
   },
+  needSize: { type: Boolean, required: [true, "need size is required"] },
   attributes: [attributeDefinitionSchema],
 });
 
@@ -58,13 +47,13 @@ const categorySchema = new mongoose.Schema(
       maxlength: [50, "category name must not exceed 50 characters"],
     },
     category_icon: {
-    type: String,
-    required: [true, "subcategory icon is required"],
-    index: true,
-    trim: true,
-    minlength: [2, "subcategory icon must be at least 2 characters long"],
-    maxlength: [20, "subcategory icon must not exceed 20 characters"],
-  },
+      type: String,
+      required: [true, "subcategory icon is required"],
+      index: true,
+      trim: true,
+      minlength: [2, "subcategory icon must be at least 2 characters long"],
+      maxlength: [20, "subcategory icon must not exceed 20 characters"],
+    },
     subcategories: [subcategorySchema],
   },
   { timestamps: true }
@@ -120,7 +109,6 @@ categorySchema.pre("save", function (next) {
   }
   next();
 });
-
 
 const Category = mongoose.model("Category", categorySchema);
 

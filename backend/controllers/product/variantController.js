@@ -13,13 +13,11 @@ const {
   imagesJoiSchema,
 } = require("../../validators/product/variantValidator");
 const { deletionQueue } = require("../../jobs/queue");
-const VariantSearchAndFilter = require("../../utils/variantSearchAndFilter");
-const mongoose = require("mongoose");
 
 // ======================= ADMIN -- Common Works For Create Variant and Update Variant ==============================
-const formatImages = (files, imgs, edit) => {
+const formatImages = (files, imgs, edit, needSize) => {
   /*
-    this function takes the req.files and images from req.body and edit - true or false
+    this function takes the req.files and images from req.body and edit with value of true or false
     then it forms an array of images 
     [{color: 'clr', files: [{}]},]
   */
@@ -45,6 +43,10 @@ const formatImages = (files, imgs, edit) => {
       if (!grouped[index]) {
         grouped[index] = {
           color: imgs[index].color,
+          price: imgs[index].price,
+          ...(needSize
+            ? { sizes: imgs[index].sizes }
+            : { stock: imgs[index].stock }),
           files: [],
         };
         // it will result in i.e. {"0": {color: 'clr', files : []}}
@@ -89,20 +91,28 @@ const formatImages = (files, imgs, edit) => {
         */
         if (grouped[index]) {
           /*
-          then return the value
+          then return the value e.g
         {
           color: 'clr',
+          price: 1000,
+          stock: 10
           files: [{url:'img_url',fileId:'imageKit_fileId',name:'orignal_name'},File,]
           }
           */
           return {
             color: grouped[index].color,
+            price: grouped[index].price,
+            ...(needSize
+              ? { sizes: grouped[index].sizes }
+              : { stock: grouped[index].stock }),
             files: [...parsedFiles, ...grouped[index].files],
           };
         } else {
           // if not then we gonna only return the already uploaded files in file field
           return {
             color: img.color,
+            price: img.price,
+            ...(needSize ? { sizes: img.sizes } : { stock: img.stock }),
             files: parsedFiles,
           };
         }
@@ -111,6 +121,8 @@ const formatImages = (files, imgs, edit) => {
         // then return files stored in grouped
         return {
           color: img.color,
+          price: img.price,
+          ...(needSize ? { sizes: img.sizes } : { stock: img.stock }),
           files: grouped[index].files,
         };
       }
@@ -121,7 +133,14 @@ const formatImages = (files, imgs, edit) => {
       Object.key(grouped) will give the keys array ["0","1","2"]
     */
     images = Object.keys(grouped).map((key) => {
-      return { color: grouped[key].color, files: grouped[key].files };
+      return {
+        color: grouped[key].color,
+        price: grouped[key].price,
+        ...(needSize
+          ? { sizes: grouped[key].sizes }
+          : { stock: grouped[key].stock }),
+        files: grouped[key].files,
+      };
     });
   }
   return images;
@@ -133,8 +152,15 @@ const contentValidation = async (req, next, edit = false) => {
     it will validate the data which received from frontend
   */
   req.body.attributes = JSON.parse(req.body.attributes);
+  req.body.needSize = JSON.parse(req.body.needSize);
 
-  const { price, stock, attributes } = req.body;
+  const { attributes, needSize } = req.body;
+
+
+  if (typeof needSize !== 'boolean') {
+    return next(new ErrorHandler("need size is required"));
+  }
+
 
   const { productId } = req.params;
 
@@ -144,19 +170,15 @@ const contentValidation = async (req, next, edit = false) => {
     return next(new ErrorHandler("product not exists", 404));
   }
 
-  const { error } = variantJoiSchema.validate({
-    price,
-    stock,
-    attributes,
-  });
+  const { error } = variantJoiSchema.validate({ attributes });
 
   if (error) {
     return next(new ErrorHandler(formatJoiErrMessage(error), 400));
   }
 
-  const images = formatImages(req.files, req.body.images, edit);
+  const images = formatImages(req.files, req.body.images, edit, needSize);
 
-  const { error: imagesError } = imagesJoiSchema.validate({ images });
+  const { error: imagesError } = imagesJoiSchema.validate({ needSize, images });
 
   if (imagesError) {
     return next(new ErrorHandler(formatJoiErrMessage(imagesError), 400));
@@ -179,17 +201,16 @@ const contentValidation = async (req, next, edit = false) => {
     if (!definedAttr) {
       return next(new ErrorHandler("invalid attribute name"));
     }
-    if (definedAttr.type === "string" && typeof attr.value !== "string") {
-      return next(new ErrorHandler(`invalid attribute value - ${attr.value}`));
-    }
-    if (definedAttr.type === "enum" && !Array.isArray(attr.value)) {
-      return next(new ErrorHandler(`invalid attribute value - ${attr.value}`));
-    }
   }
-  return { price, stock, attributes, productId, images };
+  return { attributes, productId, images, needSize };
 };
 
-const uploadImagesToImageKit = async (images, productId, variantId) => {
+const uploadImagesToImageKit = async (
+  images,
+  productId,
+  variantId,
+  needSize
+) => {
   /*
    it will upload the images to imagekit and it is used in both create and update variant function
    the images it received are those images we formated earlier in formatImages function
@@ -225,6 +246,8 @@ const uploadImagesToImageKit = async (images, productId, variantId) => {
       );
       return {
         color: img.color,
+        price: img.price,
+        ...(needSize ? { sizes: img.sizes } : { stock: img.stock }),
         files,
       };
     })
@@ -235,12 +258,16 @@ const uploadImagesToImageKit = async (images, productId, variantId) => {
 
 // ======================= ADMIN -- CREATE NEW VARIANT ==============================
 exports.createNewVariant = catchAsyncErrors(async (req, res, next) => {
-  const { price, stock, attributes, productId, images } =
-    await contentValidation(req, next);
+  const { attributes, productId, images, needSize } = await contentValidation(
+    req,
+    next
+  );
 
   const dummyImagesData = [
     {
       color: "default",
+      price: 1,
+      stock: 1,
       files: [
         {
           url: "fake",
@@ -254,8 +281,6 @@ exports.createNewVariant = catchAsyncErrors(async (req, res, next) => {
   const sku = generateSKU(productId, attributes);
 
   const variant = await Variant.create({
-    price,
-    stock,
     attributes,
     sku,
     images: dummyImagesData,
@@ -281,7 +306,8 @@ exports.createNewVariant = catchAsyncErrors(async (req, res, next) => {
     const uploadedImages = await uploadImagesToImageKit(
       images,
       productId,
-      variant._id
+      variant._id,
+      needSize
     );
 
     await Variant.findByIdAndUpdate(
@@ -316,8 +342,11 @@ exports.updateVariant = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("variant not exists", 404));
   }
 
-  const { price, stock, attributes, productId, images } =
-    await contentValidation(req, next, true);
+  const { attributes, productId, images, needSize } = await contentValidation(
+    req,
+    next,
+    true
+  );
 
   const { removedImagesFileIds } = req.body;
 
@@ -342,14 +371,13 @@ exports.updateVariant = catchAsyncErrors(async (req, res, next) => {
       const uploadedImages = await uploadImagesToImageKit(
         images,
         productId,
-        variant._id
+        variant._id,
+        needSize
       );
 
       await Variant.findByIdAndUpdate(
         variant._id,
         {
-          price,
-          stock,
           attributes,
           images: uploadedImages,
         },
@@ -369,8 +397,6 @@ exports.updateVariant = catchAsyncErrors(async (req, res, next) => {
     await Variant.findByIdAndUpdate(
       variant._id,
       {
-        price,
-        stock,
         attributes,
         images,
       },
@@ -422,12 +448,14 @@ exports.getInStockAndOutOfStockVariantCount = catchAsyncErrors(
       {
         $match: { imagesUploaded: true },
       },
+      // Break out images array so we can access price/stock
+      { $unwind: "$images" },
       // Create a flag field based on stock
       {
         $addFields: {
           status: {
             $cond: [
-              { $gt: ["$stock", 0] }, // condition
+              { $gt: ["$images.stock", 0] }, // condition
               "in_stock", // if true
               "out_of_stock", // if false
             ],
@@ -487,7 +515,6 @@ exports.getTotalNumberOfVariants = catchAsyncErrors(async (req, res) => {
   });
 });
 
-
 // ======================= GET VARIANT ==============================
 exports.getVariant = catchAsyncErrors(async (req, res, next) => {
   const variant = await Variant.findOne({
@@ -509,6 +536,7 @@ exports.getVariant = catchAsyncErrors(async (req, res, next) => {
 exports.getAllVariants = catchAsyncErrors(async (req, res) => {
   const page = Number(req.query.page) || 1;
   const limit = 10;
+
   const {
     keyword,
     subcategory,
@@ -536,6 +564,8 @@ exports.getAllVariants = catchAsyncErrors(async (req, res) => {
       },
     },
     { $unwind: "$product" },
+    // Break out images array so we can filter on price/stock
+    { $unwind: "$images" },
 
     // Keyword search (on product.name)
     ...(isSearch
@@ -549,7 +579,7 @@ exports.getAllVariants = catchAsyncErrors(async (req, res) => {
 
     ...(isSearch && brand ? [{ $match: { "product.brand": brand } }] : []),
 
-    ...(isSearch && ratings
+    ...(isSearch && isOnlyDigits(ratings)
       ? [{ $match: { "product.ratings": { $gte: Number(ratings) } } }]
       : []),
 
@@ -560,7 +590,7 @@ exports.getAllVariants = catchAsyncErrors(async (req, res) => {
       ? [
           {
             $match: {
-              price: {
+              "images.price": {
                 ...(minPrice && { $gte: Number(minPrice) }),
                 ...(maxPrice && { $lte: Number(priceMax) }),
               },
@@ -591,7 +621,24 @@ exports.getAllVariants = catchAsyncErrors(async (req, res) => {
       $facet: isSearch
         ? {
             metadata: [{ $count: "total" }],
-            variants: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+            variants: [
+              {
+                $group: {
+                  _id: "$_id",
+                  doc: { $first: "$$ROOT" }, // take variant fields
+                  images: { $push: "$images" }, // re-collect images
+                },
+              },
+              {
+                $replaceRoot: {
+                  newRoot: {
+                    $mergeObjects: ["$doc", { images: "$images" }],
+                  },
+                },
+              },
+              { $skip: (page - 1) * limit },
+              { $limit: limit },
+            ],
 
             filterOptions: [
               {
@@ -617,7 +664,24 @@ exports.getAllVariants = catchAsyncErrors(async (req, res) => {
           }
         : {
             metadata: [{ $count: "total" }],
-            variants: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+            variants: [
+              {
+                $group: {
+                  _id: "$_id",
+                  doc: { $first: "$$ROOT" }, // take variant fields
+                  images: { $push: "$images" }, // re-collect images
+                },
+              },
+              {
+                $replaceRoot: {
+                  newRoot: {
+                    $mergeObjects: ["$doc", { images: "$images" }],
+                  },
+                },
+              },
+              { $skip: (page - 1) * limit },
+              { $limit: limit },
+            ],
           },
     },
     {
@@ -647,4 +711,3 @@ exports.getAllVariants = catchAsyncErrors(async (req, res) => {
     attributes: result?.attributes || [],
   });
 });
-

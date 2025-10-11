@@ -42,16 +42,8 @@ export const Attributes = () => {
                     <h3 className="text-lg font-semibold uppercase tracking-widest">
                       Name
                     </h3>
-                    <h3 className="text-lg font-semibold uppercase tracking-widest text-amber-600">
-                      {attr.name}
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-2">
-                    <h3 className="text-lg font-semibold uppercase tracking-widest">
-                      Type
-                    </h3>
                     <h3 className="text-lg font-semibold uppercase tracking-widest text-green-600">
-                      {attr.type}
+                      {attr.name}
                     </h3>
                   </div>
                 </div>

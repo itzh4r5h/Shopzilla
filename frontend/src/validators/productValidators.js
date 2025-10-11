@@ -59,6 +59,48 @@ const filesJoiSchema = Joi.object({
     "string.max": "color must not exceed 10 characters",
     "any.required": "color is required",
   }),
+  price: Joi.number().min(0).greater(0).required().messages({
+    "number.base": "price must be a number",
+    "number.min": "price cannot be negative",
+    "number.greater": "price cannot be 0",
+    "any.required": "price is required",
+  }),
+
+  stock: Joi.number()
+    .min(1)
+    .greater(0)
+    .when(Joi.ref("....needSize"), {
+      is: false, // if needSize = false
+      then: Joi.required().messages({
+        "number.base": "stock must be a number",
+        "number.min": "stock cannot be 0",
+        "number.greater": "stock cannot be 0",
+      }),
+      otherwise: Joi.forbidden(), // prevent stock if not needed
+    }),
+
+  sizes: Joi.array()
+    .items(
+      Joi.object({
+        size: Joi.string().min(1).max(5).required().messages({
+          "any.required": "size is required",
+          "string.empty": "size is required",
+          "string.min": "size cann't be empty",
+          "string.max": "size cann't exceed 5 chars",
+        }),
+        stock: Joi.number().min(1).greater(0).required().messages({
+          "number.base": "stock must be a number",
+          "number.min": "stock cannot be 0",
+          "number.greater": "stock cannot be 0",
+        }),
+      })
+    )
+    .when(Joi.ref("....needSize"), {
+      is: true, // if needSize = true
+      then: Joi.required().messages({ "any.required": "sizes are required" }),
+      otherwise: Joi.forbidden(), // prevent sizes[] if not needed
+    }),
+
   files: Joi.array()
     .items(
       Joi.custom((file, helpers) => {
@@ -126,18 +168,6 @@ const productAttributeJoiSchema = Joi.object({
 });
 
 export const variantJoiSchema = Joi.object({
-  price: Joi.number().min(0).greater(0).required().messages({
-    "number.base": "price must be a number",
-    "number.min": "price cannot be negative",
-    "number.greater": "price cannot be 0",
-    "any.required": "price is required",
-  }),
-
-  stock: Joi.number().min(0).greater(0).messages({
-    "number.base": "stock must be a number",
-    "number.min": "stock cannot be negative",
-    "number.greater": "stock cannot be 0",
-  }),
   attributes: Joi.array()
     .items(productAttributeJoiSchema)
     .min(1)
@@ -148,6 +178,7 @@ export const variantJoiSchema = Joi.object({
       "array.min": "at least one attribute is required",
       "object.base": "each attribute must be an object with valid fields",
     }),
+  needSize: Joi.boolean().required(),
   images: Joi.array().items(filesJoiSchema).min(1).required().messages({
     "array.base": "images must be an array",
     "any.required": "images are required",
