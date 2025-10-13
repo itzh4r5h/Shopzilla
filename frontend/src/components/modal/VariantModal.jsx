@@ -137,9 +137,11 @@ export const VariantModal = ({
 
       return {
         attributes: attrs,
-        needSize:needSize,
+        needSize: variant.needSize,
         images: variant.images.map(({ _id, ...rest }) => ({
-          ...rest,
+          color: rest.color,
+          price: rest.price,
+          ...(needSize?{sizes: rest.sizes.map((({_id,...restSize})=>restSize))}:{stock:rest.stock}),
           files: rest.files.map(({ _id, ...fileRest }) => fileRest),
         })),
       };
@@ -379,7 +381,12 @@ export const VariantModal = ({
                           <FaPlusCircle
                             className="text-xl active:text-[var(--purpleDark)] transition-colors absolute top-2 right-2"
                             onClick={() =>
-                              addImagesBox({ color: "", files: [] })
+                              addImagesBox({color: "#000000",
+                                    price: 0,
+                                    ...(needSize
+                                      ? { sizes: [{ size: "", stock: 0 }] }
+                                      : { stock: 0 }),
+                                    files: [], })
                             }
                           />
                         )}

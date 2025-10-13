@@ -1,7 +1,12 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Heading } from "../../../components/Headers/Heading";
 import { useEffect } from "react";
-import { deleteProduct, deleteVariantOfProduct, getAllVariants, getProduct } from "../../../store/thunks/adminThunks";
+import {
+  deleteProduct,
+  deleteVariantOfProduct,
+  getAllVariants,
+  getProduct,
+} from "../../../store/thunks/adminThunks";
 import { useNavigate, useParams } from "react-router";
 import {
   flatAttributesValueArray,
@@ -54,7 +59,63 @@ const AttributeSlideComponent = ({ attributes }) => {
   );
 };
 
-const ImagesSlideComponent = ({ images }) => {
+const SizesSlideComponent = ({ sizes }) => {
+  return (
+    <Swiper
+      loop={sizes.length > 1 ? true : false}
+      pagination={{ clickable: true, type: "fraction" }}
+      grabCursor={true}
+      modules={[Pagination]}
+      className="mySwiper"
+      spaceBetween={10}
+    >
+      {sizes.map((data, index) => {
+        return (
+          <SwiperSlide key={data._id} className="pb-10 px-2">
+            <div className="grid grid-cols-2 gap-x-2 relative">
+              {/* size begins */}
+              <div className="flex flex-col justify-center gap-2">
+                <label
+                  htmlFor={`sizes.${index}.size`}
+                  className="text-xl w-fit"
+                >
+                  Size
+                </label>
+                <input
+                  autoComplete="off"
+                  defaultValue={data.size}
+                  readOnly
+                  id={`sizes.${index}.size`}
+                  className="uppercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none"
+                />
+              </div>
+              {/* size ends */}
+              {/* stock begins */}
+              <div className="flex flex-col justify-center gap-2">
+                <label
+                  htmlFor={`sizes.${index}.stock`}
+                  className="text-xl w-fit"
+                >
+                  Stock
+                </label>
+                <input
+                  autoComplete="off"
+                  defaultValue={data.stock}
+                  readOnly
+                  id={`sizes.${index}.stock`}
+                  className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none"
+                />
+              </div>
+              {/* stock ends */}
+            </div>
+          </SwiperSlide>
+        );
+      })}
+    </Swiper>
+  );
+};
+
+const ImagesSlideComponent = ({ images, needSize }) => {
   return (
     <figure className="relative">
       <Swiper
@@ -81,6 +142,25 @@ const ImagesSlideComponent = ({ images }) => {
                     />
                   </p>
                 </div>
+
+                <div className="grid grid-cols-[3fr_4fr]">
+                  <h2 className="text-lg uppercase">Price</h2>
+                  <p className="text-lg capitalize text-[var(--light)] justify-self-end">
+                    {img.price}
+                  </p>
+                </div>
+
+                {!needSize && (
+                  <div className="grid grid-cols-[3fr_4fr]">
+                    <h2 className="text-lg uppercase">Stock</h2>
+                    <p className="text-lg capitalize text-[var(--light)] justify-self-end">
+                      {img.stock}
+                    </p>
+                  </div>
+                )}
+
+                {needSize && <h1 className="text-2xl mt-2">Sizes</h1>}
+                {needSize && <SizesSlideComponent sizes={img.sizes}/>}
 
                 <Swiper
                   loop={img.files.length > 1 ? true : false}
@@ -116,9 +196,17 @@ const ImagesSlideComponent = ({ images }) => {
 
 export const SingleProductInfo = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate()
-  const { product,needSize, attributes, error, success, message, variants, updated } =
-    useSelector((state) => state.admin);
+  const navigate = useNavigate();
+  const {
+    product,
+    needSize,
+    attributes,
+    error,
+    success,
+    message,
+    variants,
+    updated,
+  } = useSelector((state) => state.admin);
   const { id } = useParams();
 
   useEffect(() => {
@@ -142,14 +230,19 @@ export const SingleProductInfo = () => {
     dispatch
   );
 
-  const handleDeleteProduct = ()=>{
-    dispatch(deleteProduct(id))
-    navigate('/admin/dashboard/products')
-  }
+  const handleDeleteProduct = () => {
+    dispatch(deleteProduct(id));
+    navigate("/admin/dashboard/products");
+  };
 
   return (
     <div>
-      <Heading path={"/admin/dashboard/products"} name={"product details"} icon={true} iconComponent={<DeleteModal deleteFunction={handleDeleteProduct}/>} />
+      <Heading
+        path={"/admin/dashboard/products"}
+        name={"product details"}
+        icon={true}
+        iconComponent={<DeleteModal deleteFunction={handleDeleteProduct} />}
+      />
 
       {product ? (
         <article className="border bg-white p-2 relative mt-5">
@@ -270,7 +363,11 @@ export const SingleProductInfo = () => {
       {attributes?.length > 0 ? (
         <div className="grid grid-cols-2 items-center mt-5">
           <h1 className="font-semibold text-3xl">Variants</h1>
-          <VariantModal id={id} attributesData={attributes} needSize={needSize}/>
+          <VariantModal
+            id={id}
+            attributesData={attributes}
+            needSize={needSize}
+          />
         </div>
       ) : (
         <div className="grid grid-cols-2 items-center gap-3 mt-5">
@@ -284,7 +381,7 @@ export const SingleProductInfo = () => {
       {variants?.length > 0 ? (
         <Swiper
           loop={variants.length > 1 ? true : false}
-          pagination={{ clickable: true,type: 'fraction' }}
+          pagination={{ clickable: true, type: "fraction" }}
           grabCursor={true}
           modules={[Pagination]}
           className="mySwiper"
@@ -303,25 +400,21 @@ export const SingleProductInfo = () => {
                         id={id}
                         attributesData={attributes}
                         variant={variant}
-                        needSize={needSize}
                       />
-                      <DeleteModal deleteFunction={()=>dispatch(deleteVariantOfProduct({productId:id,variantId:variant._id}))}/>
+                      <DeleteModal
+                        deleteFunction={() =>
+                          dispatch(
+                            deleteVariantOfProduct({
+                              productId: id,
+                              variantId: variant._id,
+                            })
+                          )
+                        }
+                      />
                     </div>
                   </span>
 
                   <div className="flex flex-col justify-center gap-y-2">
-                    <div className="grid grid-cols-[3fr_4fr]">
-                      <h2 className="text-lg uppercase">Price</h2>
-                      <p className="text-lg capitalize text-[var(--light)] justify-self-end">
-                        {variant.price}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-[3fr_4fr]">
-                      <h2 className="text-lg uppercase">Stock</h2>
-                      <p className="text-lg capitalize text-[var(--light)] justify-self-end">
-                        {variant.stock}
-                      </p>
-                    </div>
                     <h1 className="text-2xl mt-2">Attributes</h1>
                     <div className="grid w-full">
                       <AttributeSlideComponent
@@ -330,7 +423,10 @@ export const SingleProductInfo = () => {
                     </div>
                     <h1 className="text-2xl -mt-4">Images</h1>
 
-                    <ImagesSlideComponent images={variant.images} />
+                    <ImagesSlideComponent
+                      images={variant.images}
+                      needSize={needSize}
+                    />
                   </div>
                 </article>
               </SwiperSlide>

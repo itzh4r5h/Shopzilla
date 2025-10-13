@@ -17,6 +17,10 @@ const variantSchema = new mongoose.Schema(
     },
     sku: { type: String, unique: true },
     attributes: [productAttributeSchema],
+    needSize: {
+      type: Boolean,
+      required: [true, "need size is required"],
+    },
     images: [
       {
         color: {
@@ -26,12 +30,19 @@ const variantSchema = new mongoose.Schema(
         price: { type: Number, required: [true, "price is required"] },
         stock: {
           type: Number,
-          required: [
-            function () {
-              return !this.needSize;
+          validate: {
+            validator: function (value) {
+               const variant = this.ownerDocument(); // top-level variant document
+              if (
+                !variant.needSize &&
+                (value === null || value === undefined)
+              ) {
+                return false; // stock is required when needSize is false
+              }
+              return true; // stock is optional when needSize is true
             },
-            "stock is required",
-          ],
+            message: "stock is required when needSize is false",
+          },
         },
         sizes: [
           {

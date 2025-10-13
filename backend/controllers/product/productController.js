@@ -102,11 +102,11 @@ exports.deleteProduct = catchAsyncErrors(async (req, res, next) => {
 
   const variant = await Variant.findOne({ product: req.params.id });
 
+  await imagekit.deleteFolder(
+    `${process.env.PRODUCT_PICS_FOLDER}/${req.params.id}`
+  );
+  
   if (variant) {
-    await imagekit.deleteFolder(
-      `${process.env.PRODUCT_PICS_FOLDER}/${req.params.id}`
-    );
-
     await Variant.deleteMany({ product: req.params.id });
   }
 

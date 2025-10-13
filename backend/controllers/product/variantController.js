@@ -283,6 +283,7 @@ exports.createNewVariant = catchAsyncErrors(async (req, res, next) => {
   const variant = await Variant.create({
     attributes,
     sku,
+    needSize,
     images: dummyImagesData,
     product: productId,
   });
