@@ -34,6 +34,7 @@ import { DeleteModal } from "../../../components/modal/DeleteModal";
 const AttributeSlideComponent = ({ attributes }) => {
   return (
     <Swiper
+      key={attributes.map((attr) => attr._id).join("-")}
       loop={attributes.length > 1 ? true : false}
       pagination={{ clickable: true }}
       grabCursor={true}
@@ -62,6 +63,7 @@ const AttributeSlideComponent = ({ attributes }) => {
 const SizesSlideComponent = ({ sizes }) => {
   return (
     <Swiper
+      key={sizes.map((sz) => sz._id).join("-")}
       loop={sizes.length > 1 ? true : false}
       pagination={{ clickable: true, type: "fraction" }}
       grabCursor={true}
@@ -115,10 +117,11 @@ const SizesSlideComponent = ({ sizes }) => {
   );
 };
 
-const ImagesSlideComponent = ({ images, needSize }) => {
+const ImagesSlideComponent = ({ images, needSize, updated }) => {
   return (
     <figure className="relative">
       <Swiper
+        key={images.map((img) => img._id).join("-")}
         loop={images.length > 1 ? true : false}
         pagination={{ clickable: true }}
         grabCursor={true}
@@ -160,9 +163,10 @@ const ImagesSlideComponent = ({ images, needSize }) => {
                 )}
 
                 {needSize && <h1 className="text-2xl mt-2">Sizes</h1>}
-                {needSize && <SizesSlideComponent sizes={img.sizes}/>}
+                {needSize && <SizesSlideComponent sizes={img.sizes} />}
 
                 <Swiper
+                  key={img.files.map((file) => file._id).join("-")}
                   loop={img.files.length > 1 ? true : false}
                   pagination={{ clickable: true }}
                   grabCursor={true}
@@ -380,6 +384,7 @@ export const SingleProductInfo = () => {
 
       {variants?.length > 0 ? (
         <Swiper
+          key={variants.map((vrnt) => vrnt._id).join("-")}
           loop={variants.length > 1 ? true : false}
           pagination={{ clickable: true, type: "fraction" }}
           grabCursor={true}
@@ -400,6 +405,7 @@ export const SingleProductInfo = () => {
                         id={id}
                         attributesData={attributes}
                         variant={variant}
+                        needSize={needSize}
                       />
                       <DeleteModal
                         deleteFunction={() =>

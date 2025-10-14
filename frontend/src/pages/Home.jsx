@@ -24,9 +24,9 @@ export const Home = () => {
 
         {!loading &&
           variants?.length > 0 &&
-          variants?.map((variant) => {
+          variants?.map((variant,index) => {
             return (
-              <Link to={`/products/${variant.product._id}/variants/${variant._id}`} key={variant._id}>
+              <Link to={`/products/${variant.product._id}/variants/${variant._id}/${variant.selectedProduct}`} key={variant._id+index}>
                 <ProductCard variant={variant} />
               </Link>
             );

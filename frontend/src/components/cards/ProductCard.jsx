@@ -59,7 +59,7 @@ export const ProductCard = ({
         {orderDetails ? (
           <ImageCard src={{ url: variant.images, name: variant.name }} />
         ) : (
-          <ImageCard src={variant.images[0].files[0]} />
+          <ImageCard src={variant.images[variant.selectedProduct].files[0]} />
         )}
       </picture>
       {/* product image ends */}
@@ -114,7 +114,7 @@ export const ProductCard = ({
               <span
                 className={`${orderDetails ? "text-lg font-bold" : "text-sm"}`}
               >
-                {variant.price}
+                {variant.images[variant.selectedProduct].price}
               </span>
             </div>
             {/* price ends */}

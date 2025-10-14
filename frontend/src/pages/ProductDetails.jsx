@@ -56,11 +56,11 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 export const ProductDetails = ({ path }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { productId,variantId } = useParams();
+  const { productId, variantId, selectedProduct } = useParams();
   const {
     error: productError,
     loading: productLoading,
-    variant
+    variant,
   } = useSelector((state) => state.products);
   const { isLoggedIn, user } = useSelector((state) => state.user);
   const {
@@ -71,21 +71,17 @@ export const ProductDetails = ({ path }) => {
     totalRatings,
     loading: reviewLoading,
   } = useSelector((state) => state.review);
-  const {
-    success,
-    message,
-    error,
-  } = useSelector((state) => state.cart);
+  const { success, message, error } = useSelector((state) => state.cart);
 
   useEffect(() => {
-    dispatch(getProductDetails({productId,variantId}));
+    dispatch(getProductDetails({ productId, variantId }));
     dispatch(getAllReviewsAndRatings(productId));
   }, []);
 
   useEffect(() => {
     if (reviewed) {
       dispatch(getAllReviewsAndRatings(productId));
-      dispatch(getProductDetails({productId,variantId}));
+      dispatch(getProductDetails({ productId, variantId }));
     }
   }, [reviewed]);
 
@@ -97,23 +93,14 @@ export const ProductDetails = ({ path }) => {
     }
   }, [productError]);
 
-
-  useToastNotify(error,success,message,clearCartError, clearCartMessage,dispatch)
-  
-
-  const [quantity, setQuantity] = useState(1);
-
-  const increaseQuantity = () => {
-    if (quantity < variant.stock) {
-      setQuantity((prev) => prev + 1);
-    }
-  };
-
-  const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity((prev) => prev - 1);
-    }
-  };
+  useToastNotify(
+    error,
+    success,
+    message,
+    clearCartError,
+    clearCartMessage,
+    dispatch
+  );
 
   const handleAddToCart = () => {
     if (!isLoggedIn) {
@@ -125,7 +112,7 @@ export const ProductDetails = ({ path }) => {
   };
 
   const ratingLabels = {
-    0: "Not rated yet",
+    0: "Not Rated Yet",
     1: "Very Bad",
     2: "Poor",
     3: "Average",
@@ -143,7 +130,59 @@ export const ProductDetails = ({ path }) => {
     return num.toString();
   }
 
-  const isReviewed = reviews?.find((rev)=>rev.user.toString()===user?._id.toString())
+  const isReviewed = reviews?.find(
+    (rev) => rev.user.toString() === user?._id.toString()
+  );
+
+  const [selectedColorIndex, setSelectedColorIndex] = useState(
+    Number(selectedProduct)
+  );
+  const [selectedSizeIndex, setSelectedSizeIndex] = useState(0);
+  // this will work as check
+  const [totalStock, setTotalStock] = useState(0);
+  // current stock of selected product
+  const [currentStock, setCurrentStock] = useState(0);
+
+  // this is used to set the totalStock and currentStock based on needSize of variant
+  useEffect(() => {
+    if (variant) {
+      if (variant.needSize) {
+        const stocks = variant.images[selectedColorIndex].sizes.map(
+          (sizeObj) => sizeObj.stock
+        );
+        const totalStk = stocks.reduce((sum, stock) => sum + stock, 0);
+
+        // for setting up selectedSizeIndex based on stock is in stock of that size
+        for (let index = 0; index < stocks.length; index++) {
+          if (stocks[index] > 0) {
+            setSelectedSizeIndex(index);
+            setCurrentStock(stocks[index]);
+            break;
+          }
+        }
+
+        setTotalStock(totalStk);
+      } else {
+        const stck = variant.images[selectedColorIndex].stock;
+        setTotalStock(stck);
+        setCurrentStock(stck);
+      }
+    }
+  }, [variant, selectedColorIndex]);
+
+  const [quantity, setQuantity] = useState(1);
+
+  const increaseQuantity = () => {
+    if (quantity < currentStock) {
+      setQuantity((prev) => prev + 1);
+    }
+  };
+
+  const decreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity((prev) => prev - 1);
+    }
+  };
 
   return (
     <div>
@@ -151,7 +190,9 @@ export const ProductDetails = ({ path }) => {
       {!productLoading && !reviewLoading && allRatings && variant ? (
         <article className="w-full min-h-full border border-[var(--black)] bg-[var(--white)] p-2 flex flex-col gap-2 mt-5">
           <Swiper
-            loop={variant?.images[0].files.length > 1 ? true : false}
+            loop={
+              variant.images[selectedColorIndex].files.length > 1 ? true : false
+            }
             pagination={{ clickable: true }}
             grabCursor={true}
             effect={"creative"}
@@ -167,7 +208,7 @@ export const ProductDetails = ({ path }) => {
             modules={[EffectCreative, Pagination]}
             className="mySwiper"
           >
-            {variant.images[0].files.map((img) => {
+            {variant.images[selectedColorIndex].files.map((img) => {
               return (
                 <SwiperSlide key={img._id}>
                   <picture className="w-full h-55 block relative overflow-hidden bg-white">
@@ -179,15 +220,77 @@ export const ProductDetails = ({ path }) => {
           </Swiper>
 
           {/* product name begins */}
-          <p className="line-clamp-3 text-xl capitalize">{variant.product.name}</p>
+          <p className="line-clamp-3 text-xl capitalize">
+            {variant.product.name}
+          </p>
           {/* product name ends */}
 
           {/* color box begins */}
           <div className="overflow-x-auto flex gap-3 items-centers">
-             <div className={`h-10 w-10 bg-red-200 rounded-full shrink-0`}></div>
-             
+            {variant.images
+              .map((img) => img.color)
+              .map((clr, index) => {
+                return (
+                  <div
+                    onClick={() => {
+                      setSelectedColorIndex(index)
+                      setQuantity(1)
+                    }}
+                    className={`h-9 w-9 border-2 rounded-full relative ${
+                      Number(selectedColorIndex) === index
+                        ? "border-[var(--purpleDark)]"
+                        : "border-transparent"
+                    }`}
+                    key={index}
+                  >
+                    <div
+                      className="h-7 w-7 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                      style={{ backgroundColor: clr }}
+                    ></div>
+                  </div>
+                );
+              })}
           </div>
           {/* color box ends */}
+
+          {/* size box begins */}
+          {variant.needSize && totalStock > 0 && (
+            <div className="overflow-x-auto flex gap-3 items-centers">
+              {variant.images[selectedColorIndex].sizes
+                .map((sizeObj) => sizeObj)
+                .map((sz, index) => {
+                  return (
+                    <div
+                      onClick={
+                        sz.stock > 0
+                          ? () => {
+                              setSelectedSizeIndex(index);
+                              setCurrentStock(sz.stock)
+                              setQuantity(1);
+                            }
+                          : () => {}
+                      }
+                      className={`h-9 w-9 border-2 rounded-full relative ${
+                        selectedSizeIndex === index
+                          ? "border-[var(--purpleDark)]"
+                          : "border-transparent"
+                      }`}
+                      key={index}
+                    >
+                      <div
+                        className={`${
+                          sz.stock < 1 &&
+                          "text-[var(--light)] line-through decoration-2 decoration-[var(--light)]"
+                        } h-7 w-7 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 uppercase flex justify-center items-center font-bold`}
+                      >
+                        {sz.size}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+          {/* size box ends */}
 
           {/* price and rating container begins */}
           <div className="grid grid-cols-[2.5fr_4fr] items-center">
@@ -214,7 +317,9 @@ export const ProductDetails = ({ path }) => {
               {/* price begins */}
               <div className="absolute flex justify-center items-center w-fit top-1/2 -translate-y-1/2 left-1">
                 <BsCurrencyRupee className="text-md" />
-                <span className="text-md font-bold">{variant.price}</span>
+                <span className="text-md font-bold">
+                  {variant.images[selectedColorIndex].price}
+                </span>
               </div>
               {/* price ends */}
             </div>
@@ -231,14 +336,14 @@ export const ProductDetails = ({ path }) => {
           </div>
           {/* price and rating container ends */}
 
-          {variant.stock > 0 ? (
+          {totalStock > 0 ? (
             <p className="text-green-600 font-bold">In Stock</p>
           ) : (
             <p className="text-red-600 font-bold">Out of Stock</p>
           )}
 
           {/*increase/decrease quanity begins */}
-          {variant.stock > 0 && (
+          {totalStock > 0 && (
             <div className="grid grid-cols-2 items-center justify-items-center">
               <h3 className="justify-self-start text-xl">Quantity</h3>
 
@@ -258,10 +363,10 @@ export const ProductDetails = ({ path }) => {
           {/*increase/decrease quanity begins */}
 
           {/* shipping Address begins */}
-         {isLoggedIn &&  <ShippingAddressCard />}
+          {isLoggedIn && <ShippingAddressCard />}
           {/* shipping Address ends */}
 
-          {variant.stock > 0 && (
+          {currentStock > 0 && (
             <div className="grid grid-cols-2 items-center justify-items-center gap-5 mt-4">
               <span onClick={handleAddToCart} className="w-full">
                 <OutlineButton name={"Add To Cart"} />
@@ -282,9 +387,9 @@ export const ProductDetails = ({ path }) => {
           {/* Rating and reviews begins */}
 
           <h2 className="text-2xl text-center">Ratings & Reviews</h2>
-          {isLoggedIn && user.orderedProducts.includes(variant._id) && !isReviewed && (
-            <ReviewModal id={variant.product._id} />
-          )}
+          {isLoggedIn &&
+            user.orderedProducts.includes(variant._id) &&
+            !isReviewed && <ReviewModal id={variant.product._id} />}
 
           {/* overvall rating begins */}
           <div className="grid grid-rows-3 items-center justify-items-center mt-4 gap-0">

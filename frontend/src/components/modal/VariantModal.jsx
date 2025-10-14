@@ -130,6 +130,8 @@ export const VariantModal = ({
     return variantJoiSchema;
   }, []);
 
+
+  
   const getDefaultValues = (attributesData, variant) => {
     if (variant) {
       // Editing existing variant
@@ -141,7 +143,7 @@ export const VariantModal = ({
         images: variant.images.map(({ _id, ...rest }) => ({
           color: rest.color,
           price: rest.price,
-          ...(needSize?{sizes: rest.sizes.map((({_id,...restSize})=>restSize))}:{stock:rest.stock}),
+          ...(variant.needSize?{sizes: rest.sizes.map((({_id,...restSize})=>restSize))}:{stock:rest.stock}),
           files: rest.files.map(({ _id, ...fileRest }) => fileRest),
         })),
       };

@@ -29,7 +29,7 @@ export const Routing = () => {
       <Route path="/" element={<Home />} />
       <Route path="/products" element={<Products />} />
       <Route
-        path="/products/:productId/variants/:variantId"
+        path="/products/:productId/variants/:variantId/:selectedProduct"
         element={<ProductDetails path={"/"} />}
       />
       <Route path="/reset/password" element={<ResetPassword />} />
