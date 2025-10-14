@@ -156,11 +156,9 @@ const contentValidation = async (req, next, edit = false) => {
 
   const { attributes, needSize } = req.body;
 
-
-  if (typeof needSize !== 'boolean') {
+  if (typeof needSize !== "boolean") {
     return next(new ErrorHandler("need size is required"));
   }
-
 
   const { productId } = req.params;
 
@@ -451,15 +449,42 @@ exports.getInStockAndOutOfStockVariantCount = catchAsyncErrors(
       },
       // Break out images array so we can access price/stock
       { $unwind: "$images" },
-      // Create a flag field based on stock
+
+      // Handle two cases:
+      // Case 1: image has sizes array
+      // Case 2: image has direct stock
+      {
+        $addFields: {
+          sizesExist: { $isArray: "$images.sizes" },
+        },
+      },
+
+      // If sizes exist, unwind them; otherwise keep single image
+      {
+        $unwind: {
+          path: "$images.sizes",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      // Compute stock depending on whether sizes exist
+      {
+        $addFields: {
+          actualStock: {
+            $cond: [
+              { $ifNull: ["$images.sizes", false] },
+              "$images.sizes.stock",
+              "$images.stock",
+            ],
+          },
+        },
+      },
+
+      // Create in_stock/out_of_stock flag
       {
         $addFields: {
           status: {
-            $cond: [
-              { $gt: ["$images.stock", 0] }, // condition
-              "in_stock", // if true
-              "out_of_stock", // if false
-            ],
+            $cond: [{ $gt: ["$actualStock", 0] }, "in_stock", "out_of_stock"],
           },
         },
       },
@@ -551,6 +576,45 @@ exports.getAllVariants = catchAsyncErrors(async (req, res) => {
   // Decide early: is this a "search" request or just list-all?
   const isSearch = keyword && keyword.trim().length > 0;
 
+  const variantStage = {
+    variants: [
+      {
+        $group: {
+          _id: "$_id",
+          doc: { $first: "$$ROOT" }, // take variant fields
+          images: { $push: "$images" }, // re-collect images
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ["$doc", { images: "$images" }],
+          },
+        },
+      },
+      {
+        $set: {
+          // Create an array of numbers equal to number of images
+          selectedIndexes: {
+            $map: {
+              input: { $range: [0, { $size: "$images" }] },
+              as: "i",
+              in: {
+                $mergeObjects: ["$$ROOT", { selectedProduct: "$$i" }],
+              },
+            },
+          },
+        },
+      },
+      // 👇 flatten it (each element becomes separate variant)
+      { $unwind: "$selectedIndexes" },
+      // 👇 make that flattened object the actual root
+      { $replaceRoot: { newRoot: "$selectedIndexes" } },
+      { $skip: (page - 1) * limit },
+      { $limit: limit },
+    ],
+  };
+
   const pipeline = [
     // Basic condition (images uploaded)
     { $match: { imagesUploaded: true } },
@@ -622,25 +686,7 @@ exports.getAllVariants = catchAsyncErrors(async (req, res) => {
       $facet: isSearch
         ? {
             metadata: [{ $count: "total" }],
-            variants: [
-              {
-                $group: {
-                  _id: "$_id",
-                  doc: { $first: "$$ROOT" }, // take variant fields
-                  images: { $push: "$images" }, // re-collect images
-                },
-              },
-              {
-                $replaceRoot: {
-                  newRoot: {
-                    $mergeObjects: ["$doc", { images: "$images" }],
-                  },
-                },
-              },
-              { $skip: (page - 1) * limit },
-              { $limit: limit },
-            ],
-
+            ...variantStage,
             filterOptions: [
               {
                 $group: {
@@ -665,24 +711,7 @@ exports.getAllVariants = catchAsyncErrors(async (req, res) => {
           }
         : {
             metadata: [{ $count: "total" }],
-            variants: [
-              {
-                $group: {
-                  _id: "$_id",
-                  doc: { $first: "$$ROOT" }, // take variant fields
-                  images: { $push: "$images" }, // re-collect images
-                },
-              },
-              {
-                $replaceRoot: {
-                  newRoot: {
-                    $mergeObjects: ["$doc", { images: "$images" }],
-                  },
-                },
-              },
-              { $skip: (page - 1) * limit },
-              { $limit: limit },
-            ],
+            ...variantStage,
           },
     },
     {
