@@ -67,14 +67,12 @@ const filesJoiSchema = Joi.object({
   }),
 
   stock: Joi.number()
-    .min(1)
-    .greater(0)
+    .min(0)
     .when(Joi.ref("....needSize"), {
       is: false, // if needSize = false
       then: Joi.required().messages({
         "number.base": "stock must be a number",
-        "number.min": "stock cannot be 0",
-        "number.greater": "stock cannot be 0",
+        "number.min": "stock cannot be less than 0",
       }),
       otherwise: Joi.forbidden(), // prevent stock if not needed
     }),
@@ -88,10 +86,9 @@ const filesJoiSchema = Joi.object({
           "string.min": "size cann't be empty",
           "string.max": "size cann't exceed 5 chars",
         }),
-        stock: Joi.number().min(1).greater(0).required().messages({
+        stock: Joi.number().min(0).required().messages({
           "number.base": "stock must be a number",
-          "number.min": "stock cannot be 0",
-          "number.greater": "stock cannot be 0",
+          "number.min": "stock cannot be less than 0",
         }),
       })
     )
