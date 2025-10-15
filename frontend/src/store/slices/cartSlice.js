@@ -74,6 +74,7 @@ const cartSlice = createSlice({
       fulfilled: (state, action) => {
         state.success = action.payload.success;
         state.message = action.payload.message;
+        state.updated = true
         state.loading = false;
       },
       rejected: (state, action) => {

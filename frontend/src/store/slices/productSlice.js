@@ -25,7 +25,7 @@ const productSlice = createSlice({
       state.error = null;
     },
     clearProductDetails: (state) => {
-      state.product= undefined
+      state.variant= undefined
     }
   },
   extraReducers: (builder) => {

@@ -43,7 +43,8 @@ router.route('/users/address').post(isUserAuthenticated,addNewShippingAddress).g
 router.route('/users/address/:id').get(isUserAuthenticated,getShippingAddress).patch(isUserAuthenticated,updateShippingAddress).delete(isUserAuthenticated,deleteShippingAddress)
 
 // ========================= CART PRODUCTS ==============================
-router.route('/users/cart/:id').patch(isUserAuthenticated,addProductToCartOrUpdateQuantity).delete(isUserAuthenticated,removeProductFromCart)
+router.route('/users/cart/:id').patch(isUserAuthenticated,addProductToCartOrUpdateQuantity)
+router.route('/users/cart/:id/:colorIndex').delete(isUserAuthenticated,removeProductFromCart)
 router.route('/users/cart').get(isUserAuthenticated,getAllProductsOfCart)
 
 module.exports = router

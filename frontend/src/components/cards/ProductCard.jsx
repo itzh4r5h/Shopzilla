@@ -216,7 +216,7 @@ export const ProductCard = ({
             <div className="grid grid-cols-3 items-center justify-items-center">
               <FaPlusSquare className="text-2xl active:text-[var(--purpleDark)] transition-colors" />
 
-              <span className="text-xl font-bold">{quantity}</span>
+              <span className="text-xl font-bold">{productQuantity}</span>
 
               <FaMinusSquare className="text-2xl active:text-[var(--purpleDark)] transition-colors" />
             </div>

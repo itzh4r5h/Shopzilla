@@ -81,10 +81,28 @@ const userSchema = new mongoose.Schema({
 
   cartProducts: [
     {
-      product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+      variant: { type: mongoose.Schema.Types.ObjectId, ref: "Variant" },
+      needSize: {
+        type: Boolean,
+        required: [true, "need size is required"],
+      },
       quantity: {
         type: Number,
         min: [1, "quantity cann't be less than 1"],
+        required: [true, "quantity is required"],
+      },
+      colorIndex: {
+        type: Number,
+        required: [true, "color is required"],
+      },
+      sizeIndex: {
+        type: Number,
+        required: [
+          function () {
+            return this.needSize;
+          },
+          "size is required",
+        ],
       },
     },
   ],

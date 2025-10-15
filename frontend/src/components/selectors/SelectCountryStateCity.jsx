@@ -53,7 +53,7 @@ export const SelectCountryStateCity = ({
           options={optionsData}
           getOptionLabel={(option) => option?.name || ""}
           renderOption={(props, option) => (
-            <Box component="li" {...props} key={option._id} sx={{textTransform:'capitalize'}}>
+            <Box component="li" {...props} key={option.name} sx={{textTransform:'capitalize'}}>
               {option.name}
             </Box>
           )}

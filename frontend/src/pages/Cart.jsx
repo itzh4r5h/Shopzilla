@@ -1,11 +1,11 @@
-import { ProductCard } from "../components/cards/ProductCard";
 import { PriceCard } from "../components/cards/PriceCard";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getAllCartProducts } from "../store/thunks/cartThunk";
 import { clearCartError, clearCartMessage } from "../store/slices/cartSlice";
-import { ShippingAddressCard } from "../components/cards/ShippingAddressCard";
+import { ShippingAddressSelector } from "../components/selectors/ShippingAddressSelector";
 import { useToastNotify } from "../hooks/useToastNotify";
+import { CartCard } from "../components/cards/CartCard";
 
 export const Cart = () => {
   const dispatch = useDispatch();
@@ -21,7 +21,7 @@ export const Cart = () => {
   } = useSelector((state) => state.cart);
 
   useEffect(() => {
-      dispatch(getAllCartProducts());
+    dispatch(getAllCartProducts());
   }, []);
 
   useEffect(() => {
@@ -30,7 +30,14 @@ export const Cart = () => {
     }
   }, [updated]);
 
-  useToastNotify(error, success, message, clearCartError, clearCartMessage,dispatch);
+  useToastNotify(
+    error,
+    success,
+    message,
+    clearCartError,
+    clearCartMessage,
+    dispatch
+  );
 
   return (
     <div className="w-full h-full relative">
@@ -38,17 +45,20 @@ export const Cart = () => {
 
       {cartProducts?.length > 0 ? (
         <>
-          <ShippingAddressCard />
+          <ShippingAddressSelector />
 
           {/* cart items begins */}
           <div className="grid mt-4 gap-4 items-center justify-items-center">
-            {cartProducts?.map((cartProduct) => {
+            {cartProducts?.map((cartProduct,index) => {
               return (
-                <ProductCard
-                  key={cartProduct.product._id}
+                <CartCard
+                  key={cartProduct.variant._id+index}
                   productQuantity={cartProduct.quantity}
-                  cart={true}
-                  product={cartProduct.product}
+                  variant={cartProduct.variant}
+                  colorIndex={cartProduct.colorIndex}
+                  sizeIndex={
+                    cartProduct.variant.needSize ? cartProduct.sizeIndex : null
+                  }
                 />
               );
             })}

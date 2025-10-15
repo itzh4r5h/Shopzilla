@@ -16,7 +16,7 @@ import "swiper/css";
 import "swiper/css/effect-creative";
 import "swiper/css/pagination";
 import { Heading } from "../components/Headers/Heading";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getProductDetails } from "../store/thunks/productThunks";
 import { useNavigate, useParams } from "react-router";
@@ -25,11 +25,14 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { ImageCard } from "../components/cards/ImageCard";
 import { toast } from "react-toastify";
-import { clearProductError } from "../store/slices/productSlice";
+import {
+  clearProductDetails,
+  clearProductError,
+} from "../store/slices/productSlice";
 import { ReviewModal } from "../components/modal/ReviewModal";
 import { ReviewCard } from "../components/cards/ReviewCard";
 import { addProductToCartOrUpdateQuantity } from "../store/thunks/cartThunk";
-import { ShippingAddressCard } from "../components/cards/ShippingAddressCard";
+import { ShippingAddressSelector } from "../components/selectors/ShippingAddressSelector";
 import { Checkout } from "./Checkout";
 import { getAllReviewsAndRatings } from "../store/thunks/reviewThunk";
 import { useToastNotify } from "../hooks/useToastNotify";
@@ -76,6 +79,12 @@ export const ProductDetails = ({ path }) => {
   useEffect(() => {
     dispatch(getProductDetails({ productId, variantId }));
     dispatch(getAllReviewsAndRatings(productId));
+
+    // this is used so that variant set to undefined when component is unmounted
+    // it prevents the variant not to stuck on previous value
+    return () => {
+      dispatch(clearProductDetails());
+    };
   }, []);
 
   useEffect(() => {
@@ -102,15 +111,6 @@ export const ProductDetails = ({ path }) => {
     dispatch
   );
 
-  const handleAddToCart = () => {
-    if (!isLoggedIn) {
-      toast.error("Please sign in");
-      navigate("/signin");
-    } else {
-      dispatch(addProductToCartOrUpdateQuantity({ id, quantity }));
-    }
-  };
-
   const ratingLabels = {
     0: "Not Rated Yet",
     1: "Very Bad",
@@ -134,41 +134,43 @@ export const ProductDetails = ({ path }) => {
     (rev) => rev.user.toString() === user?._id.toString()
   );
 
-  const [selectedColorIndex, setSelectedColorIndex] = useState(
-    Number(selectedProduct)
-  );
+  const selectedColorIndex = useRef(Number(selectedProduct));
   const [selectedSizeIndex, setSelectedSizeIndex] = useState(0);
   // this will work as check
   const [totalStock, setTotalStock] = useState(0);
   // current stock of selected product
   const [currentStock, setCurrentStock] = useState(0);
 
-  // this is used to set the totalStock and currentStock based on needSize of variant
-  useEffect(() => {
+  const updateStock = () => {
     if (variant) {
       if (variant.needSize) {
-        const stocks = variant.images[selectedColorIndex].sizes.map(
+        const stocks = variant.images[selectedColorIndex.current].sizes.map(
           (sizeObj) => sizeObj.stock
         );
         const totalStk = stocks.reduce((sum, stock) => sum + stock, 0);
-
-        // for setting up selectedSizeIndex based on stock is in stock of that size
-        for (let index = 0; index < stocks.length; index++) {
-          if (stocks[index] > 0) {
-            setSelectedSizeIndex(index);
-            setCurrentStock(stocks[index]);
-            break;
+        if (totalStk > 0) {
+          // for setting up selectedSizeIndex based on stock is in stock of that size
+          for (let index = 0; index < stocks.length; index++) {
+            if (stocks[index] > 0) {
+              setSelectedSizeIndex(index);
+              setCurrentStock(stocks[index]);
+              break;
+            }
           }
         }
-
         setTotalStock(totalStk);
       } else {
-        const stck = variant.images[selectedColorIndex].stock;
+        const stck = variant.images[selectedColorIndex.current].stock;
         setTotalStock(stck);
         setCurrentStock(stck);
       }
     }
-  }, [variant, selectedColorIndex]);
+  };
+
+  // this is used to set the totalStock and currentStock based on needSize of variant
+  useEffect(() => {
+    updateStock();
+  }, [variant]);
 
   const [quantity, setQuantity] = useState(1);
 
@@ -184,6 +186,33 @@ export const ProductDetails = ({ path }) => {
     }
   };
 
+  const handleAddToCart = () => {
+    if (!isLoggedIn) {
+      toast.error("Please sign in");
+      navigate("/signin");
+    } else {
+      if (variant.needSize) {
+        dispatch(
+          addProductToCartOrUpdateQuantity({
+            id: variantId,
+            cartData: {
+              quantity,
+              sizeIndex: selectedSizeIndex,
+              colorIndex: selectedColorIndex.current,
+            },
+          })
+        );
+      } else {
+        dispatch(
+          addProductToCartOrUpdateQuantity({
+            id: variantId,
+            cartData: { quantity, colorIndex: selectedColorIndex.current },
+          })
+        );
+      }
+    }
+  };
+
   return (
     <div>
       <Heading name={"Product Details"} path={path} />
@@ -191,7 +220,9 @@ export const ProductDetails = ({ path }) => {
         <article className="w-full min-h-full border border-[var(--black)] bg-[var(--white)] p-2 flex flex-col gap-2 mt-5">
           <Swiper
             loop={
-              variant.images[selectedColorIndex].files.length > 1 ? true : false
+              variant.images[selectedColorIndex.current].files.length > 1
+                ? true
+                : false
             }
             pagination={{ clickable: true }}
             grabCursor={true}
@@ -208,7 +239,7 @@ export const ProductDetails = ({ path }) => {
             modules={[EffectCreative, Pagination]}
             className="mySwiper"
           >
-            {variant.images[selectedColorIndex].files.map((img) => {
+            {variant.images[selectedColorIndex.current].files.map((img) => {
               return (
                 <SwiperSlide key={img._id}>
                   <picture className="w-full h-55 block relative overflow-hidden bg-white">
@@ -233,11 +264,12 @@ export const ProductDetails = ({ path }) => {
                 return (
                   <div
                     onClick={() => {
-                      setSelectedColorIndex(index)
-                      setQuantity(1)
+                      selectedColorIndex.current = index;
+                      updateStock();
+                      setQuantity(1);
                     }}
                     className={`h-9 w-9 border-2 rounded-full relative ${
-                      Number(selectedColorIndex) === index
+                      selectedColorIndex.current === index
                         ? "border-[var(--purpleDark)]"
                         : "border-transparent"
                     }`}
@@ -256,7 +288,7 @@ export const ProductDetails = ({ path }) => {
           {/* size box begins */}
           {variant.needSize && totalStock > 0 && (
             <div className="overflow-x-auto flex gap-3 items-centers">
-              {variant.images[selectedColorIndex].sizes
+              {variant.images[selectedColorIndex.current].sizes
                 .map((sizeObj) => sizeObj)
                 .map((sz, index) => {
                   return (
@@ -265,7 +297,7 @@ export const ProductDetails = ({ path }) => {
                         sz.stock > 0
                           ? () => {
                               setSelectedSizeIndex(index);
-                              setCurrentStock(sz.stock)
+                              setCurrentStock(sz.stock);
                               setQuantity(1);
                             }
                           : () => {}
@@ -318,7 +350,7 @@ export const ProductDetails = ({ path }) => {
               <div className="absolute flex justify-center items-center w-fit top-1/2 -translate-y-1/2 left-1">
                 <BsCurrencyRupee className="text-md" />
                 <span className="text-md font-bold">
-                  {variant.images[selectedColorIndex].price}
+                  {variant.images[selectedColorIndex.current].price}
                 </span>
               </div>
               {/* price ends */}
@@ -363,7 +395,7 @@ export const ProductDetails = ({ path }) => {
           {/*increase/decrease quanity begins */}
 
           {/* shipping Address begins */}
-          {isLoggedIn && <ShippingAddressCard />}
+          {isLoggedIn && <ShippingAddressSelector />}
           {/* shipping Address ends */}
 
           {currentStock > 0 && (
