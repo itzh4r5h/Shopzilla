@@ -18,9 +18,9 @@ export const createOrderFromOfCartProducts = createAsyncThunk(
 
 export const createOrderFromBuyNow = createAsyncThunk(
   "order/create_order_buy_now",
-  async (productData, thunkAPI) => {
+  async ({id,productData}, thunkAPI) => {
     try {
-      const { data } = await axiosInstance.post(`/orders/${productData.id}/${productData.quantity}`,{buyNow:true});
+      const { data } = await axiosInstance.post(`/orders/${id}`,{buyNow:true,...productData});
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -61,8 +61,8 @@ export const getMyOrders = createAsyncThunk(
 );
 
 
-export const getMySinglOrder = createAsyncThunk(
-  "order/get_my_single_order",
+export const getMyOrderDetails = createAsyncThunk(
+  "order/get_my_order_details",
   async (id, thunkAPI) => {
     try {
       const { data } = await axiosInstance.get(`/orders/${id}`);

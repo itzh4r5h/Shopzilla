@@ -102,6 +102,57 @@ exports.getAllReviewsAndRatingsOfAProduct = catchAsyncErrors(
   }
 );
 
+
+// ======================= GET REVIEW OF ORDERED PRODUCTS ==============================
+exports.getReviewsOfOrderedProducts = catchAsyncErrors(
+  async (req, res, next) => {
+    const order = await Order.findById(req.params.orderId).populate("orderItems.productId")
+
+    if(!order){
+      return next(new ErrorHandler('order not exists'))
+    }
+
+    const orderedProductReviews = order.orderItems.map((item)=>{
+
+      const review = item.productId.reviews.filter((rev)=>rev.user.toString() === req.user._id.toString())
+
+      if(review.length>0){
+        return {
+          isReviewed: true,
+          review: review[0]
+        }
+      }else{
+        return {
+          isReviewed: false,
+          review: null
+        }
+      }
+    })
+
+    res.status(200).json({
+      success: true,
+      orderedProductReviews
+    })
+
+  }
+);
+
+// ======================= GET ALL RATINGS OF A PRODUCT ==============================
+exports.getRatingsOfAProduct = catchAsyncErrors(
+  async (req, res, next) => {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return next(new ErrorHandler("product not exists", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      ratings: product.ratings
+    });
+  }
+);
+
 // ======================= DELETE PRODUCT REVIEW ==============================
 exports.deleteProductReview = catchAsyncErrors(async (req, res, next) => {
   const product = await Product.findById(req.params.id);

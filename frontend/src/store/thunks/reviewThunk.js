@@ -15,6 +15,34 @@ export const getAllReviewsAndRatings = createAsyncThunk(
   }
 );
 
+export const getOrderedProductReviews = createAsyncThunk(
+  "review/get_ordered_products_reviews",
+  async (orderId, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.get(`/products/reviews/${orderId}`);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
+export const getRatings = createAsyncThunk(
+  "review/get_ratings",
+  async (id, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.get(`/products/${id}/ratings`);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed"
+      );
+    }
+  }
+);
+
 
 export const createOrUpdateReview = createAsyncThunk(
   "review/create_update_review",

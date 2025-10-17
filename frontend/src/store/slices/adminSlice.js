@@ -77,6 +77,9 @@ const adminSlice = createSlice({
       state.success = false;
       state.message = null;
     },
+    clearVariants: (state)=>{
+      state.variants = undefined
+    }
   },
   extraReducers: (builder) => {
     handleAsyncThunk(builder, getAllYears, {
@@ -316,6 +319,6 @@ const adminSlice = createSlice({
   },
 });
 
-export const { clearAdminMessage, clearAdminError, saveKeyword } =
+export const { clearAdminMessage, clearAdminError, saveKeyword,clearVariants } =
   adminSlice.actions;
 export const adminReducer = adminSlice.reducer;

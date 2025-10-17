@@ -1,14 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { handleAsyncThunk } from "../utils/handleAsyncThunk";
-import { createOrUpdateReview, deleteReview, getAllReviewsAndRatings } from "../thunks/reviewThunk";
+import { createOrUpdateReview, deleteReview, getAllReviewsAndRatings, getOrderedProductReviews, getRatings } from "../thunks/reviewThunk";
 
 const initialState = {
   error: null,
   success: false,
   message: null,
   reviews: undefined,
+  orderedProductReviews: undefined,
   review: undefined,
   reviewsCount: undefined,
+  ratings: undefined,
   allRatings: undefined,
   totalRatings:undefined,
   reviewed: undefined,
@@ -57,6 +59,36 @@ const reviewSlice = createSlice({
         state.reviewsCount = action.payload.reviewsCount;
         state.allRatings = action.payload.allRatings;
         state.totalRatings = action.payload.totalRatings;
+        state.loading = false;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      },
+    });
+
+    handleAsyncThunk(builder, getRatings, {
+      pending: (state) => {
+        state.loading = true;
+      },
+      fulfilled: (state, action) => {
+        state.success = action.payload.success;
+        state.ratings = action.payload.ratings,
+        state.loading = false;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      },
+    });
+
+    handleAsyncThunk(builder, getOrderedProductReviews, {
+      pending: (state) => {
+        state.loading = true;
+      },
+      fulfilled: (state, action) => {
+        state.success = action.payload.success;
+        state.orderedProductReviews = action.payload.orderedProductReviews,
         state.loading = false;
       },
       rejected: (state, action) => {

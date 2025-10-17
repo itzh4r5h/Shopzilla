@@ -15,7 +15,7 @@ import { PriceCard } from "../components/cards/PriceCard";
 import { Heading } from "../components/Headers/Heading";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getMySinglOrder } from "../store/thunks/orderThunk";
+import { getMyOrderDetails } from "../store/thunks/orderThunk";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { formatMongodbDate } from "../utils/helpers";
@@ -24,6 +24,7 @@ import { toast } from "react-toastify";
 import { clearOrderError } from "../store/slices/orderSlice";
 import { ReviewCard } from "../components/cards/ReviewCard";
 import { getProductDetails } from "../store/thunks/productThunks";
+import { getOrderedProductReviews } from "../store/thunks/reviewThunk";
 
 const QontoConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.active}`]: {
@@ -107,6 +108,7 @@ export const OrderDetails = () => {
     "confirmed",
     "processing",
     "shipped",
+    "dispatched",
     "out for delivery",
     "delivered",
   ];
@@ -116,8 +118,7 @@ export const OrderDetails = () => {
     (state) => state.order
   );
   const { user } = useSelector((state) => state.user);
-  const { product } = useSelector((state) => state.products);
-  const { reviewed } = useSelector((state) => state.review);
+  const { reviewed,orderedProductReviews } = useSelector((state) => state.review);
 
   useEffect(() => {
     if (error) {
@@ -127,44 +128,39 @@ export const OrderDetails = () => {
   }, [error]);
 
   useEffect(() => {
-    dispatch(getMySinglOrder(id));
+    dispatch(getOrderedProductReviews(id))
+    dispatch(getMyOrderDetails(id));
   }, []);
 
   useEffect(() => {
     if (reviewed) {
-      dispatch(getProductDetails(product._id));
+      dispatch(getOrderedProductReviews(id))
     }
-  }, [reviewed]);
+  }, [reviewed,order]);
 
-  const isReviewed = product?.reviews?.find(
-    (rev) => rev.user.toString() === user?._id.toString()
-  );
-  const review = product?.reviews?.filter(
-    (rev) => rev.user.toString() === user?._id.toString()
-  );
 
-  return !loading && order ? (
+  return !loading && order && orderedProductReviews?.length > 0  ? (
     <div className="h-full w-full">
       <Heading name={"Order Details"} path={"/orders"} />
 
       <div className="flex flex-col justify-center gap-4 mt-5">
-        {order.orderItems.map((orderedProduct) => {
+        {order.orderItems.map((orderedProduct,index) => {
           return (
-            <div key={orderedProduct.id}>
-              <Link to={`/products/${orderedProduct.id}`}>
-                <ProductCard product={orderedProduct} orderDetails={true} />
+            <div key={orderedProduct._id}>
+              <Link to={`/products/${orderedProduct.productId}/variants/${orderedProduct.variantId}/${orderedProduct.colorIndex}`}>
+                <ProductCard variant={orderedProduct} orderDetails={true} productId={orderedProduct.productId} />
               </Link>
 
-              {isReviewed && (
+              {orderedProductReviews[index]?.isReviewed && (
                 <div className="bg-white border mt-1 p-2">
-                  <ReviewCard review={review[0]} id={orderedProduct.id} />
+                  <ReviewCard review={orderedProductReviews[index].review} id={orderedProduct.productId} />
                 </div>
               )}
 
-              {user.orderedProducts.includes(orderedProduct.id) &&
-                !Boolean(isReviewed) && (
+              {user.orderedProducts.includes(orderedProduct.productId) &&
+                !orderedProductReviews[index]?.isReviewed && (
                   <div className="mt-1">
-                    <ReviewModal id={orderedProduct.id} />
+                    <ReviewModal id={orderedProduct.productId} />
                   </div>
                 )}
             </div>

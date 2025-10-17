@@ -12,7 +12,7 @@ import { useNavigate } from "react-router";
 import { axiosInstance } from "../utils/AxiosInstance";
 import { clearOrderError, resetOrderState } from "../store/slices/orderSlice";
 
-export const Checkout = ({ cart = false, id, quantity }) => {
+export const Checkout = ({ cart = false, details }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { orderId, razorpayOrder, error } = useSelector((state) => state.order);
@@ -26,7 +26,7 @@ export const Checkout = ({ cart = false, id, quantity }) => {
       if (cart) {
         dispatch(createOrderFromOfCartProducts());
       } else {
-        dispatch(createOrderFromBuyNow({ id, quantity }));
+        dispatch(createOrderFromBuyNow(details));
       }
     }
   };

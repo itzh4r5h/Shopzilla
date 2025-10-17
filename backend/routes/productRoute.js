@@ -10,6 +10,8 @@ const {
   createOrUpdateProductReview,
   deleteProductReview,
   getAllReviewsAndRatingsOfAProduct,
+  getRatingsOfAProduct,
+  getReviewsOfOrderedProducts,
 } = require("../controllers/product/reviewController");
 const { isUserAuthenticated, authorizedRoles } = require("../middlewares/auth");
 const { upload } = require("../utils/uploadImages");
@@ -119,7 +121,7 @@ router
 // =================================== Product Variant Related Routes =======================================
 router.route("/products/variants").get(getAllVariants);
 router
-  .route("/products/:productId/variants/:id")
+  .route("/products/variants/:id")
   .get(isUserAuthenticated, getVariant);
 
 // =================================== Product Review Related Routes =======================================
@@ -128,5 +130,11 @@ router
   .patch(isUserAuthenticated, createOrUpdateProductReview)
   .get(getAllReviewsAndRatingsOfAProduct)
   .delete(isUserAuthenticated, deleteProductReview);
+
+router
+  .route("/products/:id/ratings").get(getRatingsOfAProduct)
+
+router
+  .route("/products/reviews/:orderId").get(isUserAuthenticated,getReviewsOfOrderedProducts)
 
 module.exports = router;

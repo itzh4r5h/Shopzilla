@@ -20,6 +20,7 @@ import { useToastNotify } from "../../../hooks/useToastNotify";
 import {
   clearAdminError,
   clearAdminMessage,
+  clearVariants,
 } from "../../../store/slices/adminSlice";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -34,7 +35,6 @@ import { DeleteModal } from "../../../components/modal/DeleteModal";
 const AttributeSlideComponent = ({ attributes }) => {
   return (
     <Swiper
-      key={attributes.map((attr) => attr._id).join("-")}
       loop={attributes.length > 1 ? true : false}
       pagination={{ clickable: true }}
       grabCursor={true}
@@ -63,7 +63,6 @@ const AttributeSlideComponent = ({ attributes }) => {
 const SizesSlideComponent = ({ sizes }) => {
   return (
     <Swiper
-      key={sizes.map((sz) => sz._id).join("-")}
       loop={sizes.length > 1 ? true : false}
       pagination={{ clickable: true, type: "fraction" }}
       grabCursor={true}
@@ -121,7 +120,6 @@ const ImagesSlideComponent = ({ images, needSize, updated }) => {
   return (
     <figure className="relative">
       <Swiper
-        key={images.map((img) => img._id).join("-")}
         loop={images.length > 1 ? true : false}
         pagination={{ clickable: true }}
         grabCursor={true}
@@ -166,7 +164,6 @@ const ImagesSlideComponent = ({ images, needSize, updated }) => {
                 {needSize && <SizesSlideComponent sizes={img.sizes} />}
 
                 <Swiper
-                  key={img.files.map((file) => file._id).join("-")}
                   loop={img.files.length > 1 ? true : false}
                   pagination={{ clickable: true }}
                   grabCursor={true}
@@ -216,6 +213,9 @@ export const SingleProductInfo = () => {
   useEffect(() => {
     dispatch(getProduct(id));
     dispatch(getAllVariants(id));
+    return ()=>{
+      dispatch(clearVariants())
+    }
   }, []);
 
   useEffect(() => {
@@ -384,7 +384,6 @@ export const SingleProductInfo = () => {
 
       {variants?.length > 0 ? (
         <Swiper
-          key={variants.map((vrnt) => vrnt._id).join("-")}
           loop={variants.length > 1 ? true : false}
           pagination={{ clickable: true, type: "fraction" }}
           grabCursor={true}

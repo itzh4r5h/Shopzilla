@@ -77,7 +77,7 @@ export const ProductDetails = ({ path }) => {
   const { success, message, error } = useSelector((state) => state.cart);
 
   useEffect(() => {
-    dispatch(getProductDetails({ productId, variantId }));
+    dispatch(getProductDetails(variantId));
     dispatch(getAllReviewsAndRatings(productId));
 
     // this is used so that variant set to undefined when component is unmounted
@@ -90,7 +90,7 @@ export const ProductDetails = ({ path }) => {
   useEffect(() => {
     if (reviewed) {
       dispatch(getAllReviewsAndRatings(productId));
-      dispatch(getProductDetails({ productId, variantId }));
+      dispatch(getProductDetails(variantId));
     }
   }, [reviewed]);
 
@@ -403,7 +403,7 @@ export const ProductDetails = ({ path }) => {
               <span onClick={handleAddToCart} className="w-full">
                 <OutlineButton name={"Add To Cart"} />
               </span>
-              <Checkout id={variant._id} quantity={quantity} />
+              <Checkout details={{id:variant._id,productData:{...(variant.needSize?{quantity,sizeIndex: selectedSizeIndex,colorIndex: selectedColorIndex.current}:{quantity, colorIndex: selectedColorIndex.current})}}} />
             </div>
           )}
 
@@ -420,7 +420,7 @@ export const ProductDetails = ({ path }) => {
 
           <h2 className="text-2xl text-center">Ratings & Reviews</h2>
           {isLoggedIn &&
-            user.orderedProducts.includes(variant._id) &&
+            user.orderedProducts.includes(variant.product._id) &&
             !isReviewed && <ReviewModal id={variant.product._id} />}
 
           {/* overvall rating begins */}
@@ -478,7 +478,7 @@ export const ProductDetails = ({ path }) => {
               reviews.map((review) => {
                 return (
                   <div key={review._id} className="w-full">
-                    <ReviewCard review={review} id={id} />
+                    <ReviewCard review={review} id={variant.product._id} />
                   </div>
                 );
               })

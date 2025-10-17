@@ -1,4 +1,4 @@
-const { Product } = require("../../models/product/Product");
+const { Variant } = require("../../models/product/Variant");
 const { Order } = require("../../models/Order");
 const { Payment } = require("../../models/Payment");
 const ErrorHandler = require("../../utils/errorHandler");
@@ -6,7 +6,6 @@ const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const { User } = require("../../models/User");
-const { isOnlyDigits } = require("../../utils/helpers");
 
 // Intance of RazorPay
 const razorpay = new Razorpay({
@@ -81,18 +80,44 @@ exports.verifyPayment = catchAsyncErrors(async (req, res, next) => {
     });
 
     order.orderItems.forEach(async (item) => {
-      const product = await Product.findById(item.id);
-      const stock = product.stock - item.quantity;
-      product.stock = stock;
-      await product.save({ validateBeforeSave: true });
+      const { colorIndex, sizeIndex, quantity } = item;
+
+      const variant = await Variant.findById(item.variantId);
+
+      let stock;
+
+      if (variant.needSize) {
+        stock = variant.images[colorIndex].sizes[sizeIndex].stock - quantity;
+        variant.images[colorIndex].sizes[sizeIndex].stock = stock;
+      } else {
+        stock = variant.images[colorIndex].stock - quantity;
+        variant.images[colorIndex].stock = stock;
+      }
+      await variant.save({ validateBeforeSave: true });
     });
 
     if (cart) {
-      const user = await User.findById(req.user._id).populate(
-        "cartProducts.product"
-      );
-      const outOfStockProducts = user.cartProducts.filter(
-        (cartProduct) => cartProduct.product.stock === 0
+      const user = await User.findById(req.user._id).populate({
+        path: "cartProducts.variant",
+        populate: {
+          path: "product",
+        },
+      });
+      
+      const outOfStockProducts = user.cartProducts.filter((cartProduct) => {
+          const {variant,colorIndex,sizeIndex} = cartProduct
+          if(variant.needSize){
+            if(variant.images[colorIndex].sizes[sizeIndex].stock === 0){
+              return true
+            }
+            return false
+          }else{
+             if(variant.images[colorIndex].stock === 0){
+              return true
+            }
+            return false
+          }
+        }
       );
       user.cartProducts = [...outOfStockProducts];
       await user.save({ validateBeforeSave: true });
@@ -224,13 +249,13 @@ exports.getMonthlyRevenueByYear = catchAsyncErrors(async (req, res, next) => {
   ];
 
   // Fill missing months with 0 totalAmount
-  const monthlyRevenue = {}
+  const monthlyRevenue = {};
   Array.from({ length: 12 }, (_, i) => {
     const monthNum = i + 1;
     const match = results.find((r) => r._id === monthNum);
     // divide by 100 so that amt converts to rs. as it is in paise
-    monthlyRevenue[monthNames[monthNum]] = match ? match.totalAmount / 100 : 0
-  })
+    monthlyRevenue[monthNames[monthNum]] = match ? match.totalAmount / 100 : 0;
+  });
 
   res.status(200).json({
     success: true,

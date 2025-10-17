@@ -196,7 +196,7 @@ export const UserOrders = () => {
 
                 {/*ordered products container begins */}
                 <Swiper
-                  loop={order.orderItems > 1 ? true : false}
+                  loop={order.orderItems.length > 1 ? true : false}
                   pagination={{ clickable: true }}
                   grabCursor={true}
                   effect={"creative"}

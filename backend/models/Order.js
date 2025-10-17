@@ -38,23 +38,54 @@ const orderSchema = new mongoose.Schema({
 
   orderItems: [
     {
+      needSize: {
+        type: Boolean,
+        required: [true, "need size is required"],
+      },
+      colorIndex: {
+        type: Number,
+        required: [true, "color is required"],
+      },
+      sizeIndex: {
+        type: Number,
+        required: [
+          function () {
+            return this.needSize;
+          },
+          "size is required",
+        ],
+      },
+      size: {
+        type: String,
+        required: [
+          function () {
+            return this.needSize;
+          },
+          "size is required",
+        ],
+      },
       name: {
         type: String,
-        required: true,
+        required: [true,'name is required'],
       },
       price: {
         type: Number,
-        required: true,
+        required: [true,'price is required'],
       },
       quantity: {
         type: Number,
-        required: true,
+        required: [true,'quantity is required'],
       },
       image: {
         type: String,
+        required: [true,'image is required'],
+      },
+      variantId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Variant",
         required: true,
       },
-      id: {
+      productId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Product",
         required: true,

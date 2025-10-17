@@ -4,6 +4,7 @@ const { Variant } = require("../../models/product/Variant");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const { isOnlyDigits } = require("../../utils/helpers");
+const { validateQuantityAndStock } = require("../../utils/commonValidations");
 
 // ========================= ADD PRODUCT TO CART OR UPDATE PRODUCT QUANTITY =========================
 exports.addProductToCartOrUpdateQuantity = catchAsyncErrors(
@@ -20,41 +21,7 @@ exports.addProductToCartOrUpdateQuantity = catchAsyncErrors(
       return next(new ErrorHandler("product not exists", 404));
     }
 
-    const { quantity, colorIndex, sizeIndex } = req.body;
-
-    if (typeof colorIndex !== "number" && !colorIndex) {
-      return next(new ErrorHandler("color is required"));
-    }
-
-    if (!quantity || quantity.toString().trim() === "") {
-      return next(new ErrorHandler("quantity is required", 400));
-    }
-
-    if (!isOnlyDigits(quantity)) {
-      return next(new ErrorHandler("quantity must be a number", 400));
-    }
-
-    // if need size is true
-    if (variant.needSize) {
-      if (typeof sizeIndex !== "number" && !sizeIndex) {
-        return next(new ErrorHandler("size is required"));
-      }
-
-      if (
-        Number(quantity) > variant.images[colorIndex].sizes[sizeIndex].stock ||
-        variant.images[colorIndex].sizes[sizeIndex].stock === 0
-      ) {
-        return next(new ErrorHandler("oops! not enough stock", 400));
-      }
-    } else {
-      if (
-        Number(quantity) > variant.images[colorIndex].stock ||
-        variant.images[colorIndex].stock === 0
-      ) {
-        return next(new ErrorHandler("oops! not enough stock", 400));
-      }
-    }
-    // condition ends
+    const { quantity, colorIndex, sizeIndex } = validateQuantityAndStock(req,variant,next)
 
     const isAdded = user.cartProducts.find(
       (cartProduct) =>

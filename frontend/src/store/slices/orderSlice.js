@@ -6,7 +6,7 @@ import {
   createPaymentOrder,
   deletePendingOrderAndPaymentOrder,
   getMyOrders,
-  getMySinglOrder,
+  getMyOrderDetails,
 } from "../thunks/orderThunk";
 
 const initialState = {
@@ -88,7 +88,7 @@ const orderSlice = createSlice({
       },
     });
 
-    handleAsyncThunk(builder, getMySinglOrder, {
+    handleAsyncThunk(builder, getMyOrderDetails, {
       pending: (state) => {
         state.loading = true;
       },
