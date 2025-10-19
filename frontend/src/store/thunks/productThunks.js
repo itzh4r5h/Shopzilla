@@ -7,7 +7,29 @@ export const getAllProducts = createAsyncThunk(
   async (keyword='', thunkAPI) => {
     try {
       const link = `/products/variants?keyword=${keyword}`
-      const { data } = await axiosInstance.get(link);
+      const { data } = await axiosInstance.get(link)
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");
+    }
+  }
+);
+
+export const getFilteredProducts = createAsyncThunk(
+  "products/get_filtered_products",
+  async (filterOptions, thunkAPI) => {
+    try {
+      let url = '/products/variants/filtered?'
+      const keys = Object.keys(filterOptions)
+      keys.forEach((key,index)=>{
+        if(index > 0 && index < keys.length){
+          url += `&${key}=${filterOptions[key]}`
+        }else{
+          url += `${key}=${filterOptions[key]}`
+        }
+      })
+      console.log(url);
+      const { data } = await axiosInstance.get(url);
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");

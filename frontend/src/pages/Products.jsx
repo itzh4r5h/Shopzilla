@@ -4,10 +4,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getAllProducts } from "../store/thunks/productThunks";
 import { Heading } from "../components/Headers/Heading";
+import { ProudctFilter } from "../components/Filters/ProudctFilter";
 
 export const Products = () => {
   const dispatch = useDispatch();
-  const { error, products, keyword, productsCount } = useSelector(
+  const { error, variants, keyword, total, filters, attributes } = useSelector(
     (state) => state.products
   );
 
@@ -16,21 +17,40 @@ export const Products = () => {
   }, [keyword]);
 
   return (
-    <div>
-      <Heading name={"Products"} path={'/'} />
+    <div className="relative h-full grid grid-rows-[1fr_11fr]">
+      <Heading
+        name={"Products"}
+        path={"/"}
+        icon={keyword.length > 0 && attributes?.length > 0 ? true : false}
+        iconComponent={
+          <ProudctFilter filters={filters} attributes={attributes} keyword={keyword} />
+        }
+      />
 
-      <div className="grid grid-cols-2 gap-3 mt-5">
-        {products
-          ? products.map((product) => {
+      <div className="grid grid-cols-2 gap-3 mt-5 overflow-y-auto">
+        {variants ? (
+          variants.length > 0 ? (
+            variants.map((variant, index) => {
               return (
-                <Link to={`/products/${product._id}`} key={product._id}>
-                  <ProductCard product={product} />
+                <Link
+                  to={`/products/${variant.product._id}/variants/${variant._id}/${variant.selectedProduct}`}
+                  key={variant._id + index}
+                  className="h-fit"
+                >
+                  <ProductCard variant={variant} />
                 </Link>
               );
             })
-          : [...Array(20)].map((item, index) => {
-              return <ProductCard key={index} />;
-            })}
+          ) : (
+            <p className="text-center text-xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4">
+              Oops! nothing found with this name - "{keyword}"
+            </p>
+          )
+        ) : (
+          [...Array(20)].map((item, index) => {
+            return <ProductCard key={index} />;
+          })
+        )}
       </div>
     </div>
   );

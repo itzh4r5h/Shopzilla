@@ -11,7 +11,18 @@ import { formatINR } from "../../utils/helpers";
 import { Controller, useForm } from "react-hook-form";
 import Rating from "@mui/material/Rating";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllProducts } from "../../store/thunks/productThunks";
+import { getAllProducts, getFilteredProducts } from "../../store/thunks/productThunks";
+
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+import { OutlineButton } from "../buttons/OutlineButton";
+import { FillButton } from "../buttons/FillButton";
+
+import PropTypes from "prop-types";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 const CustomSlider = styled(Slider)({
   color: "var(--purpleDark)",
@@ -36,7 +47,7 @@ const CustomSlider = styled(Slider)({
     fontSize: 14,
     background: "unset",
     padding: "4px 8px",
-    width: 60,
+    width: 65,
     height: 32,
     borderRadius: "4px",
     backgroundColor: "var(--purpleDark)",
@@ -60,8 +71,7 @@ const StyledFormControlLabel = styled((props) => (
       props: { checked: true },
       style: {
         ".MuiFormControlLabel-label": {
-          color: "var(--purpleDark)",
-          fontWeight: 'bold'
+          color: "var(--purpleDark)!important",
         },
       },
     },
@@ -79,10 +89,159 @@ function CategoryFormControlLabel(props) {
   return <StyledFormControlLabel checked={checked} {...props} />;
 }
 
-export const ProudctFilter = () => {
-    const [open, setOpen] = useState(false);
-    const [priceRange, setPriceRange] = useState([0, 200000]);
-    const [category, setCategory] = useState('');
+const TabPanel = (props) => {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`vertical-tabpanel-${index}`}
+      aria-labelledby={`vertical-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ pl: 2 }}>{children}</Box>}
+    </div>
+  );
+};
+
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired,
+};
+
+const a11yProps = (index) => {
+  return {
+    id: `vertical-tab-${index}`,
+    "aria-controls": `vertical-tabpanel-${index}`,
+  };
+};
+
+const AttributesTabs = ({
+  attributes,
+  setSelectedAttributes,
+  selectedAttributes,
+}) => {
+  const [value, setValue] = useState(0);
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+
+  const attributeNames = attributes.map((attr) => attr._id);
+  const attributeValues = attributes.map((attr) => attr.values);
+
+  const handleAttributeChange = (event, index) => {
+    const newValue = event.target.value;
+
+    setSelectedAttributes((prev) =>
+      prev.map((attr, i) => (i === index ? { ...attr, value: newValue } : attr))
+    );
+  };
+
+  useEffect(() => {
+    if(selectedAttributes.length === 0){
+      setSelectedAttributes(
+      attributeNames.map((attr) => ({ name: attr, value: "" }))
+    );
+    }
+  }, []);
+
+  return (
+    <Box
+      sx={{
+        flexGrow: 1,
+        bgcolor: "background.paper",
+        display: "flex",
+        height: 130,
+      }}
+    >
+      <Tabs
+        orientation="vertical"
+        variant="scrollable"
+        value={value}
+        onChange={handleChange}
+        aria-label="Vertical tabs example"
+        sx={{
+          borderRight: 1,
+          borderColor: "divider",
+          "& .MuiTab-root": {
+            fontWeight: "bold",
+            alignItems: "flex-start",
+          },
+          "& .MuiTab-root.Mui-selected": {
+            color: "var(--purpleDark)",
+          },
+          "& .MuiTabs-indicator": {
+            backgroundColor: "var(--purpleDark)",
+          },
+        }}
+      >
+        {attributeNames.map((attrName, index) => (
+          <Tab
+            label={attrName}
+            {...a11yProps(index)}
+            key={index}
+            sx={{ alignItems: "start" }}
+          />
+        ))}
+      </Tabs>
+
+      {selectedAttributes.length > 0 &&
+        attributeValues.map((values, index) => {
+          return (
+            <TabPanel
+              value={value}
+              index={index}
+              key={index}
+              style={{ overflowY: "auto" }}
+            >
+              <RadioGroup
+                name="use-radio-group"
+                value={selectedAttributes[index].value}
+                onChange={(e) => handleAttributeChange(e, index)}
+              >
+                {values.map((val) => {
+                  return (
+                    <CategoryFormControlLabel
+                      sx={{
+                        ".MuiFormControlLabel-label": {
+                          fontWeight: "bold",
+                          color: "var(--light)",
+                        },
+                      }}
+                      value={val}
+                      label={val}
+                      control={
+                        <Radio
+                          sx={{
+                            color: "var(--purpleDark)",
+                            "&.Mui-checked": {
+                              color: "var(--purpleDark)",
+                            },
+                          }}
+                        />
+                      }
+                      key={val}
+                    />
+                  );
+                })}
+              </RadioGroup>
+            </TabPanel>
+          );
+        })}
+    </Box>
+  );
+};
+
+export const ProudctFilter = ({ filters, attributes, keyword }) => {
+  const [open, setOpen] = useState(false);
+  const [brand, setBrand] = useState("");
+  const [priceRange, setPriceRange] = useState([]);
+  const [ratings, setRatings] = useState(0);
+  const [selectedAttributes, setSelectedAttributes] = useState([]);
+  const [category, setCategory] = useState("");
 
   const toggleDrawer = (open) => (event) => {
     if (
@@ -94,7 +253,7 @@ export const ProudctFilter = () => {
     setOpen(open);
   };
 
-  const minDistance = 500;
+  const minDistance = 100;
 
   const changePrice = (event, newValue, activeThumb) => {
     if (activeThumb === 0) {
@@ -110,23 +269,70 @@ export const ProudctFilter = () => {
     }
   };
 
-  const { getValues, control } = useForm({
-    defaultValues: {
-      rating: 0, // default value
-    },
-  });
+  const dispatch = useDispatch();
 
-
-    const dispatch = useDispatch();
-  const { categories } = useSelector((state) => state.products);
-
-  const handleChange = (event) => {
+  const handleCategoryChange = (event) => {
     setCategory(event.target.value);
   };
 
-//   useEffect(()=>{
-//     dispatch(getAllProducts())
-//   },[])
+  const handleBrandChange = (event) => {
+    setBrand(event.target.value);
+  };
+
+  const handleClear = () => {
+    setBrand("");
+    setPriceRange([filters.prices[0], filters.prices[1]]);
+    setRatings(0);
+    setSelectedAttributes((prev) =>
+      prev.map((attr, i) => ({ ...attr, value: "" }))
+    );
+    setCategory("");
+  };
+
+  useEffect(() => {
+    if (filters.length > 0 || Object.keys(filters).length > 0) {
+      setPriceRange([filters.prices[0], filters.prices[1]]);
+    }
+  }, [filters]);
+
+
+  // this functions builts filteroptions object whose values are not default values
+  const buildFilterPayload = () => {
+    const payload = {};
+
+    if (brand.trim() !== "") {
+      payload.brand = brand.trim();
+    }
+
+    if (category.trim() !== "") {
+      payload.subcategory = category.trim();
+    }
+
+    if (ratings > 0) {
+      payload.ratings = ratings;
+    }
+
+    if (priceRange.length > 0) {
+      payload.minPrice = priceRange[0];
+      payload.maxPrice = priceRange[1];
+    }
+
+    const selectedAttrs = selectedAttributes
+      .filter((attr) => attr.value && attr.value.trim() !== "")
+      .map((attr) => ({ name: attr.name, value: attr.value.trim() }));
+
+    if (selectedAttrs.length > 0) {
+      payload.attributes = JSON.stringify(selectedAttrs);
+    }
+
+    return payload;
+  };
+
+  const handleApplyFilters = () => {
+    const payload = buildFilterPayload()
+    dispatch(getFilteredProducts({keyword,...payload}));
+    toggleDrawer(false)
+  };
 
   return (
     <div>
@@ -145,86 +351,166 @@ export const ProudctFilter = () => {
           },
         }}
       >
-        <aside className="w-75 h-full py-3 px-5 grid grid-rows-[1fr_1fr_1fr_0.5fr_8.5fr] gap-y-2">
-          <h1 className="text-center text-2xl font-semibold mb-5">
-            Product Filter
-          </h1>
-          <div>
-            <h3 className="text-2xl">Price</h3>
-            <CustomSlider
-              getAriaLabel={() => "Minimum distance"}
-              value={priceRange}
-              step={500}
-              min={0}
-              max={200000}
-              onChange={changePrice}
-              valueLabelDisplay="auto"
-              disableSwap
-              sx={{ color: "var(--purpleDark)" }}
-              valueLabelFormat={formatINR}
-            />
-          </div>
-          <div>
-            <h3 className="text-2xl">Rating</h3>
-            <Controller
-              name="rating"
-              control={control}
-              render={({ field }) => (
+        <aside className="w-75 h-full">
+          {filters.length > 0 || Object.keys(filters).length > 0 ? (
+            <div className="grid grid-rows-[0.5fr_4fr_1fr_1.5fr_0.5fr_3fr_0.5fr_5fr_0.5fr] gap-y-1 py-2 px-4 h-full">
+              {/* brand begins */}
+              <h3 className="text-2xl">Brand</h3>
+              <div className="overflow-y-auto capitalize">
+                <RadioGroup
+                  name="use-radio-group"
+                  value={brand}
+                  onChange={handleBrandChange}
+                >
+                  {filters.brands.map((brandName) => {
+                    return (
+                      <CategoryFormControlLabel
+                        value={brandName}
+                        label={brandName}
+                        control={
+                          <Radio
+                            sx={{
+                              color: "var(--purpleDark)",
+                              "&.Mui-checked": {
+                                color: "var(--purpleDark)",
+                              },
+                            }}
+                          />
+                        }
+                        key={brandName}
+                      />
+                    );
+                  })}
+                </RadioGroup>
+              </div>
+              {/* brand ends */}
+
+              {/* price begins */}
+              <div>
+                <h3 className="text-2xl">Price</h3>
+                <div className="px-5">
+                  <CustomSlider
+                    getAriaLabel={() => "Minimum distance"}
+                    value={priceRange}
+                    step={minDistance}
+                    min={filters.prices[0]}
+                    max={filters.prices[1]}
+                    onChange={changePrice}
+                    valueLabelDisplay="auto"
+                    disableSwap
+                    sx={{ color: "var(--purpleDark)" }}
+                    valueLabelFormat={formatINR}
+                  />
+                </div>
+              </div>
+              {/* price ends */}
+
+              {/* ratings begins */}
+              <div>
+                <h3 className="text-2xl">Rating</h3>
                 <Rating
-                  {...field}
-                  value={Number(field.value)} // ensure numeric value
-                  onChange={(_, value) => field.onChange(value)}
+                  value={ratings}
+                  onChange={(_, value) => setRatings(value)}
                   sx={{
                     color: "var(--purpleDark)",
-                    fontSize: "3rem",
+                    fontSize: "2.7rem",
                   }}
                 />
-              )}
-            />
-          </div>
-          <h3 className="text-2xl">Category</h3>
-          <div className="overflow-y-auto capitalize">
-            <RadioGroup
-              name="use-radio-group"
-              value={category}
-              onChange={handleChange}
-            >
-                <CategoryFormControlLabel
-                sx={{display:'none'}}
-                    value={''}
-                    label={'empty'}
-                    control={
-                      <Radio
-                        sx={{
-                          color: "var(--purpleDark)",
-                          "&.Mui-checked": {
-                            color: "var(--purpleDark)",
-                          },
-                        }}
+              </div>
+              {/* rating ends */}
+
+              {/* attributes begins */}
+              <h3 className="text-2xl">Attributes</h3>
+              <div className="capitalize">
+                <AttributesTabs
+                  attributes={attributes}
+                  setSelectedAttributes={setSelectedAttributes}
+                  selectedAttributes={selectedAttributes}
+                />
+              </div>
+
+              {/* attributes ends */}
+
+              {/* categories begins */}
+              <h3 className="text-2xl">Category</h3>
+              <div className="overflow-y-auto capitalize">
+                <RadioGroup
+                  name="use-radio-group"
+                  value={category}
+                  onChange={handleCategoryChange}
+                >
+                  {filters.subcategories.map((categoryName) => {
+                    return (
+                      <CategoryFormControlLabel
+                        value={categoryName}
+                        label={categoryName}
+                        control={
+                          <Radio
+                            sx={{
+                              color: "var(--purpleDark)",
+                              "&.Mui-checked": {
+                                color: "var(--purpleDark)",
+                              },
+                            }}
+                          />
+                        }
+                        key={categoryName}
                       />
-                    }
-                  />
-              {categories.map((categoryName) => {
-                return (
-                  <CategoryFormControlLabel
-                    value={categoryName}
-                    label={categoryName}
-                    control={
-                      <Radio
-                        sx={{
-                          color: "var(--purpleDark)",
-                          "&.Mui-checked": {
-                            color: "var(--purpleDark)",
-                          },
-                        }}
-                      />
-                    }
-                    key={categoryName}
-                  />
-                );
-              })}
-            </RadioGroup>
-          </div>
+                    );
+                  })}
+                </RadioGroup>
+              </div>
+
+              {/* category ends */}
+
+              {/* buttons begins */}
+              <div className="grid grid-cols-2 gap-x-5">
+                <span onClick={handleClear}>
+                  <OutlineButton name={"clear"} />
+                </span>
+                <span onClick={handleApplyFilters}>
+                <FillButton name={"apply"} />
+                </span>
+              </div>
+              {/* buttons ends */}
+            </div>
+          ) : (
+            <div className="grid grid-rows-[.5fr_1fr_1.5fr_.5fr_8fr_.5fr] gap-y-2 py-2 px-5 h-full">
+              <div>
+                <h3 className="text-2xl">
+                  <Skeleton width={"50%"} />
+                </h3>
+                <Skeleton />
+              </div>
+              <div>
+                <h3 className="text-2xl">
+                  <Skeleton width={"50%"} />
+                </h3>
+                <Skeleton height={30} />
+              </div>
+              <h3 className="text-2xl mt-4">
+                <Skeleton width={"70%"} />
+              </h3>
+              <div className="overflow-y-auto capitalize">
+                {[...Array(10)].map((item, index) => {
+                  return (
+                    <div
+                      className="grid grid-cols-[1fr_5fr] items-center my-1"
+                      key={index}
+                    >
+                      <Skeleton height={25} width={25} />
+                      <Skeleton height={20} width={"85%"} />
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-5">
+                <Skeleton height={30} />
+                <Skeleton height={30} />
+              </div>
+            </div>
+          )}
         </aside>
       </Drawer>
     </div>

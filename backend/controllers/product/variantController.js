@@ -558,62 +558,57 @@ exports.getVariant = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// // ======================= GET ALL VARIANTS ==============================
-exports.getAllVariants = catchAsyncErrors(async (req, res) => {
+// ============================= COMMON AGGREGATION PIPELINE STATGES =================================
+const variantStages = (req) => {
   const page = Number(req.query.page) || 1;
   const limit = 10;
 
-  const {
-    keyword,
-    subcategory,
-    brand,
-    ratings,
-    minPrice,
-    maxPrice,
-    attributes,
-  } = req.query;
-
-  // Decide early: is this a "search" request or just list-all?
-  const isSearch = keyword && keyword.trim().length > 0;
-
-  const variantStage = {
-    variants: [
-      {
-        $group: {
-          _id: "$_id",
-          doc: { $first: "$$ROOT" }, // take variant fields
-          images: { $push: "$images" }, // re-collect images
+  const stages = [
+    {
+      $group: {
+        _id: "$_id",
+        doc: { $first: "$$ROOT" }, // take variant fields
+        images: { $push: "$images" }, // re-collect images
+      },
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $mergeObjects: ["$doc", { images: "$images" }],
         },
       },
-      {
-        $replaceRoot: {
-          newRoot: {
-            $mergeObjects: ["$doc", { images: "$images" }],
-          },
-        },
-      },
-      {
-        $set: {
-          // Create an array of numbers equal to number of images
-          selectedIndexes: {
-            $map: {
-              input: { $range: [0, { $size: "$images" }] },
-              as: "i",
-              in: {
-                $mergeObjects: ["$$ROOT", { selectedProduct: "$$i" }],
-              },
+    },
+    {
+      $set: {
+        // Create an array of numbers equal to number of images
+        selectedIndexes: {
+          $map: {
+            input: { $range: [0, { $size: "$images" }] },
+            as: "i",
+            in: {
+              $mergeObjects: ["$$ROOT", { selectedProduct: "$$i" }],
             },
           },
         },
       },
-      // 👇 flatten it (each element becomes separate variant)
-      { $unwind: "$selectedIndexes" },
-      // 👇 make that flattened object the actual root
-      { $replaceRoot: { newRoot: "$selectedIndexes" } },
-      { $skip: (page - 1) * limit },
-      { $limit: limit },
-    ],
-  };
+    },
+    // 👇 flatten it (each element becomes separate variant)
+    { $unwind: "$selectedIndexes" },
+    // 👇 make that flattened object the actual root
+    { $replaceRoot: { newRoot: "$selectedIndexes" } },
+    { $skip: (page - 1) * limit },
+    { $limit: limit },
+  ];
+
+  return stages;
+};
+
+// ======================= GET ALL VARIANTS ==============================
+exports.getAllVariants = catchAsyncErrors(async (req, res) => {
+  const { keyword } = req.query;
+
+  // Decide early: is this a "search" request or just list-all?
+  const isSearch = keyword && keyword.trim().length > 0;
 
   const pipeline = [
     // Basic condition (images uploaded)
@@ -637,64 +632,28 @@ exports.getAllVariants = catchAsyncErrors(async (req, res) => {
       ? [{ $match: { "product.name": { $regex: keyword, $options: "i" } } }]
       : []),
 
-    // Product-level filters
-    ...(isSearch && subcategory
-      ? [{ $match: { "product.subcategory": subcategory } }]
-      : []),
-
-    ...(isSearch && brand ? [{ $match: { "product.brand": brand } }] : []),
-
-    ...(isSearch && isOnlyDigits(ratings)
-      ? [{ $match: { "product.ratings": { $gte: Number(ratings) } } }]
-      : []),
-
-    // Variant-level filters
-    ...(isSearch &&
-    ((minPrice && isOnlyDigits(minPrice)) ||
-      (maxPrice && isOnlyDigits(maxPrice)))
-      ? [
-          {
-            $match: {
-              "images.price": {
-                ...(minPrice && { $gte: Number(minPrice) }),
-                ...(maxPrice && { $lte: Number(priceMax) }),
-              },
-            },
-          },
-        ]
-      : []),
-
-    ...(isSearch && attributes && Object.keys(attributes).length
-      ? [
-          {
-            $match: {
-              attributes: {
-                $elemMatch: {
-                  $or: Object.entries(attributes).map(([name, value]) => ({
-                    name,
-                    value,
-                  })),
-                },
-              },
-            },
-          },
-        ]
-      : []),
-
     // Facet for data + filters
     {
       $facet: isSearch
         ? {
             metadata: [{ $count: "total" }],
-            ...variantStage,
+            variants: variantStages(req),
             filterOptions: [
               {
                 $group: {
                   _id: null,
                   brands: { $addToSet: "$product.brand" },
-                  categories: { $addToSet: "$product.category" },
                   subcategories: { $addToSet: "$product.subcategory" },
-                  ratings: { $addToSet: "$product.ratings" },
+                  minPrice: { $min: "$images.price" },
+                  maxPrice: { $max: "$images.price" },
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  brands: 1,
+                  subcategories: 1,
+                  prices: ["$minPrice", "$maxPrice"],
                 },
               },
             ],
@@ -711,7 +670,7 @@ exports.getAllVariants = catchAsyncErrors(async (req, res) => {
           }
         : {
             metadata: [{ $count: "total" }],
-            ...variantStage,
+            variants: variantStages(req),
           },
     },
     {
@@ -736,8 +695,103 @@ exports.getAllVariants = catchAsyncErrors(async (req, res) => {
       brands: [],
       categories: [],
       subcategories: [],
-      ratings: [],
+      prices: [],
     },
     attributes: result?.attributes || [],
+  });
+});
+
+// ======================= GET ALL FILTERED VARIANTS ==============================
+exports.getFilteredVariants = catchAsyncErrors(async (req, res) => {
+  const { keyword, subcategory, brand, ratings, minPrice, maxPrice } =
+    req.query;
+
+  const attributes = req.query.attributes
+    ? JSON.parse(req.query.attributes)
+    : false;
+
+  const pipeline = [
+    // Basic condition (images uploaded)
+    { $match: { imagesUploaded: true } },
+
+    // Join product
+    {
+      $lookup: {
+        from: "products",
+        localField: "product",
+        foreignField: "_id",
+        as: "product",
+      },
+    },
+    { $unwind: "$product" },
+    // Break out images array so we can filter on price/stock
+    { $unwind: "$images" },
+
+    // Keyword search (on product.name)
+    { $match: { "product.name": { $regex: keyword, $options: "i" } } },
+
+    // Product-level filters
+    ...(subcategory
+      ? [{ $match: { "product.subcategory": subcategory } }]
+      : []),
+
+    ...(brand ? [{ $match: { "product.brand": brand } }] : []),
+
+    ...(isOnlyDigits(ratings)
+      ? [{ $match: { "product.ratings": { $gte: Number(ratings) } } }]
+      : []),
+
+    // Variant-level filters
+    ...((minPrice && isOnlyDigits(minPrice)) ||
+    (maxPrice && isOnlyDigits(maxPrice))
+      ? [
+          {
+            $match: {
+              "images.price": {
+                ...(minPrice && { $gte: Number(minPrice) }),
+                ...(maxPrice && { $lte: Number(maxPrice) }),
+              },
+            },
+          },
+        ]
+      : []),
+
+    ...(attributes?.length > 0
+      ? [
+          {
+            $match: {
+              attributes: {
+                $elemMatch: {
+                  $or: attributes.map(({ name, value }) => ({ name, value })),
+                },
+              },
+            },
+          },
+        ]
+      : []),
+
+    // Facet for data + filters
+    {
+      $facet: {
+        metadata: [{ $count: "total" }],
+        variants: variantStages(req),
+      },
+    },
+    {
+      $project: {
+        total: {
+          $ifNull: [{ $arrayElemAt: ["$metadata.total", 0] }, 0],
+        },
+        variants: "$variants",
+      },
+    },
+  ];
+
+  const [result] = await Variant.aggregate(pipeline);
+
+  res.json({
+    success: true,
+    total: result?.total || 0,
+    variants: result?.variants || [],
   });
 });

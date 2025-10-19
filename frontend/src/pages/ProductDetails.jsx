@@ -23,6 +23,7 @@ import { useNavigate, useParams } from "react-router";
 
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+
 import { ImageCard } from "../components/cards/ImageCard";
 import { toast } from "react-toastify";
 import {

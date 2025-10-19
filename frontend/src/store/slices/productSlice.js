@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getAllProducts, getProductDetails } from "../thunks/productThunks";
+import { getAllProducts, getFilteredProducts, getProductDetails } from "../thunks/productThunks";
 import { handleAsyncThunk } from "../utils/handleAsyncThunk";
 
 const productSlice = createSlice({
@@ -39,6 +39,20 @@ const productSlice = createSlice({
         state.variantsCount = action.payload.total;
         state.filters = action.payload.filters;
         state.attributes = action.payload.attributes;
+      },
+      rejected: (state, action) => {
+        state.loading = false
+        state.error = action.payload;
+      },
+    });
+    handleAsyncThunk(builder, getFilteredProducts, {
+      pending: (state) => {
+        state.loading = true;
+      },
+      fulfilled: (state, action) => {
+        state.loading = false
+        state.variants = action.payload.variants;
+        state.variantsCount = action.payload.total;
       },
       rejected: (state, action) => {
         state.loading = false

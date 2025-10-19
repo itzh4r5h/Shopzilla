@@ -36,6 +36,7 @@ const {
   getTotalNumberOfVariants,
   getAllVariantsOfAProduct,
   getAllVariants,
+  getFilteredVariants,
 } = require("../controllers/product/variantController");
 const router = express.Router();
 
@@ -120,9 +121,10 @@ router
 
 // =================================== Product Variant Related Routes =======================================
 router.route("/products/variants").get(getAllVariants);
+router.route("/products/variants/filtered").get(getFilteredVariants);
 router
   .route("/products/variants/:id")
-  .get(isUserAuthenticated, getVariant);
+  .get(getVariant);
 
 // =================================== Product Review Related Routes =======================================
 router
