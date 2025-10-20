@@ -12,7 +12,7 @@ export const BaseProductCard = ({ product }) => {
         <textarea
           defaultValue={product.name}
           id="name"
-          className="capitalize border box-border rounded-sm px-1 text-md bg-[var(--grey)] h-13 outline-none"
+          className="capitalize border box-border rounded-sm px-1 text-md bg-[var(--grey)] h-13 outline-none ring-2 ring-[var(--purpleDark)] font-semibold text-[var(--purpleDark)]"
           autoComplete="off"
           readOnly
         />
@@ -49,6 +49,26 @@ export const BaseProductCard = ({ product }) => {
       {/* subcategory ends */}
     </article>
   ) : (
-    "b"
+    <article className="w-full rounded-md border border-[var(--black)] bg-[var(--white)] p-2 h-full flex flex-col justify-center gap-1 outline-none active:ring-2 active:ring-[var(--purpleDark)]">
+      {/* name begins */}
+      <div className="flex flex-col justify-center">
+        <Skeleton />
+        <Skeleton height={30} />
+      </div>
+      {/* name ends */}
+
+      {/* category begins */}
+      <div className="flex flex-col justify-center">
+        <Skeleton />
+        <Skeleton height={20} />
+      </div>
+      {/* category ends */}
+      {/* subcategory begins */}
+      <div className="flex flex-col justify-center">
+        <Skeleton/>
+        <Skeleton height={20}/>
+      </div>
+      {/* subcategory ends */}
+    </article>
   );
 };

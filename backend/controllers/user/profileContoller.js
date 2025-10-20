@@ -7,7 +7,6 @@ const {
   joiPasswordValidator,
 } = require("../../validators/userValidator");
 const { getBasicDetailsOnly } = require("../../utils/helpers");
-const UserSearch = require("../../utils/userSearch");
 
 // ====================== ADMIN --- GET ALL USERS =============================
 exports.getAllUsers = catchAsyncErrors(async (req, res, next) => {

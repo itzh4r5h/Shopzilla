@@ -47,7 +47,7 @@ const AttributeSlideComponent = ({ attributes }) => {
           <SwiperSlide key={attr._id} className="pb-8">
             <div className="grid grid-cols-[3fr_4fr] p-2 border-2 border-[var(--purpleDark)]">
               <h2 className="text-lg uppercase">{attr.name}</h2>
-              <p className="text-lg uppercase text-[var(--light)] justify-self-end">
+              <p className="text-lg uppercase text-[var(--light)] justify-self-end line-clamp-1">
                 {typeof attr.value === "string"
                   ? attr.value
                   : flatAttributesValueArray(attr.value).join(", ")}
@@ -274,7 +274,7 @@ export const SingleProductInfo = () => {
                       ? "Created on"
                       : key}
                   </h2>
-                  <p className="text-lg capitalize text-[var(--light)]">
+                  <p className={`text-lg capitalize text-[var(--light)] ${key === "description" && 'line-clamp-4'}`}>
                     {key === "category"
                       ? product[key].name
                       : key === "createdAt"
