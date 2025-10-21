@@ -356,7 +356,7 @@ export const ProudctFilter = ({ filters, attributes, keyword }) => {
             <div className="grid grid-rows-[0.5fr_4fr_1fr_1.5fr_0.5fr_3fr_0.5fr_5fr_0.5fr] gap-y-1 py-2 px-4 h-full">
               {/* brand begins */}
               <h3 className="text-2xl">Brand</h3>
-              <div className="overflow-y-auto capitalize">
+              <div className="overflow-y-auto capitalize pl-2">
                 <RadioGroup
                   name="use-radio-group"
                   value={brand}
@@ -433,7 +433,7 @@ export const ProudctFilter = ({ filters, attributes, keyword }) => {
 
               {/* categories begins */}
               <h3 className="text-2xl">Category</h3>
-              <div className="overflow-y-auto capitalize">
+              <div className="overflow-y-auto capitalize pl-2">
                 <RadioGroup
                   name="use-radio-group"
                   value={category}

@@ -6,9 +6,9 @@ const productSlice = createSlice({
   name: "products",
   initialState: {
     keyword: "",
+    page: 1,
     minPrice: undefined,
     maxPrice: undefined,
-    page: 1,
     variant: undefined,
     error: null,
     loading: true,
@@ -20,6 +20,9 @@ const productSlice = createSlice({
   reducers: {
     saveKeyword: (state, action) => {
       state.keyword = action.payload;
+    },
+    setPage: (state, action) => {
+      state.page = action.payload;
     },
     clearProductError: (state) => {
       state.error = null;
@@ -78,5 +81,5 @@ const productSlice = createSlice({
   },
 });
 
-export const { saveKeyword, clearProductError,clearProductDetails } = productSlice.actions;
+export const { saveKeyword, clearProductError,clearProductDetails,setPage } = productSlice.actions;
 export const productReducer = productSlice.reducer;

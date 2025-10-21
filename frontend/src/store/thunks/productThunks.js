@@ -4,9 +4,9 @@ import { axiosInstance } from "../../utils/AxiosInstance";
 
 export const getAllProducts = createAsyncThunk(
   "products/get_all_products",
-  async (keyword='', thunkAPI) => {
+  async ({page,keyword}, thunkAPI) => {
     try {
-      const link = `/products/variants?keyword=${keyword}`
+      const link = `/products/variants?page=${page}&keyword=${keyword}`
       const { data } = await axiosInstance.get(link)
       return data;
     } catch (error) {

@@ -1,18 +1,19 @@
 import { ProductCard } from "../components/cards/ProductCard";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getAllProducts } from "../store/thunks/productThunks";
+import { PurplePagination } from "../components/common/PurplePagination";
 
 export const Home = () => {
   const dispatch = useDispatch();
-  const { error, variants, variantsCount, loading } = useSelector(
+  const { error, variants, variantsCount, loading, page } = useSelector(
     (state) => state.products
   );
 
   useEffect(() => {
-    dispatch(getAllProducts());
-  }, []);
+    dispatch(getAllProducts({ page, keyword: "" }));
+  }, [page]);
 
   return (
     <div className="h-full relative">
@@ -24,13 +25,22 @@ export const Home = () => {
 
         {!loading &&
           variants?.length > 0 &&
-          variants?.map((variant,index) => {
+          variants?.map((variant, index) => {
             return (
-              <Link to={`/products/${variant.product._id}/variants/${variant._id}/${variant.selectedProduct}`} key={variant._id+index}>
+              <Link
+                to={`/products/${variant.product._id}/variants/${variant._id}/${variant.selectedProduct}`}
+                key={variant._id + index}
+              >
                 <ProductCard variant={variant} />
               </Link>
             );
           })}
+
+        {variants?.length > 0 && (
+          <div className="flex justify-center items-end col-span-2">
+            <PurplePagination count={Math.ceil(variantsCount / 10)} />
+          </div>
+        )}
       </div>
 
       {!loading && variants?.length < 1 && (
