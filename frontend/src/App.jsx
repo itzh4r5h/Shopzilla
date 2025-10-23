@@ -15,7 +15,7 @@ export const App = () => {
   const navigate = useNavigate();
   const path = useLocation();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.user);
+  const { user, loading } = useSelector((state) => state.user);
   const { isLoggedIn } = useSelector((state) => state.auth);
 
   useGlobalAlert(); // globally listens and triggers toast
@@ -48,10 +48,12 @@ export const App = () => {
   }, [isLoggedIn, user?._id]);
 
   useEffect(() => {
-    if (isLoggedIn && !user?.isVerified) {
-      navigate("/profile");
+    if (!loading && isLoggedIn && user) {
+      if (!user.isVerified) {
+        navigate("/profile");
+      }
     }
-  }, [isLoggedIn, user?.isVerified, path.pathname]);
+  }, [loading, isLoggedIn, user, path.pathname]);
 
   return (
     <>

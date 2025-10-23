@@ -21,6 +21,12 @@ const emailSlice = createSlice({
   reducers:{
     resetResendOtpIn: (state)=>{
       state.resendOtpIn = undefined
+    },
+    setResendLinkIn: (state,action)=>{
+      state.resendLinkIn = action.payload
+    },
+    clearResendLinkIn: (state)=>{
+      state.resendLinkIn = undefined
     }
   },
   extraReducers: (builder) => {
@@ -79,5 +85,5 @@ const emailSlice = createSlice({
   },
 });
 
-export const { resetResendOtpIn } = emailSlice.actions;
+export const { resetResendOtpIn,setResendLinkIn,clearResendLinkIn } = emailSlice.actions;
 export const emailReducer = emailSlice.reducer;

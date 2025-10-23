@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../../utils/AxiosInstance";
 import { rejectWithError, successAlert } from "../../utils/sendAlerts";
 import {
+  clearIsPasswordExists,
   clearUser,
   setIsPasswordExists,
   setUser,
@@ -43,6 +44,7 @@ export const signOutUser = createAsyncThunk(
     try {
       const { data } = await axiosInstance.get("/users/signout");
       dispatch(clearUser());
+      dispatch(clearIsPasswordExists())
       successAlert(dispatch, data.message);
       return data;
     } catch (error) {

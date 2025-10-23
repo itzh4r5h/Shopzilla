@@ -29,7 +29,7 @@ export const getFilteredProducts = createAsyncThunk(
           url += `${key}=${filterOptions[key]}`
         }
       })
-      console.log(url);
+
       const { data } = await axiosInstance.get(url);
       return data;
     } catch (error) {

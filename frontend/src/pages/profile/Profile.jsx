@@ -28,28 +28,17 @@ export const Profile = () => {
 
   const googleUser = searchParams.get("google_user");
 
-  const {
-    user,
-    loading:userLoading,
-  } = useSelector((state) => state.user);
+  const { user, loading: userLoading } = useSelector((state) => state.user);
 
-  const {
-    sending,
-    resendLinkIn,
-  } = useSelector((state) => state.email);
+  const { sending, resendLinkIn } = useSelector((state) => state.email);
 
-  const {
-    loading:authLoading,
-    accountDeletionCountdownExpiresAt,
-  } = useSelector((state) => state.auth);
+  const { loading: authLoading, accountDeletionCountdownExpiresAt } =
+    useSelector((state) => state.auth);
 
   const isAdminUser = user?.role === "admin";
 
-  const resendCountdown = useSyncedCountdown(`resend_timer_${user?._id}`, 0);
-  const deletionCountdown = useSyncedCountdown(
-    `deletion_timer_${user?._id}`,
-    0
-  );
+  const resendCountdown = useSyncedCountdown(`resend_timer_${user?._id}`);
+  const deletionCountdown = useSyncedCountdown(`deletion_timer_${user?._id}`);
 
   const sendLink = () => {
     dispatch(loadUser());
@@ -67,47 +56,73 @@ export const Profile = () => {
   }, [googleUser]);
 
   useEffect(() => {
-    if (!user?.isVerified) {
+    if (accountDeletionCountdownExpiresAt) {
       deletionCountdown.reset(accountDeletionCountdownExpiresAt);
+    }
+  }, [accountDeletionCountdownExpiresAt]);
+
+  useEffect(() => {
+    if (resendLinkIn) {
       resendCountdown.reset(resendLinkIn);
     }
-  }, [resendLinkIn, accountDeletionCountdownExpiresAt, user]);
+  }, [resendLinkIn]);
 
   useEffect(() => {
-    if (
-      !user?.isVerified &&
-      // means countdown is over ✅
-      deletionCountdown.secondsLeft < 1 &&
-      new Date(accountDeletionCountdownExpiresAt).getTime() <= Date.now() // makes sure timer was really active and has expired ✅
-    ) {
+    // Early exit if countdown hasn't ended
+    if (deletionCountdown.secondsLeft > 0) return;
+
+    // Then check if user exists
+    if (!user) return;
+
+    // Skip if user is verified
+    if (user.isVerified) return;
+
+    // Finally, check localStorage time
+    const time = localStorage.getItem(`deletion_timer_${user._id}`);
+    if (time && new Date(time).getTime() <= Date.now()) {
       dispatch(signOutUser());
+      navigate("/signup");
       localStorage.clear();
       toast.error("Account is deleted");
-      navigate("/signup");
     }
-  }, [
-    deletionCountdown.secondsLeft,
-    accountDeletionCountdownExpiresAt,
-    user?.isVerified,
-  ]);
+  }, [deletionCountdown, user]);
 
   const hasDispatched = useRef(false);
+
   useEffect(() => {
-    if (token && !hasDispatched.current) {
+    if(!user) return; // no user, no token checking
+
+    if (!token) return; // no token, do nothing
+
+    // If user is verified, redirect immediately
+    if (user.isVerified) {
+      navigate("/profile");
+      return;
+    }
+
+    // If not verified, dispatch verification once
+    if (!hasDispatched.current) {
       dispatch(verifyEmail(token));
       hasDispatched.current = true;
     }
-  }, [token]);
+  }, [token, user]);
 
   useEffect(() => {
-    const key1 = localStorage.getItem(`resend_timer_${user?._id}`);
-    const key2 = localStorage.getItem(`deletion_timer_${user?._id}`);
-    if (user?.isVerified) {
-      if (key1 || key2) {
-        localStorage.removeItem(`resend_timer_${user?._id}`);
-        localStorage.removeItem(`deletion_timer_${user?._id}`);
-      }
-      navigate("/profile");
+    if (!user) return; // early exit if user not ready
+
+    const resendKey = `resend_timer_${user._id}`;
+    const deletionKey = `deletion_timer_${user._id}`;
+
+    const hasResendTimer = localStorage.getItem(resendKey);
+    const hasDeletionTimer = localStorage.getItem(deletionKey);
+
+    // If there are no timers, do nothing
+    if (!hasResendTimer && !hasDeletionTimer) return;
+
+    // If user is verified, clean up both timers
+    if (user.isVerified) {
+      localStorage.removeItem(resendKey);
+      localStorage.removeItem(deletionKey);
     }
   }, [user]);
 
@@ -115,7 +130,7 @@ export const Profile = () => {
 
   return (
     <>
-      { isLoading ? (
+      {isLoading ? (
         <div className="flex flex-col justify-center gap-5 relative">
           {/* profie pic begins */}
           <div className="self-center relative">

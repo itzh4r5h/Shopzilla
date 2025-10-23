@@ -59,11 +59,12 @@ export const ProfileEmail = () => {
   };
 
   const resendCountdown = useSyncedCountdown(
-    `otp_resend_timer_${user?._id}`,
-    0
-  );
+    `otp_resend_timer_${user?._id}`);
+
   useEffect(() => {
-    resendCountdown.reset(resendOtpIn);
+    if(resendOtpIn){
+      resendCountdown.reset(resendOtpIn);
+    }
   }, [resendOtpIn]);
 
   const key = localStorage.getItem(`otp_resend_timer_${user?._id}`);

@@ -2,16 +2,25 @@ import { useEffect, useState } from "react";
 import { formatTime } from "../utils/helpers";
 
 export const useSyncedCountdown = (key) => {
-  const [secondsLeft, setSecondsLeft] = useState(() => {
+
+  const getSeconds = () => {
     // Try from localStorage first
     const saved = localStorage.getItem(key);
+
     const expiryTime = saved || 0;
 
-    if (expiryTime === 0 || !expiryTime) return 0;
+    if (!expiryTime) return 0;
 
     const diff = Math.floor((new Date(expiryTime) - new Date()) / 1000);
     return diff > 0 ? diff : 0;
-  });
+  }
+  
+  const [secondsLeft, setSecondsLeft] = useState(getSeconds());
+
+  useEffect(()=>{
+    const secs = getSeconds()
+    setSecondsLeft(secs)
+  },[key])
 
   // Countdown tick
   useEffect(() => {

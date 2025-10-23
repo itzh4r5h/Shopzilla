@@ -4,16 +4,19 @@ import { rejectWithError, successAlert } from "../../utils/sendAlerts";
 import {
   setIsLoggedIn,
 } from "../../slices/non_admin/authSlice";
+import { clearResendLinkIn, setResendLinkIn } from "../../slices/non_admin/emailSlice";
 
 export const loadUser = createAsyncThunk(
   "user/load_user",
   async (_, {dispatch,rejectWithValue}) => {
     try {
       const { data } = await axiosInstance.get("/users/me");
+      const {user} = data
+      const {resendLinkIn} = user
       dispatch(setIsLoggedIn(true))
+      dispatch(setResendLinkIn(resendLinkIn))
       return data;
     } catch (error) {
-       console.log(error);
       return rejectWithValue(
         error.response?.data?.message || "Failed"
       );
@@ -30,6 +33,7 @@ export const resetPassword = createAsyncThunk(
         { password: userData.password }
       );
       dispatch(setIsLoggedIn(true))
+      dispatch(clearResendLinkIn())
       return data;
     } catch (error) {
       return rejectWithError(error, dispatch, rejectWithValue);

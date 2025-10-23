@@ -27,7 +27,7 @@ export const ResetPassword = () => {
     useSelector((state) => state.email);
 
 
-  const resendTokenCountdown = useSyncedCountdown(`resend_token_timer`, 0);
+  const resendTokenCountdown = useSyncedCountdown(`resend_token_timer`);
 
   const {
     register,
