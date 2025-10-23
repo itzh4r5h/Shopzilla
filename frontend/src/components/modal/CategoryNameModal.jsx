@@ -5,17 +5,14 @@ import { useMemo, useState } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
 import { useDispatch } from "react-redux";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
-import { NormalSelect } from "../selectors/NormalSelect";
 import { nameJoiSchema } from "../../validators/categoryValidator";
 import { IconSelector } from "../selectors/IconSelector";
 import { deepLowercase } from "../../utils/helpers";
 import {
-  addCategory,
   updateCategoryName,
   updateSubCategoryName,
-} from "../../store/thunks/categoryThunk";
+} from "../../store/thunks/admin/categoryThunk";
 import { MdEditSquare } from "react-icons/md";
-import { useEffect } from "react";
 
 export const CategoryNameModal = ({ name, icon, id, subId = false }) => {
   const schema = useMemo(() => {

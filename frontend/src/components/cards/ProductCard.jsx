@@ -5,7 +5,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { ImageCard } from "./ImageCard";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getRatings } from "../../store/thunks/reviewThunk";
+import { getRatings } from "../../store/thunks/non_admin/reviewThunk";
 
 export const ProductCard = ({
   variant,

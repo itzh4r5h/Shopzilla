@@ -26,6 +26,7 @@ const {
   getAllCategories,
   getAllSubCategoriesOfSpecifiedCategory,
   getAllAttributesOfSubCategory,
+  getAllCategoriesAndSubCategories,
 } = require("../controllers/product/categoryController");
 const {
   createNewVariant,
@@ -45,6 +46,9 @@ router
   .route("/admin/products/categories")
   .post(isUserAuthenticated, authorizedRoles("admin"), createCategory)
   .get(isUserAuthenticated, authorizedRoles("admin"), getAllCategories);
+router
+  .route("/admin/products/categories/all")
+  .get(isUserAuthenticated, authorizedRoles("admin"), getAllCategoriesAndSubCategories);
 router
   .route("/admin/products/categories/:id")
   .patch(isUserAuthenticated, authorizedRoles("admin"), updateCategoryName)

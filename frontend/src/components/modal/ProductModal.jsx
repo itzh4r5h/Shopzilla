@@ -7,14 +7,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { MdEditSquare } from "react-icons/md";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 import { productJoiSchema } from "../../validators/productValidators";
-import { addProduct, updateProduct } from "../../store/thunks/adminThunks";
+import { addProduct, updateProduct } from "../../store/thunks/admin/adminProductThunk";
 import { CategorySelector } from "../selectors/CategorySelector";
-import { getAllCaetgories, getAllSubCaetgories } from "../../store/thunks/categoryThunk";
-import { clearSubCategories } from "../../store/slices/categorySlice";
+import { getAllCaetgories, getAllSubCaetgories } from "../../store/thunks/admin/categoryThunk";
+import { clearSubCategories } from "../../store/slices/admin/categorySlice";
 
 export const ProductModal = ({
   edit = false,
-  id = undefined,
   product = undefined
 }) => {
   const schema = useMemo(() => {

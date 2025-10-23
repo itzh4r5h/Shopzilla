@@ -10,7 +10,6 @@ import { Dashboard } from "../pages/dashboard/Dashboard";
 import { Users } from "../pages/dashboard/Users";
 import { UserOrders } from "../pages/dashboard/UserOrders";
 import { AllProducts } from "../pages/dashboard/product/AllProducts";
-import { AddOrEditProduct } from "../pages/dashboard/AddOrEditProduct";
 import { ResetPassword } from "../pages/ResetPassword";
 import { SignInOrSignUp } from "../pages/SignInOrSignUp";
 import { Products } from "../pages/Products";
@@ -23,7 +22,8 @@ import { SingleProductInfo } from "../pages/dashboard/product/SingleProductInfo"
 
 export const Routing = () => {
   const adminDefaultPath = "/admin/dashboard";
-  const { isLoggedIn, user } = useSelector((state) => state.user);
+  const { isLoggedIn } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.user);
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -70,17 +70,9 @@ export const Routing = () => {
             path={`${adminDefaultPath}/categories/:category/:id/:subcategory/:subId`}
             element={<Attributes/>}
           />
-          {/* <Route
-            path={`${adminDefaultPath}/product/new`}
-            element={<AddOrEditProduct name="Add New" />}
-          /> */}
           <Route
             path={`${adminDefaultPath}/products`}
             element={<AllProducts />}
-          />
-          <Route
-            path={`${adminDefaultPath}/products/:id/update`}
-            element={<AddOrEditProduct edit={true} name="Update" />}
           />
           <Route
             path={`${adminDefaultPath}/products/:id`}

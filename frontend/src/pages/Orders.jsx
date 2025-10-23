@@ -2,7 +2,7 @@ import { OrderCard } from "../components/cards/OrderCard";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getMyOrders } from "../store/thunks/orderThunk";
+import { getMyOrders } from "../store/thunks/non_admin/orderThunk";
 
 export const Orders = () => {
   const dispatch = useDispatch();

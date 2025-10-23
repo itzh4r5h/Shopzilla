@@ -8,20 +8,15 @@ import { useEffect } from "react";
 import {
   deleteSubCategory,
   getAllSubCaetgories,
-} from "../../../store/thunks/categoryThunk";
+} from "../../../store/thunks/admin/categoryThunk";
 import { DeleteModal } from "../../../components/modal/DeleteModal";
 import { CategoryNameModal } from "../../../components/modal/CategoryNameModal";
-import { useToastNotify } from "../../../hooks/useToastNotify";
-import {
-  clearCategoryError,
-  clearCategoryMessage,
-} from "../../../store/slices/categorySlice";
 import { SubCategoryModal } from "../../../components/modal/SubCategoryModal";
 
 export const SubCateogries = () => {
   const { category, id } = useParams();
   const dispatch = useDispatch();
-  const { error, success, message, subcategories, loading, updated } =
+  const { subcategories, loading, updated } =
     useSelector((state) => state.category);
 
   useEffect(() => {
@@ -34,14 +29,6 @@ export const SubCateogries = () => {
     }
   }, [updated]);
 
-  useToastNotify(
-    error,
-    success,
-    message,
-    clearCategoryError,
-    clearCategoryMessage,
-    dispatch
-  );
 
   return (
     <div className="grid gap-y-1 grid-cols-1 grid-rows-[1fr_10fr_1fr] h-full relative">

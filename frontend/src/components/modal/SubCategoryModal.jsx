@@ -9,7 +9,7 @@ import {
     subcategoriesJoiSchema,
 } from "../../validators/categoryValidator";
 import { deepLowercase } from "../../utils/helpers";
-import { addSubCategories } from "../../store/thunks/categoryThunk";
+import { addSubCategories } from "../../store/thunks/admin/categoryThunk";
 import { SubCategory } from "../common/SubCategory";
 
 

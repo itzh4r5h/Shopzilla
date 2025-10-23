@@ -2,7 +2,6 @@ import Pagination from "@mui/material/Pagination";
 import { styled } from "@mui/material/styles";
 import PropTypes from "prop-types";
 import { useDispatch } from "react-redux";
-import { setPage } from "../../store/slices/productSlice";
 
 const StyledPagination = styled(Pagination)(({ theme }) => ({
   "& .MuiPaginationItem-root": {
@@ -16,7 +15,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
   },
 }));
 
-export const PurplePagination = ({ count, page, ...props }) => {
+export const PurplePagination = ({ count, page,setPage, ...props }) => {
     const dispatch = useDispatch();
     const handleChange = (event, value) =>{
          dispatch(setPage(value))

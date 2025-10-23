@@ -1,9 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getAllProducts, getFilteredProducts, getProductDetails } from "../thunks/productThunks";
-import { handleAsyncThunk } from "../utils/handleAsyncThunk";
+import {
+  getAllProducts,
+  getFilteredProducts,
+  getProductDetails,
+} from "../../thunks/non_admin/productThunk";
+import { handleAsyncThunk } from "../../utils/handleAsyncThunk";
 
 const productSlice = createSlice({
-  name: "products",
+  name: "product",
   initialState: {
     keyword: "",
     page: 1,
@@ -11,11 +15,11 @@ const productSlice = createSlice({
     maxPrice: undefined,
     variant: undefined,
     error: null,
-    loading: true,
+    loading: false,
     variantsCount: undefined,
     variants: undefined,
     filters: undefined,
-    attributes:undefined,
+    attributes: undefined,
   },
   reducers: {
     saveKeyword: (state, action) => {
@@ -24,12 +28,9 @@ const productSlice = createSlice({
     setPage: (state, action) => {
       state.page = action.payload;
     },
-    clearProductError: (state) => {
-      state.error = null;
-    },
     clearProductDetails: (state) => {
-      state.variant= undefined
-    }
+      state.variant = undefined;
+    },
   },
   extraReducers: (builder) => {
     handleAsyncThunk(builder, getAllProducts, {
@@ -37,29 +38,28 @@ const productSlice = createSlice({
         state.loading = true;
       },
       fulfilled: (state, action) => {
-        state.loading = false
+        state.loading = false;
         state.variants = action.payload.variants;
         state.variantsCount = action.payload.total;
         state.filters = action.payload.filters;
         state.attributes = action.payload.attributes;
       },
       rejected: (state, action) => {
-        state.loading = false
-        state.error = action.payload;
+        state.loading = false;
       },
     });
+
     handleAsyncThunk(builder, getFilteredProducts, {
       pending: (state) => {
         state.loading = true;
       },
       fulfilled: (state, action) => {
-        state.loading = false
+        state.loading = false;
         state.variants = action.payload.variants;
         state.variantsCount = action.payload.total;
       },
       rejected: (state, action) => {
-        state.loading = false
-        state.error = action.payload;
+        state.loading = false;
       },
     });
 
@@ -73,13 +73,11 @@ const productSlice = createSlice({
       },
       rejected: (state, action) => {
         state.loading = false;
-        state.error = action.payload;
       },
     });
-    
-   
   },
 });
 
-export const { saveKeyword, clearProductError,clearProductDetails,setPage } = productSlice.actions;
+export const { saveKeyword, clearProductDetails, setPage } =
+  productSlice.actions;
 export const productReducer = productSlice.reducer;

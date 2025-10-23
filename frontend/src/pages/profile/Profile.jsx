@@ -3,23 +3,21 @@ import { Link, useNavigate, useParams, useLocation } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
-import { clearUserError, clearUserMessage } from "../../store/slices/userSlice";
 
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import {
-  loadUser,
   sendEmailVerificationLink,
-  signOutUser,
   verifyEmail,
-} from "../../store/thunks/userThunks";
+} from "../../store/thunks/non_admin/emailThunk";
+import { signOutUser } from "../../store/thunks/non_admin/authThunk";
+import { loadUser } from "../../store/thunks/non_admin/userThunk";
 import { useSyncedCountdown } from "../../hooks/useSyncedCountdown";
 import { ProfileName } from "./ProfileName";
 import { ProfileEmail } from "./ProfileEmail";
 import { ProfilePassword } from "./ProfilePassword";
 import { ProfileAddress } from "./ProfileAddress";
 import { ProfileImage } from "./ProfileImage";
-import { useToastNotify } from "../../hooks/useToastNotify";
 
 export const Profile = () => {
   const dispatch = useDispatch();
@@ -31,15 +29,19 @@ export const Profile = () => {
   const googleUser = searchParams.get("google_user");
 
   const {
-    error,
-    success,
-    message,
     user,
-    loading,
-    sending,
-    accountDeletionCountdownExpiresAt,
-    resendLinkIn,
+    loading:userLoading,
   } = useSelector((state) => state.user);
+
+  const {
+    sending,
+    resendLinkIn,
+  } = useSelector((state) => state.email);
+
+  const {
+    loading:authLoading,
+    accountDeletionCountdownExpiresAt,
+  } = useSelector((state) => state.auth);
 
   const isAdminUser = user?.role === "admin";
 
@@ -51,7 +53,7 @@ export const Profile = () => {
 
   const sendLink = () => {
     dispatch(loadUser());
-    if (!user.isVerified) {
+    if (!user?.isVerified) {
       dispatch(sendEmailVerificationLink());
     } else {
       navigate("/profile");
@@ -64,10 +66,8 @@ export const Profile = () => {
     }
   }, [googleUser]);
 
-   useToastNotify(error,success,message,clearUserError,clearUserMessage,dispatch)
-
   useEffect(() => {
-    if (!user.isVerified) {
+    if (!user?.isVerified) {
       deletionCountdown.reset(accountDeletionCountdownExpiresAt);
       resendCountdown.reset(resendLinkIn);
     }
@@ -75,17 +75,21 @@ export const Profile = () => {
 
   useEffect(() => {
     if (
-      !user.isVerified &&
+      !user?.isVerified &&
       // means countdown is over ✅
       deletionCountdown.secondsLeft < 1 &&
       new Date(accountDeletionCountdownExpiresAt).getTime() <= Date.now() // makes sure timer was really active and has expired ✅
     ) {
       dispatch(signOutUser());
-      localStorage.clear()
+      localStorage.clear();
       toast.error("Account is deleted");
       navigate("/signup");
     }
-  }, [deletionCountdown.secondsLeft, accountDeletionCountdownExpiresAt, user?.isVerified]);
+  }, [
+    deletionCountdown.secondsLeft,
+    accountDeletionCountdownExpiresAt,
+    user?.isVerified,
+  ]);
 
   const hasDispatched = useRef(false);
   useEffect(() => {
@@ -96,20 +100,22 @@ export const Profile = () => {
   }, [token]);
 
   useEffect(() => {
-    const key1 = localStorage.getItem(`resend_timer_${user?._id}`)
-    const key2 = localStorage.getItem(`deletion_timer_${user?._id}`)
-    if (user.isVerified) {
-      if(key1 || key2){
-        localStorage.removeItem(`resend_timer_${user?._id}`)
-        localStorage.removeItem(`deletion_timer_${user?._id}`)
+    const key1 = localStorage.getItem(`resend_timer_${user?._id}`);
+    const key2 = localStorage.getItem(`deletion_timer_${user?._id}`);
+    if (user?.isVerified) {
+      if (key1 || key2) {
+        localStorage.removeItem(`resend_timer_${user?._id}`);
+        localStorage.removeItem(`deletion_timer_${user?._id}`);
       }
       navigate("/profile");
     }
   }, [user]);
 
+  const isLoading = userLoading || authLoading;
+
   return (
     <>
-      {loading ? (
+      { isLoading ? (
         <div className="flex flex-col justify-center gap-5 relative">
           {/* profie pic begins */}
           <div className="self-center relative">
@@ -154,7 +160,7 @@ export const Profile = () => {
       ) : (
         <div className="flex flex-col justify-center gap-5 relative">
           {/* profie pic begins */}
-          <ProfileImage profilePic={user.profilePic}/>
+          <ProfileImage profilePic={user.profilePic} />
           {/* profie pic ends */}
 
           {/* name begins */}
@@ -193,11 +199,10 @@ export const Profile = () => {
           )}
           {/* email ends */}
 
-
-         {user?.isVerified && <ProfilePassword/>}
+          {user?.isVerified && <ProfilePassword />}
 
           {/* address begins */}
-          {user?.isVerified && <ProfileAddress/>}
+          {user?.isVerified && <ProfileAddress />}
           {/* address ends */}
 
           {isAdminUser && (

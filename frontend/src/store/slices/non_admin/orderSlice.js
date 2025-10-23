@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { handleAsyncThunk } from "../utils/handleAsyncThunk";
+import { handleAsyncThunk } from "../../utils/handleAsyncThunk";
 import {
   createOrderFromBuyNow,
   createOrderFromOfCartProducts,
@@ -7,12 +7,9 @@ import {
   deletePendingOrderAndPaymentOrder,
   getMyOrders,
   getMyOrderDetails,
-} from "../thunks/orderThunk";
+} from "../../thunks/non_admin/orderThunk";
 
 const initialState = {
-   error: null,
-  success: false,
-  message: null,
   loading: false,
   orderId: undefined,
   razorpayOrder: undefined,
@@ -26,13 +23,11 @@ const commonActions = {
     state.loading = true;
   },
   fulfilled: (state, action) => {
-    state.success = action.payload.success;
     state.orderId = action.payload.orderId;
     state.loading = false;
   },
   rejected: (state, action) => {
     state.loading = false;
-    state.error = action.payload;
   },
 };
 
@@ -43,13 +38,6 @@ const orderSlice = createSlice({
     resetOrderState: (state) => {
       state.orderId = undefined;
       state.razorpayOrder = undefined;
-    },
-    clearOrderError: (state) => {
-      state.error = null;
-    },
-    clearOrderMessage: (state) => {
-      state.success = false;
-      state.message = null;
     },
   },
   extraReducers: (builder) => {
@@ -64,13 +52,11 @@ const orderSlice = createSlice({
         state.loading = true;
       },
       fulfilled: (state, action) => {
-        state.success = action.payload.success;
         state.razorpayOrder = action.payload.razorpayOrder;
         state.loading = false;
       },
       rejected: (state, action) => {
         state.loading = false;
-        state.error = action.payload;
       },
     });
 
@@ -84,7 +70,6 @@ const orderSlice = createSlice({
       },
       rejected: (state, action) => {
         state.loading = false;
-        state.error = action.payload;
       },
     });
 
@@ -99,7 +84,6 @@ const orderSlice = createSlice({
       },
       rejected: (state, action) => {
         state.loading = false;
-        state.error = action.payload;
       },
     });
 
@@ -109,18 +93,16 @@ const orderSlice = createSlice({
         state.loading = true;
       },
       fulfilled: (state, action) => {
-        state.success = action.payload.success
         state.orderId = undefined
         state.razorpayOrder = undefined
         state.loading = false;
       },
       rejected: (state, action) => {
         state.loading = false;
-        state.error = action.payload;
       }
     });
   },
 });
 
-export const { clearOrderMessage, clearOrderError ,resetOrderState} = orderSlice.actions;
+export const {resetOrderState} = orderSlice.actions;
 export const orderReducer = orderSlice.reducer;

@@ -2,15 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { MdEditSquare } from "react-icons/md";
 import { FillButton } from "../buttons/FillButton";
 import { OutlineButton } from "../buttons/OutlineButton";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import Joi from "joi";
 import Rating from "@mui/material/Rating";
-import { createOrUpdateReview } from "../../store/thunks/reviewThunk";
-import { clearReviewError, clearReviewMessage} from "../../store/slices/reviewSlice"
+import { createOrUpdateReview } from "../../store/thunks/non_admin/reviewThunk";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
-import { useToastNotify } from "../../hooks/useToastNotify";
 
 export const ReviewModal = ({
   edit = false,
@@ -35,7 +33,6 @@ export const ReviewModal = ({
   }, []);
   
   const dispatch = useDispatch();
-  const { success, message, error } = useSelector((state) => state.review);
   const [open, setOpen] = useState(false);
 
   const {
@@ -66,11 +63,7 @@ export const ReviewModal = ({
     reset();
   };
 
-
   useValidationErrorToast(errors)
-
-  useToastNotify(error,success,message,clearReviewError,clearReviewMessage,dispatch)
-
 
   useEffect(() => {
     if (review) {

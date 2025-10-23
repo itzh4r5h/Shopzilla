@@ -15,11 +15,9 @@ import { useEffect } from "react";
 import {
   getOrdersByStatus,
   updateOrderStatus,
-} from "../../store/thunks/adminThunks";
+} from "../../store/thunks/admin/adminOrderThunk";
 import { formatMongodbDate } from "../../utils/helpers";
 import { ImageCard } from "../../components/cards/ImageCard";
-import { clearAdminError,clearAdminMessage} from "../../store/slices/adminSlice";
-import { useToastNotify } from "../../hooks/useToastNotify";
 
 export const UserOrders = () => {
   const orderStatus = [
@@ -33,8 +31,8 @@ export const UserOrders = () => {
 
   const { status } = useParams();
   const dispatch = useDispatch();
-  const { loading, orders, error, success, message, updated } = useSelector(
-    (state) => state.admin
+  const { loading, orders, updated } = useSelector(
+    (state) => state.adminOrder
   );
 
   useEffect(() => {
@@ -47,7 +45,6 @@ export const UserOrders = () => {
     }
   }, [updated]);
 
- useToastNotify(error,success,message,clearAdminError,clearAdminMessage,dispatch)
 
   return (
     <div className="h-full relative">

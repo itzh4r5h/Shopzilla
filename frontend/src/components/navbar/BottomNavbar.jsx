@@ -17,7 +17,8 @@ export const BottomNavbar = () => {
   const path = useLocation();
 
   const adminDefaultPath = "/admin/dashboard";
-  const { isLoggedIn, user, loading } = useSelector((state) => state.user);
+  const { user, loading:userLoading } = useSelector((state) => state.user);
+  const { isLoggedIn, loading:authLoading } = useSelector((state) => state.auth);
   const isAdminUser = user?.role === "admin";
 
   const userRoutes = [
@@ -66,9 +67,11 @@ export const BottomNavbar = () => {
     },
   ];
 
+  const isLoading = userLoading || authLoading
+
   return (
     <nav className="px-4 py-2 relative">
-      {loading ? (
+      {isLoading ? (
         <ul className="border border-[var(--black)] rounded-lg bg-[var(--white)] w-full p-2 flex justify-around items-center gap-3">
           <Skeleton height={36} width={44} />
           <Skeleton height={36} width={44} />

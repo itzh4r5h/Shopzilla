@@ -7,7 +7,7 @@ import { SelectCountryStateCity } from "../selectors/SelectCountryStateCity";
 import { Country, State, City } from "country-state-city";
 import { joiResolver } from "@hookform/resolvers/joi";
 import { useDispatch } from "react-redux";
-import { addAddress, updateAddress } from "../../store/thunks/userThunks";
+import { addAddress, updateAddress } from "../../store/thunks/non_admin/userThunk";
 import { getIsoCode } from "../../utils/helpers";
 import { MdEditSquare } from "react-icons/md";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
@@ -31,7 +31,6 @@ export const AddressModal = ({
     handleSubmit,
     reset,
     setValue,
-    watch,
     control,
     formState: { errors },
   } = useForm({ resolver: joiResolver(schema) });

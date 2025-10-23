@@ -2,7 +2,6 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import { Controller } from "react-hook-form";
-import { useEffect } from "react";
 
 const ITEM_HEIGHT = 48;
 const MenuProps = {

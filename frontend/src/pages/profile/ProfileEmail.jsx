@@ -2,29 +2,28 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { useEffect, useMemo, useState } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
-import Joi from "joi";
 import { useDispatch, useSelector } from "react-redux";
 import { FaCheck, FaExclamation } from "react-icons/fa";
 import Tooltip from "@mui/material/Tooltip";
 import { useSyncedCountdown } from "../../hooks/useSyncedCountdown";
 import { FillButton } from "../../components/buttons/FillButton";
 import { FaTimesCircle } from "react-icons/fa";
-import {
-  cancelUpdateEmail,
-  sendOtpToEmail,
-  updateEmail,
-} from "../../store/thunks/userThunks";
+import { sendOtpToEmail } from "../../store/thunks/non_admin/emailThunk";
+import { cancelUpdateEmail, updateEmail } from "../../store/thunks/non_admin/userThunk";
 import { MdEditSquare } from "react-icons/md";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 import { emailJoiSchema } from "../../validators/userValidator";
 
 export const ProfileEmail = () => {
-  const { user, resendOtpIn, sending, updated } = useSelector(
+  const { user, updated } = useSelector(
     (state) => state.user
+  );
+  const { resendOtpIn, sending } = useSelector(
+    (state) => state.email
   );
 
   const schema = useMemo(() => {
-    return emailJoiSchema(resendOtpIn)
+    return emailJoiSchema(resendOtpIn);
   }, [resendOtpIn]);
 
   const dispatch = useDispatch();

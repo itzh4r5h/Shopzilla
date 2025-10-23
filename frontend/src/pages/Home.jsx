@@ -1,14 +1,15 @@
 import { ProductCard } from "../components/cards/ProductCard";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
-import { getAllProducts } from "../store/thunks/productThunks";
+import { useEffect } from "react";
+import { getAllProducts } from "../store/thunks/non_admin/productThunk";
 import { PurplePagination } from "../components/common/PurplePagination";
+import { setPage } from "../store/slices/non_admin/productSlice";
 
 export const Home = () => {
   const dispatch = useDispatch();
-  const { error, variants, variantsCount, loading, page } = useSelector(
-    (state) => state.products
+  const { variants, variantsCount, loading, page } = useSelector(
+    (state) => state.product
   );
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export const Home = () => {
 
         {variants?.length > 0 && (
           <div className="flex justify-center items-end col-span-2">
-            <PurplePagination count={Math.ceil(variantsCount / 10)} />
+            <PurplePagination count={Math.ceil(variantsCount / 10)} setPage={setPage}/>
           </div>
         )}
       </div>

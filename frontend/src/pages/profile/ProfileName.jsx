@@ -1,10 +1,9 @@
 import { useForm } from "react-hook-form";
 import { useMemo, useState } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
-import Joi from "joi";
 import { useDispatch, useSelector } from "react-redux";
 import { FaCheckSquare } from "react-icons/fa";
-import { updateName } from "../../store/thunks/userThunks";
+import { updateName } from "../../store/thunks/non_admin/userThunk";
 import { MdEditSquare } from "react-icons/md";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 import { userNameSchema } from "../../validators/userValidator";

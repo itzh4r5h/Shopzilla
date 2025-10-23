@@ -3,7 +3,7 @@ import { ImageCard } from "../../components/cards/ImageCard";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-import { updateImage } from "../../store/thunks/userThunks";
+import { updateImage } from "../../store/thunks/non_admin/userThunk";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { MdEditSquare } from "react-icons/md";

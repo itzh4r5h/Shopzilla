@@ -10,19 +10,47 @@ const { getBasicDetailsOnly } = require("../../utils/helpers");
 
 // ====================== ADMIN --- GET ALL USERS =============================
 exports.getAllUsers = catchAsyncErrors(async (req, res, next) => {
-  const resultPerPage = 10;
-  const userCount = await User.countDocuments();
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const search = req.query.search || "";
 
-  let users = new UserSearch(User, req.query)
-    .search()
-    .pagination(resultPerPage);
+  const pipeline = [
+    {
+      $match: {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ],
+      },
+    },
+    {
+      $facet: {
+        metadata: [{ $count: "total" }],
+        data: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+      },
+    },
+    {
+      $project: {
+        total: { $arrayElemAt: ["$metadata.total", 0] },
+        totalPages: {
+          $ceil: {
+            $divide: [
+              { $ifNull: [{ $arrayElemAt: ["$metadata.total", 0] }, 0] },
+              limit,
+            ],
+          },
+        },
+        users: "$data",
+      },
+    },
+  ];
 
-  users = await users.query;
-
+  const result = await User.aggregate(pipeline);
   res.status(200).json({
     success: true,
-    users,
-    userCount
+    total: result[0]?.total || 0,
+    totalPages: result[0]?.totalPages || 0,
+    users: result[0]?.users || []
   });
 });
 
@@ -46,7 +74,7 @@ exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
 
   // code to remove imagekit images here
   if (user.profilePic.fileId !== process.env.IMAGE_KIT_DEFAULT_FILE_ID) {
-      await imagekit.deleteFile(user.profilePic.fileId);
+    await imagekit.deleteFile(user.profilePic.fileId);
   }
 
   res.status(200).json({

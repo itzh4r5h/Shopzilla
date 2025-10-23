@@ -1,7 +1,5 @@
 import { BsCurrencyRupee } from "react-icons/bs";
 import { FaStar } from "react-icons/fa";
-import { FaPlusSquare } from "react-icons/fa";
-import { FaMinusSquare } from "react-icons/fa";
 import { FaTimesCircle } from "react-icons/fa";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -11,10 +9,9 @@ import { useForm } from "react-hook-form";
 import {
   addProductToCartOrUpdateQuantity,
   removeProductFromCart,
-} from "../../store/thunks/cartThunk";
-import { useDispatch, useSelector } from "react-redux";
+} from "../../store/thunks/non_admin/cartThunk";
+import { useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
-import { getProductDetails } from "../../store/thunks/productThunks";
 
 export const CartCard = ({
   variant,

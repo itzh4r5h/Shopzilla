@@ -1,4 +1,4 @@
-import { FaMinusCircle, FaPlusCircle, FaTimesCircle } from "react-icons/fa";
+import { FaTimesCircle } from "react-icons/fa";
 import { FillButton } from "../buttons/FillButton";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useMemo, useState } from "react";
@@ -10,7 +10,7 @@ import {
 } from "../../validators/categoryValidator";
 import { IconSelector } from "../selectors/IconSelector";
 import { deepLowercase } from "../../utils/helpers";
-import { addCategory } from "../../store/thunks/categoryThunk";
+import { addCategory } from "../../store/thunks/admin/categoryThunk";
 import { SubCategory } from "../common/SubCategory";
 
 
@@ -26,8 +26,6 @@ export const CategoryModal = () => {
     register,
     handleSubmit,
     reset,
-    setValue,
-    watch,
     control,
     formState: { errors },
   } = useForm({

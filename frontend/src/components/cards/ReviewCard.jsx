@@ -3,7 +3,7 @@ import { DeleteModal } from "../modal/DeleteModal";
 import Box from "@mui/material/Box";
 import Rating from "@mui/material/Rating";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteReview } from "../../store/thunks/reviewThunk";
+import { deleteReview } from "../../store/thunks/non_admin/reviewThunk";
 
 export const ReviewCard = ({ review, id }) => {
   const dispatch = useDispatch();

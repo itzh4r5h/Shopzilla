@@ -5,8 +5,7 @@ import { BiSolidDashboard } from "react-icons/bi";
 import { FaCircleArrowLeft } from "react-icons/fa6";
 import { SearchBar } from "../Filters/SearchBar";
 import { useDispatch, useSelector } from "react-redux";
-import { signOutUser } from "../../store/thunks/userThunks";
-import { useEffect } from "react";
+import { signOutUser } from "../../store/thunks/non_admin/authThunk";
 import { stopSocketConnection } from "../../utils/socketEvents";
 
 
@@ -16,9 +15,13 @@ export const TopNavbar = () => {
 
 
   const dispatch = useDispatch();
-  const { isLoggedIn, user } = useSelector(
+  const { user } = useSelector(
     (state) => state.user
   );
+  const { isLoggedIn } = useSelector(
+    (state) => state.auth
+  );
+
   const isAdminUser = user?.role === "admin";
   
   const signout = () => {

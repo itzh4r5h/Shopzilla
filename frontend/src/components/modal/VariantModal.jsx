@@ -1,7 +1,7 @@
 import { FaMinusCircle, FaPlusCircle, FaTimesCircle } from "react-icons/fa";
 import { FillButton } from "../buttons/FillButton";
 import { useFieldArray, useForm } from "react-hook-form";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
 import { useDispatch } from "react-redux";
 import { MdEditSquare, MdOutlineFileUpload } from "react-icons/md";
@@ -16,7 +16,7 @@ import "swiper/css/pagination";
 import { ImageCard } from "../cards/ImageCard";
 import { variantJoiSchema } from "../../validators/productValidators";
 import { cleanAttributes, deepLowercase } from "../../utils/helpers";
-import { addOrUpdateVariant } from "../../store/thunks/adminThunks";
+import { addOrUpdateVariant } from "../../store/thunks/admin/variantThunk";
 
 const SizesSlideComponent = ({ control, imgIndex, register }) => {
   // For attributes inside each subcategory

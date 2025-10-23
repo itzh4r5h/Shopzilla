@@ -1,6 +1,6 @@
 import { toast } from "react-toastify";
 import { socket } from "./socket";
-import { getAllVariants } from "../store/thunks/adminThunks";
+import { getAllVariants } from "../store/thunks/admin/variantThunk";
 
 export const startSocketConnection = (loggedInUserId,dispatch) => {
   if (!socket.connected) {

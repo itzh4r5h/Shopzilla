@@ -1,15 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { handleAsyncThunk } from "../utils/handleAsyncThunk";
+import { handleAsyncThunk } from "../../utils/handleAsyncThunk";
 import {
   addProductToCartOrUpdateQuantity,
   getAllCartProducts,
   removeProductFromCart,
-} from "../thunks/cartThunk";
+} from "../../thunks/non_admin/cartThunk";
 
 const initialState = {
-   error: null,
-  success: false,
-  message: null,
   loading: false,
   cartProducts: undefined,
   cartProductsQuantity: undefined,
@@ -24,13 +21,6 @@ const cartSlice = createSlice({
     quantityUpdated: (state) => {
       state.updated = true;
     },
-    clearCartError: (state) => {
-      state.error = null;
-    },
-    clearCartMessage: (state) => {
-      state.success = false;
-      state.message = null;
-    },
   },
   extraReducers: (builder) => {
     handleAsyncThunk(builder, addProductToCartOrUpdateQuantity, {
@@ -38,14 +28,11 @@ const cartSlice = createSlice({
         state.loading = true;
       },
       fulfilled: (state, action) => {
-        state.success = action.payload.success;
-        state.message = action.payload.message;
         state.updated = action.payload.updated
         state.loading = false;
       },
       rejected: (state, action) => {
         state.loading = false;
-        state.error = action.payload;
       },
     });
 
@@ -62,7 +49,6 @@ const cartSlice = createSlice({
       },
       rejected: (state, action) => {
         state.loading = false;
-        state.error = action.payload;
       },
     });
 
@@ -72,18 +58,15 @@ const cartSlice = createSlice({
         state.updated = false;
       },
       fulfilled: (state, action) => {
-        state.success = action.payload.success;
-        state.message = action.payload.message;
         state.updated = true
         state.loading = false;
       },
       rejected: (state, action) => {
         state.loading = false;
-        state.error = action.payload;
       },
     });
   },
 });
 
-export const { clearCartMessage, clearCartError, quantityUpdated } = cartSlice.actions;
+export const {quantityUpdated } = cartSlice.actions;
 export const cartReducer = cartSlice.reducer;

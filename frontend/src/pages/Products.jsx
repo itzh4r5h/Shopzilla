@@ -2,19 +2,25 @@ import { ProductCard } from "../components/cards/ProductCard";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getAllProducts } from "../store/thunks/productThunks";
+import { getAllProducts } from "../store/thunks/non_admin/productThunk";
 import { Heading } from "../components/Headers/Heading";
 import { ProudctFilter } from "../components/Filters/ProudctFilter";
 import { PurplePagination } from "../components/common/PurplePagination";
+import { setPage } from "../store/slices/non_admin/productSlice";
 
 export const Products = () => {
   const dispatch = useDispatch();
-  const { error, variants, keyword, variantsCount, filters, attributes, page } =
-    useSelector((state) => state.products);
+  const { variants, keyword, variantsCount, filters, attributes, page } =
+    useSelector((state) => state.product);
 
   useEffect(() => {
     dispatch(getAllProducts({ page, keyword }));
   }, [page, keyword]);
+
+
+  useEffect(()=>{
+    dispatch(setPage(1))
+  },[])
 
   return (
     <div className="relative h-full grid grid-rows-[1fr_11fr]">
@@ -57,7 +63,7 @@ export const Products = () => {
         )}
 
        {variants?.length > 0 &&  <div className="flex justify-center items-end col-span-2">
-          <PurplePagination count={Math.ceil(variantsCount / 10)} />
+          <PurplePagination count={Math.ceil(variantsCount / 10)} setPage={setPage}/>
         </div>}
       </div>
     </div>

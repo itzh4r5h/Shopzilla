@@ -3,10 +3,12 @@ import { Heading } from "../../../components/Headers/Heading";
 import { useEffect } from "react";
 import {
   deleteProduct,
-  deleteVariantOfProduct,
-  getAllVariants,
   getProduct,
-} from "../../../store/thunks/adminThunks";
+} from "../../../store/thunks/admin/adminProductThunk";
+import {
+  deleteVariantOfProduct,
+  getAllVariants
+} from "../../../store/thunks/admin/variantThunk";
 import { useNavigate, useParams } from "react-router";
 import {
   flatAttributesValueArray,
@@ -16,12 +18,9 @@ import { ProductModal } from "../../../components/modal/ProductModal";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { VariantModal } from "../../../components/modal/VariantModal";
-import { useToastNotify } from "../../../hooks/useToastNotify";
 import {
-  clearAdminError,
-  clearAdminMessage,
   clearVariants,
-} from "../../../store/slices/adminSlice";
+} from "../../../store/slices/admin/variantSlice";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -202,12 +201,9 @@ export const SingleProductInfo = () => {
     product,
     needSize,
     attributes,
-    error,
-    success,
-    message,
     variants,
     updated,
-  } = useSelector((state) => state.admin);
+  } = useSelector((state) => state.adminProduct);
   const { id } = useParams();
 
   useEffect(() => {
@@ -224,15 +220,6 @@ export const SingleProductInfo = () => {
       dispatch(getAllVariants(id));
     }
   }, [updated]);
-
-  useToastNotify(
-    error,
-    success,
-    message,
-    clearAdminError,
-    clearAdminMessage,
-    dispatch
-  );
 
   const handleDeleteProduct = () => {
     dispatch(deleteProduct(id));

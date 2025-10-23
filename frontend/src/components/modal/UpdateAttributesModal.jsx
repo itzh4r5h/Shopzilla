@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 import { attributesJoiSchema } from "../../validators/categoryValidator";
 import { cleanAttributes, deepLowercase } from "../../utils/helpers";
-import { updateAttributes } from "../../store/thunks/categoryThunk";
+import { updateAttributes } from "../../store/thunks/admin/categoryThunk";
 import { AttributeComponent } from "../common/AttributeComponent";
 
 
@@ -24,7 +24,6 @@ export const UpdateAttributesModal = ({ attributesData, id, subId }) => {
     register,
     handleSubmit,
     reset,
-    setValue,
     control,
     formState: { errors },
   } = useForm({

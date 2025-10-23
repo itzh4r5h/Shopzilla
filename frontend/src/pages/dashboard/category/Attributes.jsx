@@ -2,15 +2,13 @@ import { useParams } from "react-router";
 import { Heading } from "../../../components/Headers/Heading";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getAllAttributes } from "../../../store/thunks/categoryThunk";
-import { clearCategoryError, clearCategoryMessage } from "../../../store/slices/categorySlice";
-import { useToastNotify } from "../../../hooks/useToastNotify";
+import { getAllAttributes } from "../../../store/thunks/admin/categoryThunk";
 import { UpdateAttributesModal } from "../../../components/modal/UpdateAttributesModal";
 
 export const Attributes = () => {
   const { subcategory, category, id, subId } = useParams();
   const dispatch = useDispatch();
-  const { error, success, message, attributes, loading, updated } = useSelector(
+  const { attributes, loading, updated } = useSelector(
     (state) => state.category
   );
 
@@ -23,8 +21,6 @@ export const Attributes = () => {
       dispatch(getAllAttributes({ id, subId }));
     }
   }, [updated]);
-
-  useToastNotify(error,success,message,clearCategoryError,clearCategoryMessage,dispatch)
 
   return (
     <div className="grid gap-y-2 grid-cols-1 grid-rows-[1fr_10fr_1fr] h-full relative">

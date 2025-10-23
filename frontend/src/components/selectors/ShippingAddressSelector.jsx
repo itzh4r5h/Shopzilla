@@ -5,15 +5,13 @@ import { useForm } from "react-hook-form";
 import {
   getAllAddress,
   updateAddressIndex,
-} from "../../store/thunks/userThunks";
+} from "../../store/thunks/non_admin/userThunk";
 import { AddressModal } from "../modal/AddressModal";
-import { clearUserError, clearUserMessage } from "../../store/slices/userSlice";
-import { useToastNotify } from "../../hooks/useToastNotify";
 
 export const ShippingAddressSelector = () => {
   const dispatch = useDispatch();
 
-  const { allShippingAddress, error, success, message, updatedAddress, user } =
+  const { allShippingAddress, updatedAddress, user } =
     useSelector((state) => state.user);
 
   const [shippingAddress, setShippingAddress] = useState([]);
@@ -52,16 +50,6 @@ export const ShippingAddressSelector = () => {
     }
   }, [allShippingAddress, user, setValue]);
 
-  useToastNotify(
-    error,
-    success,
-    message,
-    clearUserError,
-    clearUserMessage,
-    dispatch
-  );
-
-  // console.log(shippingAddress);
 
   return allShippingAddress?.length < 1 ? (
     <div className="mt-3">

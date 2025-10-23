@@ -2,39 +2,30 @@ import { useForm } from "react-hook-form";
 import { FillButton } from "../components/buttons/FillButton";
 import { useLocation, useParams } from "react-router";
 import { joiResolver } from "@hookform/resolvers/joi";
-import Joi from "joi";
 import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
-import {
-  loadUser,
-  resetPassword,
-  sendPasswordResetTokenToEmail,
-} from "../store/thunks/userThunks";
-import { clearUserError, clearUserMessage } from "../store/slices/userSlice";
+import { loadUser, resetPassword } from "../store/thunks/non_admin/userThunk";
+import { sendPasswordResetTokenToEmail } from "../store/thunks/non_admin/emailThunk";
 import { useSyncedCountdown } from "../hooks/useSyncedCountdown";
-import { useToastNotify } from "../hooks/useToastNotify";
 import { useValidationErrorToast } from "../hooks/useValidationErrorToast";
 import { resetPasswordJoiSchema } from "../validators/userValidator";
 
 export const ResetPassword = () => {
   const { token } = useParams();
   const schema = useMemo(() => {
-    return resetPasswordJoiSchema(token)
+    return resetPasswordJoiSchema(token);
   }, [token]);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const path = useLocation()
-  const {
-    error,
-    isLoggedIn,
-    success,
-    message,
-    resendTokenIn,
-    sending,
-  } = useSelector((state) => state.user);
+  const path = useLocation();
+  const { isLoggedIn } =
+    useSelector((state) => state.auth);
+  const { resendTokenIn, sending } =
+    useSelector((state) => state.email);
+
 
   const resendTokenCountdown = useSyncedCountdown(`resend_token_timer`, 0);
 
@@ -61,15 +52,13 @@ export const ResetPassword = () => {
     }
   };
 
-  useValidationErrorToast(errors)
+  useValidationErrorToast(errors);
 
-  useToastNotify(error,success,message,clearUserError,clearUserMessage,dispatch)
-
-  useEffect(()=>{
-    if(resendTokenIn){
-      resendTokenCountdown.reset(resendTokenIn)
+  useEffect(() => {
+    if (resendTokenIn) {
+      resendTokenCountdown.reset(resendTokenIn);
     }
-  },[resendTokenIn])
+  }, [resendTokenIn]);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -80,14 +69,13 @@ export const ResetPassword = () => {
     }
   }, [isLoggedIn]);
 
-
-  useEffect(()=>{
-    if(resendTokenCountdown.secondsLeft < 1){
+  useEffect(() => {
+    if (resendTokenCountdown.secondsLeft < 1) {
       localStorage.removeItem("resend_token_timer");
       localStorage.removeItem("email");
-      reset()
+      reset();
     }
-  },[path.pathname])
+  }, [path.pathname]);
 
   return (
     <div>

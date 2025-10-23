@@ -1,19 +1,14 @@
 import { PriceCard } from "../components/cards/PriceCard";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getAllCartProducts } from "../store/thunks/cartThunk";
-import { clearCartError, clearCartMessage } from "../store/slices/cartSlice";
+import { getAllCartProducts } from "../store/thunks/non_admin/cartThunk";
 import { ShippingAddressSelector } from "../components/selectors/ShippingAddressSelector";
-import { useToastNotify } from "../hooks/useToastNotify";
 import { CartCard } from "../components/cards/CartCard";
 
 export const Cart = () => {
   const dispatch = useDispatch();
 
   const {
-    success,
-    message,
-    error,
     cartProducts,
     cartProductsQuantity,
     totalPrice,
@@ -29,15 +24,6 @@ export const Cart = () => {
       dispatch(getAllCartProducts());
     }
   }, [updated]);
-
-  useToastNotify(
-    error,
-    success,
-    message,
-    clearCartError,
-    clearCartMessage,
-    dispatch
-  );
 
   return (
     <div className="w-full h-full relative">

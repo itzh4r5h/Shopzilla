@@ -5,28 +5,21 @@ import { OutlineButton } from "../components/buttons/OutlineButton";
 import { toast } from "react-toastify";
 import { useEffect, useMemo } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
-import Joi from "joi";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router";
-import {
-  sendEmailVerificationLink,
-  signInUser,
-  signUpUser,
-} from "../store/thunks/userThunks";
-import {clearUserError, clearUserMessage } from "../store/slices/userSlice";
+import { signInUser, signUpUser } from "../store/thunks/non_admin/authThunk";
+import { sendEmailVerificationLink } from "../store/thunks/non_admin/emailThunk";
 import { useValidationErrorToast } from "../hooks/useValidationErrorToast";
-import { useToastNotify } from "../hooks/useToastNotify";
 import { signInSignUpJoiSchema } from "../validators/userValidator";
 
 export const SignInOrSignUp = ({ title }) => {
   const schema = useMemo(() => {
-    return signInSignUpJoiSchema(title)
+    return signInSignUpJoiSchema(title);
   }, [title]);
 
   const dispatch = useDispatch();
-  const { error, isLoggedIn, success, message, user, loading } = useSelector(
-    (state) => state.user
-  );
+  const { user, loading:userLoading } = useSelector((state) => state.user);
+  const { isLoggedIn,loading:authLoading } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const path = useLocation();
 
@@ -49,44 +42,38 @@ export const SignInOrSignUp = ({ title }) => {
     }
   };
 
-
-    const signInSignupWithGoogle = () => {
+  const signInSignupWithGoogle = () => {
     const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL;
     window.location.href = googleAuthUrl;
   };
 
+  useValidationErrorToast(errors);
 
-  useValidationErrorToast(errors)
-
-  useToastNotify(error,success,message,clearUserError,clearUserMessage,dispatch)
-
+  const isLoading = userLoading || authLoading
 
   useEffect(() => {
     switch (title.toLowerCase()) {
       case "sign up":
-        if (!loading && isLoggedIn && user) {
+        if (!isLoading && isLoggedIn && user) {
           toast.success("signed up");
           dispatch(sendEmailVerificationLink());
           navigate("/profile");
         }
         break;
       case "sign in":
-        if (!loading && isLoggedIn && user) {
+        if (!isLoading && isLoggedIn && user) {
           localStorage.clear();
           toast.success("signed in");
           navigate("/");
         }
         break;
     }
-  }, [title, isLoggedIn, loading, user]);
-
-
+  }, [title, isLoggedIn, isLoading, user]);
 
   // reset the form fields if url is changed
   useEffect(() => {
     reset();
   }, [path.pathname]);
-
 
   return (
     <div className="bg-white border border-black w-full p-3 flex flex-col justify-center gap-3">

@@ -2,48 +2,27 @@ import { Link } from "react-router";
 import { TitleWithSearchBar } from "../../../components/Headers/TitleWithSearchBar";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import {
-  deleteProduct,
-  getAllProduct,
-} from "../../../store/thunks/adminThunks";
-import { useToastNotify } from "../../../hooks/useToastNotify";
-import {
-  clearAdminError,
-  clearAdminMessage,
-} from "../../../store/slices/adminSlice";
+import { getAllProduct } from "../../../store/thunks/admin/adminProductThunk";
+import { setPage } from "../../../store/slices/admin/adminProductSlice";
 import { ProductModal } from "../../../components/modal/ProductModal";
 import { BaseProductCard } from "../../../components/cards/BaseProductCard";
+import { PurplePagination } from "../../../components/common/PurplePagination";
 
 export const AllProducts = () => {
   const adminDefaultPath = "/admin/dashboard";
 
   const dispatch = useDispatch();
-  const { loading, error, success, message,updated, products } = useSelector(
-    (state) => state.admin
-  );
+  const { loading, updated, products } = useSelector((state) => state.adminProduct);
 
   useEffect(() => {
     dispatch(getAllProduct());
   }, []);
 
   useEffect(() => {
-   if(updated){
-     dispatch(getAllProduct());
-   }
+    if (updated) {
+      dispatch(getAllProduct());
+    }
   }, [updated]);
-
-  useToastNotify(
-    error,
-    success,
-    message,
-    clearAdminError,
-    clearAdminMessage,
-    dispatch
-  );
-
-  const handleDeleteProduct = (id) => {
-    dispatch(deleteProduct(id));
-  };
 
   return (
     <div className="h-full relative grid grid-rows-[1fr_10fr_1fr] gap-y-3">
@@ -76,6 +55,12 @@ export const AllProducts = () => {
                 </Link>
               );
             })}
+
+          {products?.length > 0 && (
+            <div className="flex justify-center items-end col-span-2">
+              <PurplePagination count={5} setPage={setPage} />
+            </div>
+          )}
         </div>
 
         {!loading && products?.length === 0 && (

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate  } from 'react-router'
 import {useDispatch} from 'react-redux'
-import {saveKeyword as serachProduct} from '../../store/slices/productSlice'
-import {saveKeyword as searchUser} from '../../store/slices/adminSlice'
+import {saveKeyword as serachProduct} from '../../store/slices/non_admin/productSlice'
+import {saveSearch as searchUser} from '../../store/slices/admin/adminUserSlice'
 
 export const SearchBar = ({placeholderValue,path}) => {
      const [search, setSearch] = useState("");
@@ -11,15 +11,15 @@ export const SearchBar = ({placeholderValue,path}) => {
      const url = useLocation()
 
      const sendToProductsPage = (e)=>{
-        if(e.key === 'Enter' && search.trim().length > 0){
-
-          if(path.includes('products')){
+        if(e.key === 'Enter'){
+          if(search.trim().length > 0 && path.includes('products')){
             dispatch(serachProduct(search.trim()))
+            navigate(path)
           }
           else if(path.includes('users')){
             dispatch(searchUser(search.trim()))
+            navigate(path)
           }
-          navigate(path)
         }
      }
 

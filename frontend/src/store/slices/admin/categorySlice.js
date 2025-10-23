@@ -1,17 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { handleAsyncThunk } from "../utils/handleAsyncThunk";
-import { addCategory, addSubCategories, deleteCategory, deleteSubCategory, getAllAttributes, getAllCaetgories, getAllSubCaetgories, updateAttributes, updateCategoryName, updateSubCategoryName } from "../thunks/categoryThunk";
+import { handleAsyncThunk } from "../../utils/handleAsyncThunk";
+import { addCategory, addSubCategories, deleteCategory, deleteSubCategory, getAllAttributes, getAllCaetgories, getAllSubCaetgories, updateAttributes, updateCategoryName, updateSubCategoryName } from "../../thunks/admin/categoryThunk";
 
 
 const initialState = {
-  error: null,
-  success: false,
-  message: null,
   categories: undefined,
   subcategories: undefined,
   attributes: undefined,
-  updated: undefined
-
+  updated: undefined,
+  loading: false,
 };
 
 const commonActions = {
@@ -20,14 +17,11 @@ const commonActions = {
     state.updated = undefined
   },
   fulfilled: (state, action) => {
-    state.success = action.payload.success;
-    state.message = action.payload.message;
     state.updated = true
     state.loading = false;
   },
   rejected: (state, action) => {
     state.loading = false;
-    state.error = action.payload;
   },
 };
 
@@ -35,13 +29,6 @@ const categorySlice = createSlice({
   name: "category",
   initialState,
   reducers: {
-    clearCategoryError: (state) => {
-      state.error = null;
-    },
-    clearCategoryMessage: (state) => {
-      state.success = false;
-      state.message = null;
-    },
     clearSubCategories: (state) => {
      state.subcategories = undefined
     },
@@ -58,7 +45,6 @@ const categorySlice = createSlice({
       },
       rejected: (state, action) => {
         state.loading = false;
-        state.error = action.payload;
       },
     });
 
@@ -73,7 +59,6 @@ const categorySlice = createSlice({
       },
       rejected: (state, action) => {
         state.loading = false;
-        state.error = action.payload;
       },
     });
 
@@ -88,7 +73,6 @@ const categorySlice = createSlice({
       },
       rejected: (state, action) => {
         state.loading = false;
-        state.error = action.payload;
       },
     });
 

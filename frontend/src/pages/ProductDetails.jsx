@@ -18,7 +18,7 @@ import "swiper/css/pagination";
 import { Heading } from "../components/Headers/Heading";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getProductDetails } from "../store/thunks/productThunks";
+import { getProductDetails } from "../store/thunks/non_admin/productThunk";
 import { useNavigate, useParams } from "react-router";
 
 import Skeleton from "react-loading-skeleton";
@@ -28,16 +28,13 @@ import { ImageCard } from "../components/cards/ImageCard";
 import { toast } from "react-toastify";
 import {
   clearProductDetails,
-  clearProductError,
-} from "../store/slices/productSlice";
+} from "../store/slices/non_admin/productSlice";
 import { ReviewModal } from "../components/modal/ReviewModal";
 import { ReviewCard } from "../components/cards/ReviewCard";
-import { addProductToCartOrUpdateQuantity } from "../store/thunks/cartThunk";
+import { addProductToCartOrUpdateQuantity } from "../store/thunks/non_admin/cartThunk";
 import { ShippingAddressSelector } from "../components/selectors/ShippingAddressSelector";
 import { Checkout } from "./Checkout";
-import { getAllReviewsAndRatings } from "../store/thunks/reviewThunk";
-import { useToastNotify } from "../hooks/useToastNotify";
-import { clearCartError, clearCartMessage } from "../store/slices/cartSlice";
+import { getAllReviewsAndRatings } from "../store/thunks/non_admin/reviewThunk";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 10,
@@ -62,11 +59,11 @@ export const ProductDetails = ({ path }) => {
   const navigate = useNavigate();
   const { productId, variantId, selectedProduct } = useParams();
   const {
-    error: productError,
     loading: productLoading,
     variant,
-  } = useSelector((state) => state.products);
-  const { isLoggedIn, user } = useSelector((state) => state.user);
+  } = useSelector((state) => state.product);
+  const { user } = useSelector((state) => state.user);
+  const { isLoggedIn } = useSelector((state) => state.auth);
   const {
     reviewed,
     reviews,
@@ -75,7 +72,6 @@ export const ProductDetails = ({ path }) => {
     totalRatings,
     loading: reviewLoading,
   } = useSelector((state) => state.review);
-  const { success, message, error } = useSelector((state) => state.cart);
 
   useEffect(() => {
     dispatch(getProductDetails(variantId));
@@ -94,23 +90,6 @@ export const ProductDetails = ({ path }) => {
       dispatch(getProductDetails(variantId));
     }
   }, [reviewed]);
-
-  useEffect(() => {
-    // this shows the error if error exists
-    if (productError) {
-      toast.error(productError);
-      dispatch(clearProductError());
-    }
-  }, [productError]);
-
-  useToastNotify(
-    error,
-    success,
-    message,
-    clearCartError,
-    clearCartMessage,
-    dispatch
-  );
 
   const ratingLabels = {
     0: "Not Rated Yet",

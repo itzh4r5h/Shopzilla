@@ -4,19 +4,20 @@ import {
   createOrderFromOfCartProducts,
   createPaymentOrder,
   deletePendingOrderAndPaymentOrder,
-} from "../store/thunks/orderThunk";
+} from "../store/thunks/non_admin/orderThunk";
 import { useEffect } from "react";
 import { FillButton } from "../components/buttons/FillButton";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import { axiosInstance } from "../utils/AxiosInstance";
-import { clearOrderError, resetOrderState } from "../store/slices/orderSlice";
+import { resetOrderState } from "../store/slices/non_admin/orderSlice";
 
 export const Checkout = ({ cart = false, details }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { orderId, razorpayOrder, error } = useSelector((state) => state.order);
-  const { isLoggedIn, user } = useSelector((state) => state.user);
+  const { orderId, razorpayOrder } = useSelector((state) => state.order);
+  const { user } = useSelector((state) => state.user);
+  const { isLoggedIn } = useSelector((state) => state.auth);
 
   const checkout = () => {
     if (!isLoggedIn) {
@@ -51,13 +52,6 @@ export const Checkout = ({ cart = false, details }) => {
       toast.error("Something Went Wrong, Try Again");
     }
   };
-
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(clearOrderError());
-    }
-  }, [error]);
 
   useEffect(() => {
     const key = localStorage.getItem("razorpayOrderId");

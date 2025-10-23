@@ -8,10 +8,9 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Radio from "@mui/material/Radio";
 import { useEffect, useState } from "react";
 import { formatINR } from "../../utils/helpers";
-import { Controller, useForm } from "react-hook-form";
 import Rating from "@mui/material/Rating";
-import { useDispatch, useSelector } from "react-redux";
-import { getAllProducts, getFilteredProducts } from "../../store/thunks/productThunks";
+import { useDispatch } from "react-redux";
+import { getFilteredProducts } from "../../store/thunks/non_admin/productThunk";
 
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -21,7 +20,6 @@ import { FillButton } from "../buttons/FillButton";
 import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
 const CustomSlider = styled(Slider)({

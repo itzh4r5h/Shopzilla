@@ -15,16 +15,14 @@ import { PriceCard } from "../components/cards/PriceCard";
 import { Heading } from "../components/Headers/Heading";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getMyOrderDetails } from "../store/thunks/orderThunk";
+import { getMyOrderDetails } from "../store/thunks/non_admin/orderThunk";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { formatMongodbDate } from "../utils/helpers";
 import { ReviewModal } from "../components/modal/ReviewModal";
 import { toast } from "react-toastify";
-import { clearOrderError } from "../store/slices/orderSlice";
 import { ReviewCard } from "../components/cards/ReviewCard";
-import { getProductDetails } from "../store/thunks/productThunks";
-import { getOrderedProductReviews } from "../store/thunks/reviewThunk";
+import { getOrderedProductReviews } from "../store/thunks/non_admin/reviewThunk";
 
 const QontoConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.active}`]: {
@@ -114,18 +112,11 @@ export const OrderDetails = () => {
   ];
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { order, loading, orderQuantity, error } = useSelector(
+  const { order, loading, orderQuantity } = useSelector(
     (state) => state.order
   );
   const { user } = useSelector((state) => state.user);
   const { reviewed,orderedProductReviews } = useSelector((state) => state.review);
-
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(clearOrderError());
-    }
-  }, [error]);
 
   useEffect(() => {
     dispatch(getOrderedProductReviews(id))

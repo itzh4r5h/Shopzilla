@@ -19,7 +19,7 @@ import {
   getTotalProducts,
   getTotalRevenue,
   getTotalUsers,
-} from "../../store/thunks/adminThunks";
+} from "../../store/thunks/admin/dashboardThunk";
 
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -113,7 +113,7 @@ export const Dashboard = () => {
     totalUsers,
     totalOrders,
     stockStatus
-  } = useSelector((state) => state.admin);
+  } = useSelector((state) => state.dashboard);
 
   const months = [
     "Jan",
@@ -162,7 +162,7 @@ export const Dashboard = () => {
 
   const currentYear = new Date().getFullYear();
 
-  const { register, setValue, getValues,control, handleSubmit, reset } = useForm({defaultValues:{
+  const { getValues,control } = useForm({defaultValues:{
     total_revenue_year: currentYear,
     monthly_revenue_year: currentYear,
   }});

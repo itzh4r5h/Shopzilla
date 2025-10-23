@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createPassword, updatePassword } from "../../store/thunks/userThunks";
+import { createPassword, updatePassword } from "../../store/thunks/non_admin/userThunk";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 import { userPasswordSchema } from "../../validators/userValidator";
 

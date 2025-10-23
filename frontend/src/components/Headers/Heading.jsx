@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router";
 import { FaCircleArrowLeft } from "react-icons/fa6";
-import { ProudctFilter } from "../Filters/ProudctFilter";
 
 export const Heading = ({ path, name, icon=false,iconComponent }) => {
   const navigate = useNavigate();

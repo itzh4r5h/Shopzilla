@@ -8,18 +8,13 @@ import { useEffect } from "react";
 import {
   deleteCategory,
   getAllCaetgories,
-} from "../../../store/thunks/categoryThunk";
-import { useToastNotify } from "../../../hooks/useToastNotify";
-import {
-  clearCategoryError,
-  clearCategoryMessage,
-} from "../../../store/slices/categorySlice";
+} from "../../../store/thunks/admin/categoryThunk";
 import { CategoryNameModal } from "../../../components/modal/CategoryNameModal";
 import { DeleteModal } from "../../../components/modal/DeleteModal";
 
 export const Categories = () => {
   const dispatch = useDispatch();
-  const { error, success, message, categories, loading, updated } = useSelector(
+  const { categories, loading, updated } = useSelector(
     (state) => state.category
   );
 
@@ -33,14 +28,6 @@ export const Categories = () => {
     }
   }, [updated]);
 
-  useToastNotify(
-    error,
-    success,
-    message,
-    clearCategoryError,
-    clearCategoryMessage,
-    dispatch
-  );
 
   return (
     <div className="grid gap-y-1 grid-cols-1 grid-rows-[1fr_10fr_1fr] h-full relative">

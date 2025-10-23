@@ -1,14 +1,11 @@
 import { FaMinusCircle, FaPlusCircle } from "react-icons/fa";
-import { NormalSelect } from "../selectors/NormalSelect";
 
 export const AttributeComponent = ({
   attributesLength,
   attributeName,
-  attributeType,
   addAttribute,
   removeAttribute,
   register,
-  control,
   attrIndex,
 }) => {
   return (

@@ -2,48 +2,38 @@ import { TitleWithSearchBar } from "../../components/Headers/TitleWithSearchBar"
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteUser, getAllUsers } from "../../store/thunks/adminThunks";
+import { deleteUser, getAllUsers } from "../../store/thunks/admin/adminUserThunk";
 import { useEffect } from "react";
 import { ImageCard } from "../../components/cards/ImageCard";
 import { formatMongodbDate } from "../../utils/helpers";
 import {
-  clearAdminError,
-  clearAdminMessage,
-  saveKeyword,
-} from "../../store/slices/adminSlice";
+  saveSearch,
+  setPage,
+} from "../../store/slices/admin/adminUserSlice";
 import { DeleteModal } from "../../components/modal/DeleteModal";
-import { useToastNotify } from "../../hooks/useToastNotify";
+import { PurplePagination } from "../../components/common/PurplePagination";
 
 export const Users = () => {
   const dispatch = useDispatch();
-  const { loading, users, keyword, error, success, message, updated } =
-    useSelector((state) => state.admin);
+  const { loading, users, search, updated, page, totalPages } =
+    useSelector((state) => state.adminUser);
 
   useEffect(() => {
     if (!users) {
-      dispatch(saveKeyword(""));
-      dispatch(getAllUsers());
+      dispatch(saveSearch(''));
+      dispatch(getAllUsers({page:1,search:''}));
     }
   }, [users]);
 
   useEffect(() => {
     if (updated) {
-      dispatch(getAllUsers());
+      dispatch(getAllUsers({page:1,search:''}));
     }
   }, [updated]);
 
   useEffect(() => {
-    dispatch(getAllUsers(keyword));
-  }, [keyword]);
-
-  useToastNotify(
-    error,
-    success,
-    message,
-    clearAdminError,
-    clearAdminMessage,
-    dispatch
-  );
+    dispatch(getAllUsers({page,search}));
+  }, [page,search]);
 
   return (
     <div className="h-full relative grid grid-cols-1 grid-rows-[1fr_11fr] gap-y-3">
@@ -125,6 +115,12 @@ export const Users = () => {
               </article>
             );
           })}
+
+                {users?.length > 0 && (
+          <div className="flex justify-center items-end col-span-2">
+            <PurplePagination count={totalPages} setPage={setPage}/>
+          </div>
+        )}
       </div>
 
       {!loading && users?.length === 0 && (
