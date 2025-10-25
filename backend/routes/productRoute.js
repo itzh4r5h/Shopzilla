@@ -5,6 +5,7 @@ const {
   getProduct,
   updateProduct,
   createProduct,
+  getAllBrands,
 } = require("../controllers/product/productController");
 const {
   createOrUpdateProductReview,
@@ -78,6 +79,7 @@ router
     updateSubCategoryAttriubtes
   );
 
+
 // =================================== Admin User Product Variant Related Routes =======================================
 router
   .route("/admin/products/:productId/variants")
@@ -122,6 +124,8 @@ router
   .patch(isUserAuthenticated, authorizedRoles("admin"), updateProduct)
   .delete(isUserAuthenticated, authorizedRoles("admin"), deleteProduct)
   .get(isUserAuthenticated, authorizedRoles("admin"), getProduct);
+
+router.route('/admin/products/brands').get(isUserAuthenticated,authorizedRoles('admin'),getAllBrands)
 
 // =================================== Product Variant Related Routes =======================================
 router.route("/products/variants").get(getAllVariants);
