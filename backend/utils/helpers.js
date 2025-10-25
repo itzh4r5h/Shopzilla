@@ -14,7 +14,7 @@ exports.createHashWithCrypto = (token) => {
 
 
 exports.getBasicDetailsOnly = (user)=>{
-  const { password,otp,otpExpire,resetPasswordToken,resetPasswordTokenExpire,emailVerificationToken,emailVerificationTokenExpire, ...userData } = user._doc
+  const { password,otp,otpExpire,resendTokenIn,resetPasswordToken,resetPasswordTokenExpire,emailVerificationToken,emailVerificationTokenExpire, ...userData } = user._doc
   return userData
 }
 
