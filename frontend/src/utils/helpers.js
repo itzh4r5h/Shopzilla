@@ -59,21 +59,6 @@ export const deepLowercase = (obj) => {
   return obj; // leave other types (number, boolean, null) as is
 };
 
-// images = product.images from backend
-export const getImagesByColor = (images, color = "default") => {
-  if (!images || !Array.isArray(images)) return [];
-
-  // If color exists (Red, Blue, etc.)
-  if (color !== "default") {
-    const entry = images.find((img) => img.color === color);
-    return entry ? entry.files : [];
-  }
-
-  // If "default" mode (no color attribute)
-  const defaultEntry = images.find((img) => img.color === "default");
-  return defaultEntry ? defaultEntry.files : [];
-};
-
 export const flatAttributesValueArray = (attrValueArray) => {
   return attrValueArray.map((attr) => {
     return attr.value;
