@@ -49,6 +49,7 @@ export const useSyncedCountdown = (key) => {
 
   return {
     secondsLeft,
+    setSecondsLeft,
     formatted,
     reset,
   };
