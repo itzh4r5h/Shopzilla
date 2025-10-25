@@ -24,6 +24,16 @@ exports.getAllUsers = catchAsyncErrors(async (req, res, next) => {
       },
     },
     {
+    // Include only desired fields before pagination
+    $project: {
+      profilePic: 1,
+      name: 1,
+      email: 1,
+      role: 1,
+      createdAt: 1,
+    },
+  },
+    {
       $facet: {
         metadata: [{ $count: "total" }],
         data: [{ $skip: (page - 1) * limit }, { $limit: limit }],
