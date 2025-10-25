@@ -4,7 +4,7 @@ import { rejectWithError, successAlert } from "../../utils/sendAlerts";
 import {
   setIsLoggedIn,
 } from "../../slices/non_admin/authSlice";
-import { clearResendLinkIn, setResendLinkIn } from "../../slices/non_admin/emailSlice";
+import { clearResendLinkIn, resetResendOtpIn, setResendLinkIn } from "../../slices/non_admin/emailSlice";
 
 export const loadUser = createAsyncThunk(
   "user/load_user",
@@ -93,6 +93,7 @@ export const cancelUpdateEmail = createAsyncThunk(
   async (_, { dispatch, rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.get("/users/email");
+      dispatch(resetResendOtpIn())
       successAlert(dispatch, data.message);
       return data;
     } catch (error) {
