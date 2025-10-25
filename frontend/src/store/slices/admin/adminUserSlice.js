@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { handleAsyncThunk } from "../../utils/handleAsyncThunk";
+import { handleAsyncThunk } from "../../../utils/handleAsyncThunk";
 import {
   deleteUser,
   getAllUsers,

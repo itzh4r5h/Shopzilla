@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../../utils/AxiosInstance";
-import { rejectWithError } from "../../utils/sendAlerts";
+import { rejectWithError } from "../../../utils/sendAlerts";
 
 export const getAllYears = createAsyncThunk(
   "dashboard/get_years",

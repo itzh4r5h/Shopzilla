@@ -61,7 +61,7 @@ export const BottomNavbar = () => {
       icon: <FaListUl />,
     },
     {
-      path: `${adminDefaultPath}/products`,
+      path: `${adminDefaultPath}/products/all`,
       name: "products",
       icon: <BsFillBoxSeamFill />,
     },
@@ -183,6 +183,9 @@ export const BottomNavbar = () => {
                               (index === 2 &&
                                 path.pathname.includes(
                                   `${adminDefaultPath}/orders/`
+                                )) || (index === 4 &&
+                                path.pathname.includes(
+                                  `${adminDefaultPath}/products/`
                                 ))
                                 ? "text-[var(--purpleDark)]"
                                 : "text-[var(--light)]"
@@ -196,6 +199,9 @@ export const BottomNavbar = () => {
                               (index === 2 &&
                                 path.pathname.includes(
                                   `${adminDefaultPath}/orders/`
+                                )) || (index === 4 &&
+                                path.pathname.includes(
+                                  `${adminDefaultPath}/products/`
                                 ))
                                 ? "text-[var(--purpleDark)] font-bold"
                                 : "text-[var(--light)]"

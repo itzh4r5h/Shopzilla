@@ -234,7 +234,7 @@ export const SingleProductInfo = () => {
   return (
     <div>
       <Heading
-        path={"/admin/dashboard/products"}
+        path={"/admin/dashboard/products/all"}
         name={"product details"}
         icon={true}
         iconComponent={<DeleteModal deleteFunction={handleDeleteProduct} />}

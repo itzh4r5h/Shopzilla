@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../../utils/AxiosInstance";
-import { rejectWithError, successAlert } from "../../utils/sendAlerts";
+import { rejectWithError, successAlert } from "../../../utils/sendAlerts";
 
 export const getOrdersByStatus = createAsyncThunk(
   "admin_order/get_orders_by_status",

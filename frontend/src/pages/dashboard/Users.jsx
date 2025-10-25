@@ -1,4 +1,3 @@
-import { TitleWithSearchBar } from "../../components/Headers/TitleWithSearchBar";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,6 +11,7 @@ import {
 } from "../../store/slices/admin/adminUserSlice";
 import { DeleteModal } from "../../components/modal/DeleteModal";
 import { PurplePagination } from "../../components/common/PurplePagination";
+import { SearchBar } from "../../components/Filters/SearchBar";
 
 export const Users = () => {
   const dispatch = useDispatch();
@@ -37,11 +37,10 @@ export const Users = () => {
 
   return (
     <div className="h-full relative grid grid-cols-1 grid-rows-[1fr_11fr] gap-y-3">
-      <TitleWithSearchBar
-        title={"Users"}
-        placeholderValue={"search by name or email..."}
-        path="/admin/dashboard/users"
-      />
+      <div>
+         <h1 className="text-2xl text-center font-semibold -mt-1 mb-1">Users</h1>
+        <SearchBar placeholderValue={"search by name or email..."} path={"/admin/dashboard/users"}/>
+      </div>
 
       <div className="grid grid-cols-2 gap-2.5 overflow-y-auto">
         {loading &&

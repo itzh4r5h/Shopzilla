@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { handleAsyncThunk } from "../../utils/handleAsyncThunk";
+import { handleAsyncThunk } from "../../../utils/handleAsyncThunk";
 import { addCategory, addSubCategories, deleteCategory, deleteSubCategory, getAllAttributes, getAllCaetgories, getAllSubCaetgories, updateAttributes, updateCategoryName, updateSubCategoryName } from "../../thunks/admin/categoryThunk";
 
 

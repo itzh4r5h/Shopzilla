@@ -4,7 +4,7 @@ import {
   getFilteredProducts,
   getProductDetails,
 } from "../../thunks/non_admin/productThunk";
-import { handleAsyncThunk } from "../../utils/handleAsyncThunk";
+import { handleAsyncThunk } from "../../../utils/handleAsyncThunk";
 
 const productSlice = createSlice({
   name: "product",

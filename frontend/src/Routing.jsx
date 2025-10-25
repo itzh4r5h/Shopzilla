@@ -1,23 +1,23 @@
 import { Route, Routes } from "react-router";
-import { Home } from "../pages/Home";
-import { Cart } from "../pages/Cart";
-import { Profile } from "../pages/profile/Profile";
-import { NotFound } from "../pages/NotFound";
-import { ProductDetails } from "../pages/ProductDetails";
-import { Orders } from "../pages/Orders";
-import { OrderDetails } from "../pages/OrderDetails";
-import { Dashboard } from "../pages/dashboard/Dashboard";
-import { Users } from "../pages/dashboard/Users";
-import { UserOrders } from "../pages/dashboard/UserOrders";
-import { AllProducts } from "../pages/dashboard/product/AllProducts";
-import { ResetPassword } from "../pages/ResetPassword";
-import { SignInOrSignUp } from "../pages/SignInOrSignUp";
-import { Products } from "../pages/Products";
+import { Home } from "./pages/Home";
+import { Cart } from "./pages/Cart";
+import { Profile } from "./pages/profile/Profile";
+import { NotFound } from "./pages/NotFound";
+import { ProductDetails } from "./pages/ProductDetails";
+import { Orders } from "./pages/Orders";
+import { OrderDetails } from "./pages/OrderDetails";
+import { Dashboard } from "./pages/dashboard/Dashboard";
+import { Users } from "./pages/dashboard/Users";
+import { UserOrders } from "./pages/dashboard/UserOrders";
+import { ResetPassword } from "./pages/ResetPassword";
+import { SignInOrSignUp } from "./pages/SignInOrSignUp";
+import { Products } from "./pages/Products";
 import { useSelector } from "react-redux";
-import { Categories } from "../pages/dashboard/category/Categories";
-import { SubCateogries } from "../pages/dashboard/category/SubCateogries";
-import { Attributes } from "../pages/dashboard/category/Attributes";
-import { SingleProductInfo } from "../pages/dashboard/product/SingleProductInfo";
+import { Categories } from "./pages/dashboard/category/Categories";
+import { SubCateogries } from "./pages/dashboard/category/SubCateogries";
+import { Attributes } from "./pages/dashboard/category/Attributes";
+import { SingleProductInfo } from "./pages/dashboard/product/SingleProductInfo";
+import { ProductNavigationTab } from "./pages/dashboard/product/ProductNavigationTab";
 
 
 export const Routing = () => {
@@ -71,8 +71,12 @@ export const Routing = () => {
             element={<Attributes/>}
           />
           <Route
-            path={`${adminDefaultPath}/products`}
-            element={<AllProducts />}
+            path={`${adminDefaultPath}/products/all`}
+            element={<ProductNavigationTab />}
+          />
+          <Route
+            path={`${adminDefaultPath}/products/out_of_stock`}
+            element={<ProductNavigationTab />}
           />
           <Route
             path={`${adminDefaultPath}/products/:id`}

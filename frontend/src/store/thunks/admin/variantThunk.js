@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../../utils/AxiosInstance";
-import { rejectWithError } from "../../utils/sendAlerts";
+import { rejectWithError } from "../../../utils/sendAlerts";
 
 export const addOrUpdateVariant = createAsyncThunk(
   "variant/add_update_variant",

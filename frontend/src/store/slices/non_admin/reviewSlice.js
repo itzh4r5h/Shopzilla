@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { handleAsyncThunk } from "../../utils/handleAsyncThunk";
+import { handleAsyncThunk } from "../../../utils/handleAsyncThunk";
 import { createOrUpdateReview, deleteReview, getAllReviewsAndRatings, getOrderedProductReviews, getRatings } from "../../thunks/non_admin/reviewThunk";
 
 const initialState = {

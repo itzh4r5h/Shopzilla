@@ -20,7 +20,6 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 
-
 const StyledFormControlLabel = styled((props) => (
   <FormControlLabel {...props} />
 ))(({ theme }) => ({
@@ -76,33 +75,32 @@ const a11yProps = (index) => {
   };
 };
 
-const CategoriesTabs = ({
-  categories,
-}) => {
+const CategoriesTabs = ({ categories }) => {
   const [value, setValue] = useState(0);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
-  const categoryNames = attributes.map((attr) => attr._id);
-  const subCategoryNames = attributes.map((attr) => attr.values);
+  const categoryNames = categories.map((category) => category.name);
+  const subCategories = categories.map((category) => category.subcategories);
+
 
   const handleAttributeChange = (event, index) => {
     const newValue = event.target.value;
 
-    setSelectedAttributes((prev) =>
-      prev.map((attr, i) => (i === index ? { ...attr, value: newValue } : attr))
-    );
+    // setSelectedAttributes((prev) =>
+    //   prev.map((attr, i) => (i === index ? { ...attr, value: newValue } : attr))
+    // );
   };
 
-  useEffect(() => {
-    if(selectedAttributes.length === 0){
-      setSelectedAttributes(
-      attributeNames.map((attr) => ({ name: attr, value: "" }))
-    );
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (selectedAttributes.length === 0) {
+  //     setSelectedAttributes(
+  //       attributeNames.map((attr) => ({ name: attr, value: "" }))
+  //     );
+  //   }
+  // }, []);
 
   return (
     <Box
@@ -110,7 +108,7 @@ const CategoriesTabs = ({
         flexGrow: 1,
         bgcolor: "background.paper",
         display: "flex",
-        height: 130,
+        height: 245,
       }}
     >
       <Tabs
@@ -134,9 +132,9 @@ const CategoriesTabs = ({
           },
         }}
       >
-        {categoryNames.map((attrName, index) => (
+        {categoryNames.map((name, index) => (
           <Tab
-            label={attrName}
+            label={name}
             {...a11yProps(index)}
             key={index}
             sx={{ alignItems: "start" }}
@@ -144,8 +142,8 @@ const CategoriesTabs = ({
         ))}
       </Tabs>
 
-      {selectedAttributes.length > 0 &&
-        subCategoryNames.map((values, index) => {
+      {
+        subCategories.map((subCats, index) => {
           return (
             <TabPanel
               value={value}
@@ -155,10 +153,10 @@ const CategoriesTabs = ({
             >
               <RadioGroup
                 name="use-radio-group"
-                value={selectedAttributes[index].value}
+                value={""}
                 onChange={(e) => handleAttributeChange(e, index)}
               >
-                {values.map((val) => {
+                {subCats.map((val) => {
                   return (
                     <CategoryFormControlLabel
                       sx={{
@@ -167,8 +165,8 @@ const CategoriesTabs = ({
                           color: "var(--light)",
                         },
                       }}
-                      value={val}
-                      label={val}
+                      value={val.name}
+                      label={val.name}
                       control={
                         <Radio
                           sx={{
@@ -179,7 +177,7 @@ const CategoriesTabs = ({
                           }}
                         />
                       }
-                      key={val}
+                      key={val.name}
                     />
                   );
                 })}
@@ -191,11 +189,39 @@ const CategoriesTabs = ({
   );
 };
 
-export const AdminProductFilter = ({ filters, attributes, keyword }) => {
+export const AdminProductFilter = ({ keyword }) => {
   const [open, setOpen] = useState(false);
   const [brand, setBrand] = useState("");
   const [ratings, setRatings] = useState(0);
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState([]);
+
+  const brands = [
+    "colz",'livi','h & m'
+  ]
+  const categories = [
+    {
+      name: "electronics",
+      subcategories: [
+        {
+          name: "mobile",
+        },
+        {
+          name: "laptop",
+        },
+      ],
+    },
+    {
+      name: "cloths",
+      subcategories: [
+        {
+          name: "jeans",
+        },
+        {
+          name: "shirt",
+        },
+      ],
+    },
+  ]
 
   const toggleDrawer = (open) => (event) => {
     if (
@@ -243,14 +269,14 @@ export const AdminProductFilter = ({ filters, attributes, keyword }) => {
   };
 
   const handleApplyFilters = () => {
-    const payload = buildFilterPayload()
-    dispatch(getFilteredProducts({keyword,...payload}));
-    toggleDrawer(false)
+    const payload = buildFilterPayload();
+    dispatch(getFilteredProducts({ keyword, ...payload }));
+    toggleDrawer(false);
   };
 
   return (
     <div>
-      <Button onClick={toggleDrawer(true)}>
+      <Button onClick={toggleDrawer(true)} sx={{padding:0}}>
         <IoFilterCircle className="active:text-[var(--purpleDark)] transition-colors text-3xl text-black" />
       </Button>
       <Drawer
@@ -266,8 +292,8 @@ export const AdminProductFilter = ({ filters, attributes, keyword }) => {
         }}
       >
         <aside className="w-75 h-full">
-          {filters.length > 0 || Object.keys(filters).length > 0 ? (
-            <div className="grid grid-rows-[0.5fr_4fr_1fr_1.5fr_0.5fr_3fr_0.5fr_5fr_0.5fr] gap-y-1 py-2 px-4 h-full">
+          {categories.length > 0 || Object.keys(categories).length > 0 ? (
+            <div className="grid grid-rows-[.5fr_4fr_1fr_.5fr_5fr_1fr] gap-y-1 py-2 px-4 h-full">
               {/* brand begins */}
               <h3 className="text-2xl">Brand</h3>
               <div className="overflow-y-auto capitalize pl-2">
@@ -276,7 +302,7 @@ export const AdminProductFilter = ({ filters, attributes, keyword }) => {
                   value={brand}
                   onChange={handleBrandChange}
                 >
-                  {filters.brands.map((brandName) => {
+                  {brands.map((brandName) => {
                     return (
                       <CategoryFormControlLabel
                         value={brandName}
@@ -299,7 +325,6 @@ export const AdminProductFilter = ({ filters, attributes, keyword }) => {
               </div>
               {/* brand ends */}
 
-
               {/* ratings begins */}
               <div>
                 <h3 className="text-2xl">Rating</h3>
@@ -317,20 +342,17 @@ export const AdminProductFilter = ({ filters, attributes, keyword }) => {
               {/* category begins */}
               <h3 className="text-2xl">Categories</h3>
               <div className="capitalize">
-                <CategoriesTabs
-                  categories={[]}
-                 
-                />
+                <CategoriesTabs categories={categories} />
               </div>
               {/* category ends */}
 
               {/* buttons begins */}
-              <div className="grid grid-cols-2 gap-x-5">
+              <div className="grid grid-cols-2 gap-x-5 items-end">
                 <span onClick={handleClear}>
                   <OutlineButton name={"clear"} />
                 </span>
                 <span onClick={handleApplyFilters}>
-                <FillButton name={"apply"} />
+                  <FillButton name={"apply"} />
                 </span>
               </div>
               {/* buttons ends */}

@@ -1,4 +1,4 @@
-import { showAlert } from "../slices/alertSlice";
+import { showAlert } from "../store/slices/alertSlice";
 
 
 export const rejectWithError = (error, dispatch, rejectWithValue) => {

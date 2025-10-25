@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../../utils/AxiosInstance";
-import { rejectWithError, successAlert } from "../../utils/sendAlerts";
+import { rejectWithError, successAlert } from "../../../utils/sendAlerts";
 import {
   setIsLoggedIn,
 } from "../../slices/non_admin/authSlice";
