@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
 import { useDispatch, useSelector } from "react-redux";
 import { FaCheck, FaExclamation } from "react-icons/fa";
@@ -9,22 +9,24 @@ import { useSyncedCountdown } from "../../hooks/useSyncedCountdown";
 import { FillButton } from "../../components/buttons/FillButton";
 import { FaTimesCircle } from "react-icons/fa";
 import { sendOtpToEmail } from "../../store/thunks/non_admin/emailThunk";
-import { cancelUpdateEmail, updateEmail } from "../../store/thunks/non_admin/userThunk";
+import {
+  cancelUpdateEmail,
+  updateEmail,
+} from "../../store/thunks/non_admin/userThunk";
 import { MdEditSquare } from "react-icons/md";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 import { emailJoiSchema } from "../../validators/userValidator";
 
 export const ProfileEmail = () => {
-  const { user, updated } = useSelector(
-    (state) => state.user
-  );
-  const { resendOtpIn, sending } = useSelector(
-    (state) => state.email
-  );
+  const { user, updated } = useSelector((state) => state.user);
+  const { resendOtpIn, sending } = useSelector((state) => state.email);
+
+
+  const isOtpResendExists = localStorage.getItem(`otp_resend_timer_${user?._id}`);
 
   const schema = useMemo(() => {
-    return emailJoiSchema(resendOtpIn);
-  }, [resendOtpIn]);
+    return emailJoiSchema(isOtpResendExists);
+  }, [isOtpResendExists]);
 
   const dispatch = useDispatch();
   const [readOnly, setReadOnly] = useState(true);
@@ -33,52 +35,47 @@ export const ProfileEmail = () => {
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: { errors },
   } = useForm({ resolver: joiResolver(schema) });
 
-  const submitForm = (data, e) => {
-    const buttonValue = e.nativeEvent.submitter.textContent;
+  const submitForm = (data) => {
     data.email = data.email.toLowerCase();
+    data.otp = data.otp.toLowerCase();
+    dispatch(updateEmail(data));
+  };
 
-    switch (buttonValue) {
-      case "Send OTP":
-      case "Resend OTP":
-        if (data.email === user.email) {
-          setReadOnly(true);
-          return toast.error("enter new email");
-        } else {
-          localStorage.setItem("email", data.email);
-          dispatch(sendOtpToEmail(data.email));
-        }
-        break;
-      case "Submit":
-        data.otp = data.otp.toLowerCase();
-        dispatch(updateEmail(data));
-        break;
+  const sendOtp = () => {
+    const email = getValues('email')
+    if (email === user.email) {
+      setReadOnly(true);
+      return toast.error("enter new email");
+    } else {
+      localStorage.setItem("email", email);
+      dispatch(sendOtpToEmail(email));
     }
   };
 
-  const resendCountdown = useSyncedCountdown(
-    `otp_resend_timer_${user?._id}`);
+  const resendCountdown = useSyncedCountdown(`otp_resend_timer_${user?._id}`);
 
   useEffect(() => {
-    if(resendOtpIn){
+    if (resendOtpIn) {
       resendCountdown.reset(resendOtpIn);
     }
   }, [resendOtpIn]);
 
-  const key = localStorage.getItem(`otp_resend_timer_${user?._id}`);
   useEffect(() => {
-    if (key) {
+    if (isOtpResendExists) {
       setReadOnly(false);
     }
-  }, [key]);
+  }, [isOtpResendExists]);
 
   useEffect(() => {
     if (updated) {
       localStorage.removeItem(`otp_resend_timer_${user?._id}`);
       localStorage.removeItem("email");
       setReadOnly(true);
+      resendCountdown.setSecondsLeft(0);
     }
   }, [updated]);
 
@@ -93,6 +90,7 @@ export const ProfileEmail = () => {
       setReadOnly(true);
       reset();
       dispatch(cancelUpdateEmail());
+      resendCountdown.setSecondsLeft(0);
     } else {
       reset();
       setReadOnly(true);
@@ -160,10 +158,10 @@ export const ProfileEmail = () => {
       {!readOnly && (
         <div
           className={`grid ${
-            resendOtpIn ? "grid-cols-[3fr_2.5fr]" : "grid-cols-1"
+            isOtpResendExists ? "grid-cols-[3fr_2.5fr]" : "grid-cols-1"
           } items-center w-full gap-x-3`}
         >
-          {resendOtpIn && (
+          {isOtpResendExists && (
             <span className="relative w-full">
               <input
                 id="otp"
@@ -176,11 +174,8 @@ export const ProfileEmail = () => {
             </span>
           )}
           {!readOnly && resendCountdown.secondsLeft === 0 && !sending && (
-            <span className="w-full">
-              <FillButton
-                type="submit"
-                name={resendOtpIn ? "Resend OTP" : "Send OTP"}
-              />
+            <span className="w-full" onClick={sendOtp}>
+              <FillButton type="button" name={isOtpResendExists ? "Resend OTP" : "Send OTP"} />
             </span>
           )}
 
@@ -192,7 +187,7 @@ export const ProfileEmail = () => {
         </div>
       )}
 
-      {!readOnly && resendOtpIn && (
+      {!readOnly && isOtpResendExists && (
         <span className="w-full">
           <FillButton type="submit" name={"Submit"} />
         </span>
