@@ -201,9 +201,12 @@ export const SingleProductInfo = () => {
     product,
     needSize,
     attributes,
-    variants,
-    updated,
+    updated : productUpdated,
   } = useSelector((state) => state.adminProduct);
+  const {
+    variants,
+    updated : variantUpdated,
+  } = useSelector((state) => state.variant);
   const { id } = useParams();
 
   useEffect(() => {
@@ -214,12 +217,14 @@ export const SingleProductInfo = () => {
     }
   }, []);
 
+  const isUpdated = productUpdated || variantUpdated
+
   useEffect(() => {
-    if (updated) {
+    if (isUpdated) {
       dispatch(getProduct(id));
       dispatch(getAllVariants(id));
     }
-  }, [updated]);
+  }, [isUpdated]);
 
   const handleDeleteProduct = () => {
     dispatch(deleteProduct(id));
