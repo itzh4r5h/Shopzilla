@@ -115,7 +115,7 @@ const SizesSlideComponent = ({ sizes }) => {
   );
 };
 
-const ImagesSlideComponent = ({ images, needSize, updated }) => {
+const ImagesSlideComponent = ({ images, needSize }) => {
   return (
     <figure className="relative">
       <Swiper
