@@ -105,7 +105,7 @@ exports.deleteProduct = catchAsyncErrors(async (req, res, next) => {
   await imagekit.deleteFolder(
     `${process.env.PRODUCT_PICS_FOLDER}/${req.params.id}`
   );
-  
+
   if (variant) {
     await Variant.deleteMany({ product: req.params.id });
   }
@@ -125,8 +125,6 @@ exports.getProduct = catchAsyncErrors(async (req, res, next) => {
   if (!product) {
     return next(new ErrorHandler("product not exists", 404));
   }
-
-  
 
   const attributes = product.category.subcategories.find(
     (subcat) =>
@@ -158,5 +156,15 @@ exports.getAllProduct = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     products,
+  });
+});
+
+// ======================= ADMIN GET ALL BRANDS ==============================
+exports.getAllBrands = catchAsyncErrors(async (req, res, next) => {
+  const brands = await Product.find({}, { brand: 1 })
+
+  res.status(200).json({
+    success: true,
+    brands,
   });
 });
