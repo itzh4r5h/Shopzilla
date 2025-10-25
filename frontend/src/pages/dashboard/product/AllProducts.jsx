@@ -2,7 +2,7 @@ import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getAllProduct } from "../../../store/thunks/admin/adminProductThunk";
-import { setPage } from "../../../store/slices/admin/adminProductSlice";
+import { saveKeyword, setPage } from "../../../store/slices/admin/adminProductSlice";
 import { BaseProductCard } from "../../../components/cards/BaseProductCard";
 import { PurplePagination } from "../../../components/common/PurplePagination";
 
@@ -10,23 +10,29 @@ export const AllProducts = () => {
   const adminDefaultPath = "/admin/dashboard";
 
   const dispatch = useDispatch();
-  const { loading, updated, products } = useSelector(
+  const { loading, updated, products,page,keyword,totalPages } = useSelector(
     (state) => state.adminProduct
   );
 
   useEffect(() => {
-    dispatch(getAllProduct());
-  }, []);
+    dispatch(getAllProduct({page,keyword}));
+  }, [page,keyword]);
+
+
+  useEffect(()=>{
+    dispatch(saveKeyword(""))
+    dispatch(setPage(1))
+  },[])
 
   useEffect(() => {
     if (updated) {
-      dispatch(getAllProduct());
+      dispatch(getAllProduct({page,keyword}));
     }
   }, [updated]);
 
   return (
     <div className="h-full overflow-y-auto p-1">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 h-full">
         {loading &&
           [1, 2, 3, 4].map((item, index) => {
             return (
@@ -51,7 +57,7 @@ export const AllProducts = () => {
 
         {products?.length > 0 && (
           <div className="flex justify-center items-end col-span-2">
-            <PurplePagination count={5} setPage={setPage} />
+            <PurplePagination count={totalPages} setPage={setPage} />
           </div>
         )}
       </div>

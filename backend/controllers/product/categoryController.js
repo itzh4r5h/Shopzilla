@@ -306,7 +306,24 @@ exports.getAllAttributesOfSubCategory = catchAsyncErrors(
 
 
 exports.getAllCategoriesAndSubCategories = catchAsyncErrors(async (req, res, next) => {
-  const categories = await Category.find()
+  const categories = await Category.aggregate([
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        subcategories: {
+          $map: {
+            input: "$subcategories",
+            as: "sub",
+            in: {
+              _id: "$$sub._id",
+              name: "$$sub.name",
+            },
+          },
+        },
+      },
+    },
+  ]);
 
   res.status(200).json({
     success: true,

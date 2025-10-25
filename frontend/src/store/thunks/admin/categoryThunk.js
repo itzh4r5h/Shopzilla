@@ -26,6 +26,18 @@ export const getAllSubCaetgories = createAsyncThunk(
   }
 );
 
+export const getCategoriesAndSubCategories = createAsyncThunk(
+  "category/get_categroies_subcategories",
+  async (id, {dispatch,rejectWithValue}) => {
+    try {
+      const { data } = await axiosInstance.get(`/admin/products/categories/all`);
+      return data;
+    } catch (error) {
+      return rejectWithError(error, dispatch, rejectWithValue);
+    }
+  }
+);
+
 export const getAllAttributes = createAsyncThunk(
   "category/get_attributes",
   async (ids, {dispatch,rejectWithValue}) => {

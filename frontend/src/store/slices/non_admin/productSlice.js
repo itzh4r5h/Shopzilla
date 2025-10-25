@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
   getAllProducts,
-  getFilteredProducts,
+  getFilters,
   getProductDetails,
 } from "../../thunks/non_admin/productThunk";
 import { handleAsyncThunk } from "../../../utils/handleAsyncThunk";
@@ -16,7 +16,7 @@ const productSlice = createSlice({
     variant: undefined,
     error: null,
     loading: false,
-    variantsCount: undefined,
+    totalPages: undefined,
     variants: undefined,
     filters: undefined,
     attributes: undefined,
@@ -33,14 +33,12 @@ const productSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    handleAsyncThunk(builder, getAllProducts, {
+    handleAsyncThunk(builder, getFilters, {
       pending: (state) => {
         state.loading = true;
       },
       fulfilled: (state, action) => {
         state.loading = false;
-        state.variants = action.payload.variants;
-        state.variantsCount = action.payload.total;
         state.filters = action.payload.filters;
         state.attributes = action.payload.attributes;
       },
@@ -49,14 +47,14 @@ const productSlice = createSlice({
       },
     });
 
-    handleAsyncThunk(builder, getFilteredProducts, {
+    handleAsyncThunk(builder, getAllProducts, {
       pending: (state) => {
         state.loading = true;
       },
       fulfilled: (state, action) => {
         state.loading = false;
         state.variants = action.payload.variants;
-        state.variantsCount = action.payload.total;
+        state.totalPages = action.payload.totalPages;
       },
       rejected: (state, action) => {
         state.loading = false;

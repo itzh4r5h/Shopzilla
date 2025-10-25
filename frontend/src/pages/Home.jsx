@@ -8,7 +8,7 @@ import { setPage } from "../store/slices/non_admin/productSlice";
 
 export const Home = () => {
   const dispatch = useDispatch();
-  const { variants, variantsCount, loading, page } = useSelector(
+  const { variants, totalPages, loading, page } = useSelector(
     (state) => state.product
   );
 
@@ -39,7 +39,7 @@ export const Home = () => {
 
         {variants?.length > 0 && (
           <div className="flex justify-center items-end col-span-2">
-            <PurplePagination count={Math.ceil(variantsCount / 10)} setPage={setPage}/>
+            <PurplePagination count={totalPages} setPage={setPage}/>
           </div>
         )}
       </div>

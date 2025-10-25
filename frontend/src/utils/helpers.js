@@ -65,18 +65,29 @@ export const flatAttributesValueArray = (attrValueArray) => {
   });
 };
 
-/**
- * Removes unwanted fields from attributes
- * @param {Array} attributes - array of attribute objects
- * @param {Array} excludeKeys - keys to remove (default: ["_id", "required"])
- * @returns {Array} cleaned attributes
- */
-export const cleanAttributes =(attributes, excludeKeys = ["_id", "required"]) => {
-  return attributes.map(attr => {
+export const cleanAttributes = (
+  attributes,
+  excludeKeys = ["_id", "required"]
+) => {
+  return attributes.map((attr) => {
     const cleaned = { ...attr };
-    excludeKeys.forEach(key => {
+    excludeKeys.forEach((key) => {
       delete cleaned[key];
     });
     return cleaned;
   });
-}
+};
+
+export const makeUrl = (link,filterOptions) => {
+  let url = link;
+  const keys = Object.keys(filterOptions);
+  keys.forEach((key, index) => {
+    if (index > 0 && index < keys.length) {
+      url += `&${key}=${filterOptions[key]}`;
+    } else {
+      url += `${key}=${filterOptions[key]}`;
+    }
+  });
+
+  return url;
+};

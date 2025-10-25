@@ -1,10 +1,11 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../../utils/AxiosInstance";
-import { rejectWithError } from "../../../utils/sendAlerts";
+import { rejectWithError, successAlert } from "../../../utils/sendAlerts";
+import { makeUrl } from "../../../utils/helpers";
 
 export const addOrUpdateVariant = createAsyncThunk(
   "variant/add_update_variant",
-  async ({ edit, variant, id, variantId }, {dispatch,rejectWithValue}) => {
+  async ({ edit, variant, id, variantId }, { dispatch, rejectWithValue }) => {
     try {
       const formData = new FormData();
 
@@ -80,21 +81,34 @@ export const addOrUpdateVariant = createAsyncThunk(
 
 export const getAllVariants = createAsyncThunk(
   "variant/get_variants",
-  async (id, {dispatch,rejectWithValue}) => {
+  async (id, { dispatch, rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.get(
         `/admin/products/${id}/variants`
       );
       return data;
     } catch (error) {
-     return rejectWithError(error, dispatch, rejectWithValue);
+      return rejectWithError(error, dispatch, rejectWithValue);
+    }
+  }
+);
+
+export const getOutOfStockVariants = createAsyncThunk(
+  "variant/get_out_of_stock_variants",
+  async (filterOptions, { dispatch, rejectWithValue }) => {
+    try {
+      const url = makeUrl( "/admin/products/variants/out_of_stock?",filterOptions)
+      const { data } = await axiosInstance.get(url);
+      return data;
+    } catch (error) {
+      return rejectWithError(error, dispatch, rejectWithValue);
     }
   }
 );
 
 export const deleteVariantOfProduct = createAsyncThunk(
   "variant/delete_variant",
-  async ({ productId, variantId }, {dispatch,rejectWithValue}) => {
+  async ({ productId, variantId }, { dispatch, rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.delete(
         `/admin/products/${productId}/variants/${variantId}`

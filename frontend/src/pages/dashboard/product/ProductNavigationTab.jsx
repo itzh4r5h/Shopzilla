@@ -11,7 +11,13 @@ export const ProductNavigationTab = () => {
   const activeTab = path.pathname.split("/").slice(-1)[0];
 
   return (
-    <div className={`h-full relative grid ${activeTab==='all'?'grid-rows-[1fr_10fr_1fr]':'grid-rows-[1fr_11fr]'} gap-y-1.5`}>
+    <div
+      className={`h-full relative grid ${
+        activeTab === "all"
+          ? "grid-rows-[1fr_10fr_1fr]"
+          : "grid-rows-[1fr_11fr]"
+      } gap-y-1.5`}
+    >
       <div>
         <div className="grid grid-cols-2 gap-2 mb-2 justify-items-center">
           {tabs.map((name, index) => {
@@ -38,14 +44,15 @@ export const ProductNavigationTab = () => {
           })}
         </div>
         <div className="grid grid-cols-[5fr_1fr] justify-items-center">
-            <SearchBar
-          placeholderValue={
-            activeTab === "all"
-              ? "search product..."
-              : "search out of product..."
-          }
-        />
-        <AdminProductFilter/>
+          <SearchBar
+            placeholderValue={
+              activeTab === "all"
+                ? "search product..."
+                : "search out of product..."
+            }
+            path={activeTab==="all"?'/admin/dashboard/products/all':'/admin/dashboard/products/out_of_stock'}
+          />
+          <AdminProductFilter tab={activeTab} />
         </div>
       </div>
 

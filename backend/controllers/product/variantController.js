@@ -13,6 +13,7 @@ const {
   imagesJoiSchema,
 } = require("../../validators/product/variantValidator");
 const { deletionQueue } = require("../../jobs/queue");
+const mongoose = require("mongoose");
 
 // ======================= ADMIN -- Common Works For Create Variant and Update Variant ==============================
 const formatImages = (files, imgs, edit, needSize) => {
@@ -558,11 +559,115 @@ exports.getVariant = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// ============================= COMMON AGGREGATION PIPELINE STATGES =================================
-const variantStages = (req) => {
-  const page = Number(req.query.page) || 1;
-  const limit = 10;
+// ======================= GET ALL VARIANTS ==============================
+exports.getFilterOptionsBasedOnSearchedProduct = catchAsyncErrors(
+  async (req, res, next) => {
+    const { keyword } = req.query;
 
+    if (!keyword || keyword.toString().trim() === "") {
+      return next(new ErrorHandler("keyword is required"));
+    }
+
+    const pipeline = [
+      // Basic condition (images uploaded)
+      { $match: { imagesUploaded: true } },
+
+      // Join product
+      {
+        $lookup: {
+          from: "products",
+          localField: "product",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
+      { $unwind: "$product" },
+      // Break out images array so we can filter on price/stock
+      { $unwind: "$images" },
+
+      // Keyword search (on product.name)
+      { $match: { "product.name": { $regex: keyword, $options: "i" } } },
+
+      // Facet for data + filters
+      {
+        $facet: {
+          filterOptions: [
+            {
+              $group: {
+                _id: null,
+                brands: { $addToSet: "$product.brand" },
+                subcategories: { $addToSet: "$product.subcategory" },
+                minPrice: { $min: "$images.price" },
+                maxPrice: { $max: "$images.price" },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                brands: 1,
+                subcategories: 1,
+                prices: ["$minPrice", "$maxPrice"],
+              },
+            },
+          ],
+
+          attributesOptions: [
+            { $unwind: "$attributes" },
+            {
+              $group: {
+                _id: "$attributes.name",
+                values: { $addToSet: "$attributes.value" },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          filters: { $arrayElemAt: ["$filterOptions", 0] },
+          attributes: "$attributesOptions",
+        },
+      },
+    ];
+
+    const [result] = await Variant.aggregate(pipeline);
+
+    res.json({
+      success: true,
+      filters: result?.filters || {
+        brands: [],
+        categories: [],
+        subcategories: [],
+        prices: [],
+      },
+      attributes: result?.attributes || [],
+    });
+  }
+);
+
+//====================== COMMON PIPELINE STAGES =============================
+
+const initialStage = () => {
+  return [
+    // Basic condition (images uploaded)
+    { $match: { imagesUploaded: true } },
+
+    // Join product
+    {
+      $lookup: {
+        from: "products",
+        localField: "product",
+        foreignField: "_id",
+        as: "product",
+      },
+    },
+    { $unwind: "$product" },
+    // Break out images array so we can filter on price/stock
+    { $unwind: "$images" },
+  ];
+};
+
+const variantStage = (page, limit) => {
   const stages = [
     {
       $group: {
@@ -603,129 +708,46 @@ const variantStages = (req) => {
   return stages;
 };
 
-// ======================= GET ALL VARIANTS ==============================
-exports.getAllVariants = catchAsyncErrors(async (req, res) => {
-  const { keyword } = req.query;
-
-  // Decide early: is this a "search" request or just list-all?
-  const isSearch = keyword && keyword.trim().length > 0;
-
-  const pipeline = [
-    // Basic condition (images uploaded)
-    { $match: { imagesUploaded: true } },
-
-    // Join product
-    {
-      $lookup: {
-        from: "products",
-        localField: "product",
-        foreignField: "_id",
-        as: "product",
-      },
-    },
-    { $unwind: "$product" },
-    // Break out images array so we can filter on price/stock
-    { $unwind: "$images" },
-
-    // Keyword search (on product.name)
-    ...(isSearch
-      ? [{ $match: { "product.name": { $regex: keyword, $options: "i" } } }]
-      : []),
-
+const lastFacetStage = (page,limit) => {
+  return [
     // Facet for data + filters
     {
-      $facet: isSearch
-        ? {
-            metadata: [{ $count: "total" }],
-            variants: variantStages(req),
-            filterOptions: [
-              {
-                $group: {
-                  _id: null,
-                  brands: { $addToSet: "$product.brand" },
-                  subcategories: { $addToSet: "$product.subcategory" },
-                  minPrice: { $min: "$images.price" },
-                  maxPrice: { $max: "$images.price" },
-                },
-              },
-              {
-                $project: {
-                  _id: 0,
-                  brands: 1,
-                  subcategories: 1,
-                  prices: ["$minPrice", "$maxPrice"],
-                },
-              },
-            ],
-
-            attributesOptions: [
-              { $unwind: "$attributes" },
-              {
-                $group: {
-                  _id: "$attributes.name",
-                  values: { $addToSet: "$attributes.value" },
-                },
-              },
-            ],
-          }
-        : {
-            metadata: [{ $count: "total" }],
-            variants: variantStages(req),
-          },
+      $facet: {
+        metadata: [{ $count: "total" }],
+        variants: variantStage(page, limit),
+      },
     },
     {
       $project: {
-        total: {
-          $ifNull: [{ $arrayElemAt: ["$metadata.total", 0] }, 0],
+        totalPages: {
+          $ceil: {
+            $divide: [
+              { $ifNull: [{ $arrayElemAt: ["$metadata.total", 0] }, 0] },
+              limit,
+            ],
+          },
         },
         variants: "$variants",
-        filters: isSearch ? { $arrayElemAt: ["$filterOptions", 0] } : [],
-        attributes: isSearch ? "$attributesOptions" : [],
       },
     },
   ];
-
-  const [result] = await Variant.aggregate(pipeline);
-
-  res.json({
-    success: true,
-    total: result?.total || 0,
-    variants: result?.variants || [],
-    filters: result?.filters || {
-      brands: [],
-      categories: [],
-      subcategories: [],
-      prices: [],
-    },
-    attributes: result?.attributes || [],
-  });
-});
+};
 
 // ======================= GET ALL FILTERED VARIANTS ==============================
-exports.getFilteredVariants = catchAsyncErrors(async (req, res) => {
-  const { keyword, subcategory, brand, ratings, minPrice, maxPrice } =
-    req.query;
+exports.getAllVariants = catchAsyncErrors(async (req, res) => {
+  const { subcategory, brand, ratings, minPrice, maxPrice } = req.query;
+
+  const page = Number(req.query.page) || 1;
+  const limit = 10;
+
+  const keyword = req.query.keyword || "";
 
   const attributes = req.query.attributes
     ? JSON.parse(req.query.attributes)
     : false;
 
   const pipeline = [
-    // Basic condition (images uploaded)
-    { $match: { imagesUploaded: true } },
-
-    // Join product
-    {
-      $lookup: {
-        from: "products",
-        localField: "product",
-        foreignField: "_id",
-        as: "product",
-      },
-    },
-    { $unwind: "$product" },
-    // Break out images array so we can filter on price/stock
-    { $unwind: "$images" },
+    ...initialStage(),
 
     // Keyword search (on product.name)
     { $match: { "product.name": { $regex: keyword, $options: "i" } } },
@@ -770,28 +792,99 @@ exports.getFilteredVariants = catchAsyncErrors(async (req, res) => {
         ]
       : []),
 
-    // Facet for data + filters
-    {
-      $facet: {
-        metadata: [{ $count: "total" }],
-        variants: variantStages(req),
-      },
-    },
-    {
-      $project: {
-        total: {
-          $ifNull: [{ $arrayElemAt: ["$metadata.total", 0] }, 0],
-        },
-        variants: "$variants",
-      },
-    },
+    ...lastFacetStage(page,limit),
   ];
 
   const [result] = await Variant.aggregate(pipeline);
 
   res.json({
     success: true,
-    total: result?.total || 0,
+    totalPages: result?.totalPages || 0,
     variants: result?.variants || [],
+  });
+});
+
+// ======================= GET OUT OF STOCK VARIANTS ==============================
+exports.getOutOfStockVariants = catchAsyncErrors(async (req, res) => {
+  const { brand, ratings } = req.query;
+
+  const category = req.query.category ? JSON.parse(req.query.category) : false;
+
+  const page = Number(req.query.page) || 1;
+  const limit = 10;
+
+  const keyword = req.query.keyword || "";
+
+  const pipeline = [
+    ...initialStage(),
+
+    // Handle both needSize = true/false to get out-of-stock variants
+    {
+      $match: {
+        $or: [
+          // For needSize false → directly check stock field
+          { needSize: false, "images.stock": { $lte: 0 } },
+
+          // For needSize true → at least one size out of stock
+          {
+            needSize: true,
+            $expr: {
+              $gt: [
+                {
+                  $size: {
+                    $filter: {
+                      input: "$images.sizes",
+                      as: "s",
+                      cond: { $eq: ["$$s.stock", 0] },
+                    },
+                  },
+                },
+                0,
+              ],
+            },
+          },
+        ],
+      },
+    },
+
+    // Keyword search (on product.name)
+    { $match: { "product.name": { $regex: keyword, $options: "i" } } },
+
+    // Product-level filters
+    ...(category?._id
+      ? [
+          {
+            $match: {
+              "product.category": new mongoose.Types.ObjectId(category._id),
+            },
+          },
+        ]
+      : []),
+
+    ...(category?.subcategory
+      ? [
+          {
+            $match: {
+              "product.subcategory": category.subcategory,
+            },
+          },
+        ]
+      : []),
+
+    ...(brand ? [{ $match: { "product.brand": brand } }] : []),
+
+    ...(isOnlyDigits(ratings)
+      ? [{ $match: { "product.ratings": { $gte: Number(ratings) } } }]
+      : []),
+
+    ...lastFacetStage(page,limit),
+  ];
+
+  const [result] = await Variant.aggregate(pipeline);
+
+  res.json({
+    success: true,
+    totalPages: result?.totalPages || 0,
+    out_of_stock_variants: result?.variants || [],
   });
 });

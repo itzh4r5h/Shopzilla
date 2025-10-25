@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { handleAsyncThunk } from "../../../utils/handleAsyncThunk";
-import { addCategory, addSubCategories, deleteCategory, deleteSubCategory, getAllAttributes, getAllCaetgories, getAllSubCaetgories, updateAttributes, updateCategoryName, updateSubCategoryName } from "../../thunks/admin/categoryThunk";
+import { addCategory, addSubCategories, deleteCategory, deleteSubCategory, getAllAttributes, getAllCaetgories, getAllSubCaetgories, getCategoriesAndSubCategories, updateAttributes, updateCategoryName, updateSubCategoryName } from "../../thunks/admin/categoryThunk";
 
 
 const initialState = {
@@ -9,6 +9,7 @@ const initialState = {
   attributes: undefined,
   updated: undefined,
   loading: false,
+  categoriesAndSubcategories: []
 };
 
 const commonActions = {
@@ -69,6 +70,19 @@ const categorySlice = createSlice({
       },
       fulfilled: (state, action) => {
         state.attributes = action.payload.attributes;
+        state.loading = false;
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+      },
+    });
+
+    handleAsyncThunk(builder, getCategoriesAndSubCategories, {
+      pending: (state) => {
+        state.loading = true;
+      },
+      fulfilled: (state, action) => {
+        state.categoriesAndSubcategories = action.payload.categories;
         state.loading = false;
       },
       rejected: (state, action) => {

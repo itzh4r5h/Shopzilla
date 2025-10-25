@@ -2,7 +2,7 @@ import { ProductCard } from "../components/cards/ProductCard";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getAllProducts } from "../store/thunks/non_admin/productThunk";
+import { getAllProducts, getFilters } from "../store/thunks/non_admin/productThunk";
 import { Heading } from "../components/Headers/Heading";
 import { ProudctFilter } from "../components/Filters/ProudctFilter";
 import { PurplePagination } from "../components/common/PurplePagination";
@@ -10,12 +10,19 @@ import { setPage } from "../store/slices/non_admin/productSlice";
 
 export const Products = () => {
   const dispatch = useDispatch();
-  const { variants, keyword, variantsCount, filters, attributes, page } =
+  const { variants, keyword, totalPages, filters, attributes, page } =
     useSelector((state) => state.product);
 
   useEffect(() => {
     dispatch(getAllProducts({ page, keyword }));
   }, [page, keyword]);
+
+
+  useEffect(()=>{
+    if(keyword!==''){
+      dispatch(getFilters(keyword))
+    }
+  },[keyword])
 
 
   useEffect(()=>{
@@ -33,6 +40,7 @@ export const Products = () => {
             filters={filters}
             attributes={attributes}
             keyword={keyword}
+            page={page}
           />
         }
       />
@@ -63,7 +71,7 @@ export const Products = () => {
         )}
 
        {variants?.length > 0 &&  <div className="flex justify-center items-end col-span-2">
-          <PurplePagination count={Math.ceil(variantsCount / 10)} setPage={setPage}/>
+          <PurplePagination count={totalPages} setPage={setPage}/>
         </div>}
       </div>
     </div>

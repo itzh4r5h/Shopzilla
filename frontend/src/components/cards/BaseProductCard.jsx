@@ -3,7 +3,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 
 export const BaseProductCard = ({ product }) => {
   return product ? (
-    <article className="w-full rounded-md border border-[var(--black)] bg-[var(--white)] p-2 h-full flex flex-col justify-center gap-1 outline-none active:ring-2 active:ring-[var(--purpleDark)]">
+    <article className="w-full h-fit rounded-md border border-[var(--black)] bg-[var(--white)] p-2 flex flex-col justify-center gap-1 outline-none active:ring-2 active:ring-[var(--purpleDark)]">
       {/* name begins */}
       <div className="flex flex-col justify-center">
         <label htmlFor="name" className="text-lg w-fit">
@@ -25,7 +25,7 @@ export const BaseProductCard = ({ product }) => {
           Category
         </label>
         <input
-          defaultValue={product.category.name}
+          defaultValue={product.category}
           autoComplete="off"
           readOnly
           id="category"

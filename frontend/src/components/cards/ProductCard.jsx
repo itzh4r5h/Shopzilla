@@ -6,11 +6,13 @@ import { ImageCard } from "./ImageCard";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getRatings } from "../../store/thunks/non_admin/reviewThunk";
+import { UpdateStock } from "../modal/UpdateStock";
 
 export const ProductCard = ({
   variant,
   orderDetails = false,
-  productId = undefined
+  productId = undefined,
+  out_of_stock = false
 }) => {
   const dispatch = useDispatch();
   const { ratings } = useSelector((state) => state.review);
@@ -67,7 +69,7 @@ export const ProductCard = ({
           } items-center`}
         >
           {/* svg and price container begins */}
-          <div className="w-full relative">
+          {!out_of_stock && <div className="w-full relative">
             {/* svg begins */}
             <svg
               className="w-full"
@@ -102,8 +104,10 @@ export const ProductCard = ({
               </span>
             </div>
             {/* price ends */}
-          </div>
+          </div>}
           {/* svg and price container emd */}
+
+          {out_of_stock && <UpdateStock/>}
 
           {/* rating begins */}
           <div className="flex justify-center items-center gap-1">

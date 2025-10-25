@@ -4,12 +4,17 @@ import {
   addOrUpdateVariant,
   getAllVariants,
   deleteVariantOfProduct,
+  getOutOfStockVariants,
 } from "../../thunks/admin/variantThunk";
 
 const initialState = {
+  page: 1,
+  keyword: "",
   updated: undefined,
   loading: false,
   variants: undefined,
+  out_of_stock_variants: undefined,
+  totalPages: undefined,
 };
 
 const commonActions = {
@@ -30,12 +35,17 @@ const variantSlice = createSlice({
   name: "variant",
   initialState,
   reducers: {
-    clearVariants: (state)=>{
-      state.variants = undefined
-    }
+    clearVariants: (state) => {
+      state.variants = undefined;
+    },
+    setKeyword: (state, action) => {
+      state.keyword = action.payload;
+    },
+    setPage: (state, action) => {
+      state.page = action.payload;
+    },
   },
   extraReducers: (builder) => {
-
     handleAsyncThunk(builder, addOrUpdateVariant, { ...commonActions });
 
     handleAsyncThunk(builder, deleteVariantOfProduct, { ...commonActions });
@@ -53,9 +63,23 @@ const variantSlice = createSlice({
         state.loading = false;
       },
     });
+
+    handleAsyncThunk(builder, getOutOfStockVariants, {
+      pending: (state) => {
+        state.loading = true;
+        state.updated = undefined;
+      },
+      fulfilled: (state, action) => {
+        state.loading = false;
+        state.out_of_stock_variants = action.payload.out_of_stock_variants;
+        state.totalPages = action.payload.totalPages
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+      },
+    });
   },
 });
 
-export const {clearVariants } =
-  variantSlice.actions;
+export const { clearVariants,setKeyword,setPage } = variantSlice.actions;
 export const variantReducer = variantSlice.reducer;

@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { formatINR } from "../../utils/helpers";
 import Rating from "@mui/material/Rating";
 import { useDispatch } from "react-redux";
-import { getFilteredProducts } from "../../store/thunks/non_admin/productThunk";
+import { getAllProducts } from "../../store/thunks/non_admin/productThunk";
 
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -233,7 +233,7 @@ const AttributesTabs = ({
   );
 };
 
-export const ProudctFilter = ({ filters, attributes, keyword }) => {
+export const ProudctFilter = ({ filters, attributes, keyword, page }) => {
   const [open, setOpen] = useState(false);
   const [brand, setBrand] = useState("");
   const [priceRange, setPriceRange] = useState([]);
@@ -328,7 +328,7 @@ export const ProudctFilter = ({ filters, attributes, keyword }) => {
 
   const handleApplyFilters = () => {
     const payload = buildFilterPayload()
-    dispatch(getFilteredProducts({keyword,...payload}));
+    dispatch(getAllProducts({page,keyword,...payload}));
     toggleDrawer(false)
   };
 

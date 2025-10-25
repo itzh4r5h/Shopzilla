@@ -8,7 +8,7 @@ import Radio from "@mui/material/Radio";
 import { useEffect, useState } from "react";
 import { formatINR } from "../../utils/helpers";
 import Rating from "@mui/material/Rating";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -19,6 +19,9 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+import { getCategoriesAndSubCategories } from "../../store/thunks/admin/categoryThunk";
+import { getAllProduct, getBrands } from "../../store/thunks/admin/adminProductThunk";
+import { getOutOfStockVariants } from "../../store/thunks/admin/variantThunk";
 
 const StyledFormControlLabel = styled((props) => (
   <FormControlLabel {...props} />
@@ -75,7 +78,7 @@ const a11yProps = (index) => {
   };
 };
 
-const CategoriesTabs = ({ categories }) => {
+const CategoriesTabs = ({ categories,category,setCategory }) => {
   const [value, setValue] = useState(0);
 
   const handleChange = (event, newValue) => {
@@ -86,21 +89,13 @@ const CategoriesTabs = ({ categories }) => {
   const subCategories = categories.map((category) => category.subcategories);
 
 
-  const handleAttributeChange = (event, index) => {
-    const newValue = event.target.value;
+  const handleCategoryChange = (event, selectedCategory) => {
 
-    // setSelectedAttributes((prev) =>
-    //   prev.map((attr, i) => (i === index ? { ...attr, value: newValue } : attr))
-    // );
+   const subcategory = event.target.value;
+
+    setCategory({_id:selectedCategory._id,subcategory});
   };
 
-  // useEffect(() => {
-  //   if (selectedAttributes.length === 0) {
-  //     setSelectedAttributes(
-  //       attributeNames.map((attr) => ({ name: attr, value: "" }))
-  //     );
-  //   }
-  // }, []);
 
   return (
     <Box
@@ -153,8 +148,8 @@ const CategoriesTabs = ({ categories }) => {
             >
               <RadioGroup
                 name="use-radio-group"
-                value={""}
-                onChange={(e) => handleAttributeChange(e, index)}
+                value={category.subcategory}
+                onChange={(e) => handleCategoryChange(e, categories[index])}
               >
                 {subCats.map((val) => {
                   return (
@@ -189,39 +184,21 @@ const CategoriesTabs = ({ categories }) => {
   );
 };
 
-export const AdminProductFilter = ({ keyword }) => {
+export const AdminProductFilter = ({tab}) => {
   const [open, setOpen] = useState(false);
   const [brand, setBrand] = useState("");
   const [ratings, setRatings] = useState(0);
-  const [category, setCategory] = useState([]);
+  const [category, setCategory] = useState({_id:'',subcategory:''});
+  const dispatch = useDispatch()
+  const {categoriesAndSubcategories} = useSelector((state)=>state.category)
+  const {brands,page,keyword} = useSelector((state)=>state.adminProduct)
+  const {page:variantPage,keyword:variantKeyword} = useSelector((state)=>state.variant)
 
-  const brands = [
-    "colz",'livi','h & m'
-  ]
-  const categories = [
-    {
-      name: "electronics",
-      subcategories: [
-        {
-          name: "mobile",
-        },
-        {
-          name: "laptop",
-        },
-      ],
-    },
-    {
-      name: "cloths",
-      subcategories: [
-        {
-          name: "jeans",
-        },
-        {
-          name: "shirt",
-        },
-      ],
-    },
-  ]
+  useEffect(()=>{
+    dispatch(getCategoriesAndSubCategories())
+    dispatch(getBrands())
+  },[])
+
 
   const toggleDrawer = (open) => (event) => {
     if (
@@ -233,12 +210,6 @@ export const AdminProductFilter = ({ keyword }) => {
     setOpen(open);
   };
 
-  const dispatch = useDispatch();
-
-  const handleCategoryChange = (event) => {
-    setCategory(event.target.value);
-  };
-
   const handleBrandChange = (event) => {
     setBrand(event.target.value);
   };
@@ -246,7 +217,7 @@ export const AdminProductFilter = ({ keyword }) => {
   const handleClear = () => {
     setBrand("");
     setRatings(0);
-    setCategory("");
+    setCategory({_id:'',subcategory:''});
   };
 
   // this functions builts filteroptions object whose values are not default values
@@ -257,8 +228,8 @@ export const AdminProductFilter = ({ keyword }) => {
       payload.brand = brand.trim();
     }
 
-    if (category.trim() !== "") {
-      payload.category = category.trim();
+    if (category._id !== "") {
+      payload.category = JSON.stringify(category)
     }
 
     if (ratings > 0) {
@@ -270,7 +241,11 @@ export const AdminProductFilter = ({ keyword }) => {
 
   const handleApplyFilters = () => {
     const payload = buildFilterPayload();
-    dispatch(getFilteredProducts({ keyword, ...payload }));
+    if(tab==='all'){
+      dispatch(getAllProduct({page,keyword,...payload}))
+    }else if (tab === 'out_of_stock'){
+      dispatch(getOutOfStockVariants({page:variantPage,keyword:variantKeyword,...payload}))
+    }
     toggleDrawer(false);
   };
 
@@ -292,7 +267,7 @@ export const AdminProductFilter = ({ keyword }) => {
         }}
       >
         <aside className="w-75 h-full">
-          {categories.length > 0 || Object.keys(categories).length > 0 ? (
+          {categoriesAndSubcategories.length > 0 ? (
             <div className="grid grid-rows-[.5fr_4fr_1fr_.5fr_5fr_1fr] gap-y-1 py-2 px-4 h-full">
               {/* brand begins */}
               <h3 className="text-2xl">Brand</h3>
@@ -342,7 +317,7 @@ export const AdminProductFilter = ({ keyword }) => {
               {/* category begins */}
               <h3 className="text-2xl">Categories</h3>
               <div className="capitalize">
-                <CategoriesTabs categories={categories} />
+                <CategoriesTabs categories={categoriesAndSubcategories} setCategory={setCategory} category={category}/>
               </div>
               {/* category ends */}
 

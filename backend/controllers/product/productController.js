@@ -148,20 +148,107 @@ exports.getProduct = catchAsyncErrors(async (req, res, next) => {
 
 // ======================= ADMIN GET ALL PRODUCTS ==============================
 exports.getAllProduct = catchAsyncErrors(async (req, res, next) => {
-  const products = await Product.find(
-    {},
-    { name: 1, brand: 1, category: 1, subcategory: 1 }
-  ).populate("category", "name");
+  const { keyword, brand, ratings } = req.query;
+
+  const page = req.query.page || 1;
+  const limit = 10;
+
+  const category = req.query.category ? JSON.parse(req.query.category) : false;
+
+  const pipeline = [
+    // Search by product name
+    {
+      $match: {
+        name: { $regex: keyword, $options: "i" },
+      },
+    },
+
+    // Apply filters only if they exist
+    {
+      $match: {
+        ...(brand && { brand }),
+        ...(ratings && { ratings: { $gte: Number(ratings) } }),
+        ...(category?._id && { category: new mongoose.Types.ObjectId(category._id) }),
+        ...(category?.subcategory && { subcategory: category.subcategory }),
+      },
+    },
+
+    // lookup to get category name
+    {
+      $lookup: {
+        from: "categories",
+        localField: "category",
+        foreignField: "_id",
+        as: "categoryInfo",
+      },
+    },
+    { $unwind: { path: "$categoryInfo", preserveNullAndEmptyArrays: true } },
+
+    // Pagination + total count together
+    {
+      $facet: {
+        metadata: [{ $count: "total" }],
+        products: [
+          { $skip: (page - 1) * limit },
+          { $limit: limit },
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              category: "$categoryInfo.name",
+              subcategory: 1,
+            },
+          },
+        ],
+      },
+    },
+
+    // Reshape output
+    {
+      $project: {
+        totalPages: {
+          $ceil: {
+            $divide: [
+              { $ifNull: [{ $arrayElemAt: ["$metadata.total", 0] }, 0] },
+              limit,
+            ],
+          },
+        },
+        products: "$products",
+      },
+    },
+  ];
+
+  // Run aggregation
+  const result = await Product.aggregate(pipeline);
 
   res.status(200).json({
     success: true,
-    products,
+    totalPages: result[0]?.totalPages || 0,
+    products: result[0]?.products || [],
   });
 });
 
 // ======================= ADMIN GET ALL BRANDS ==============================
 exports.getAllBrands = catchAsyncErrors(async (req, res, next) => {
-  const brands = await Product.find({}, { brand: 1 })
+  const result = await Product.aggregate([
+    {
+      $group: {
+        _id: "$brand", // group by brand to get unique values
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        brand: "$_id",
+      },
+    },
+    {
+      $sort: { brand: 1 }, // optional: sort alphabetically
+    },
+  ]);
+
+  const brands = result.map((item) => item.brand);
 
   res.status(200).json({
     success: true,

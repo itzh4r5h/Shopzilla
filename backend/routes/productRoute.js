@@ -38,7 +38,8 @@ const {
   getTotalNumberOfVariants,
   getAllVariantsOfAProduct,
   getAllVariants,
-  getFilteredVariants,
+  getFilterOptionsBasedOnSearchedProduct,
+  getOutOfStockVariants,
 } = require("../controllers/product/variantController");
 const router = express.Router();
 
@@ -106,6 +107,10 @@ router
   .get(isUserAuthenticated, authorizedRoles("admin"), getTotalNumberOfVariants);
 
 router
+  .route("/admin/products/variants/out_of_stock")
+  .get(isUserAuthenticated, authorizedRoles("admin"), getOutOfStockVariants);
+
+router
   .route("/admin/products/variants/stock_status")
   .get(
     isUserAuthenticated,
@@ -119,17 +124,17 @@ router
   .post(isUserAuthenticated, authorizedRoles("admin"), createProduct)
   .get(isUserAuthenticated, authorizedRoles("admin"), getAllProduct);
 
+router.route('/admin/products/brands').get(isUserAuthenticated,authorizedRoles('admin'),getAllBrands)
+
 router
   .route("/admin/products/:id")
   .patch(isUserAuthenticated, authorizedRoles("admin"), updateProduct)
   .delete(isUserAuthenticated, authorizedRoles("admin"), deleteProduct)
   .get(isUserAuthenticated, authorizedRoles("admin"), getProduct);
 
-router.route('/admin/products/brands').get(isUserAuthenticated,authorizedRoles('admin'),getAllBrands)
-
 // =================================== Product Variant Related Routes =======================================
 router.route("/products/variants").get(getAllVariants);
-router.route("/products/variants/filtered").get(getFilteredVariants);
+router.route("/products/variants/filters").get(getFilterOptionsBasedOnSearchedProduct);
 router
   .route("/products/variants/:id")
   .get(getVariant);

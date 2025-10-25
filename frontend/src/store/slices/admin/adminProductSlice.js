@@ -4,6 +4,7 @@ import {
   addProduct,
   deleteProduct,
   getAllProduct,
+  getBrands,
   getProduct,
   updateProduct,
 } from "../../thunks/admin/adminProductThunk";
@@ -11,13 +12,14 @@ import {
 const initialState = {
   updated: undefined,
   loading: false,
-  keyword: undefined,
+  keyword: "",
   totalPages: undefined,
   page: 1,
   product: undefined,
   products: undefined,
   attributes: undefined,
-  needSize: undefined
+  needSize: undefined,
+  brands: [],
 };
 
 const commonActions = {
@@ -71,6 +73,7 @@ const adminProductSlice = createSlice({
       fulfilled: (state, action) => {
         state.loading = false;
         state.products = action.payload.products;
+        state.totalPages = action.payload.totalPages;
       },
       rejected: (state, action) => {
         state.loading = false;
@@ -87,6 +90,19 @@ const adminProductSlice = createSlice({
       fulfilled: (state, action) => {
         state.loading = false;
         state.updated = true
+      },
+      rejected: (state, action) => {
+        state.loading = false;
+      },
+    });
+
+    handleAsyncThunk(builder, getBrands, {
+      pending: (state) => {
+        state.loading = true;
+      },
+      fulfilled: (state, action) => {
+        state.loading = false;
+        state.brands = action.payload.brands
       },
       rejected: (state, action) => {
         state.loading = false;
