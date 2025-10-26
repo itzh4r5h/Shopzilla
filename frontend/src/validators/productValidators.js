@@ -183,3 +183,31 @@ export const variantJoiSchema = Joi.object({
     "object.base": "each images must be an object with valid fields",
   }),
 });
+
+export const stockJoiSchema = (needSize) => {
+  const baseSchema = {};
+
+  if (needSize) {
+    baseSchema.sizes = Joi.array().items(
+      Joi.object({
+        size: Joi.string().min(1).max(5).required().messages({
+          "any.required": "size is required",
+          "string.empty": "size is required",
+          "string.min": "size cann't be empty",
+          "string.max": "size cann't exceed 5 chars",
+        }),
+        stock: Joi.number().min(1).required().messages({
+          "number.base": "stock must be a number",
+          "number.min": "stock cannot be less than 1",
+        }),
+      })
+    );
+  } else {
+    baseSchema.stock = Joi.number().min(1).required().messages({
+      "number.base": "stock must be a number",
+      "number.min": "stock cannot be less than 1",
+    });
+  }
+
+  return Joi.object(baseSchema);
+};

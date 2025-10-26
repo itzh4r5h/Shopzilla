@@ -11,6 +11,7 @@ const { uploadToImageKit, imagekit } = require("../../utils/uploadImages");
 const {
   variantJoiSchema,
   imagesJoiSchema,
+  stockJoiSchema,
 } = require("../../validators/product/variantValidator");
 const { deletionQueue } = require("../../jobs/queue");
 const mongoose = require("mongoose");
@@ -663,7 +664,7 @@ const initialStage = () => {
     },
     { $unwind: "$product" },
     // Break out images array so we can filter on price/stock
-    { $unwind: "$images" },
+    { $unwind: { path: "$images", includeArrayIndex: "originalIndex" } },
   ];
 };
 
@@ -674,12 +675,16 @@ const variantStage = (page, limit) => {
         _id: "$_id",
         doc: { $first: "$$ROOT" }, // take variant fields
         images: { $push: "$images" }, // re-collect images
+        originalIndex: { $first: "$originalIndex" }, // preserve original image index
       },
     },
     {
       $replaceRoot: {
         newRoot: {
-          $mergeObjects: ["$doc", { images: "$images" }],
+          $mergeObjects: [
+            "$doc",
+            { images: "$images", originalIndex: "$originalIndex" },
+          ],
         },
       },
     },
@@ -708,7 +713,7 @@ const variantStage = (page, limit) => {
   return stages;
 };
 
-const lastFacetStage = (page,limit) => {
+const lastFacetStage = (page, limit) => {
   return [
     // Facet for data + filters
     {
@@ -792,7 +797,7 @@ exports.getAllVariants = catchAsyncErrors(async (req, res) => {
         ]
       : []),
 
-    ...lastFacetStage(page,limit),
+    ...lastFacetStage(page, limit),
   ];
 
   const [result] = await Variant.aggregate(pipeline);
@@ -877,7 +882,7 @@ exports.getOutOfStockVariants = catchAsyncErrors(async (req, res) => {
       ? [{ $match: { "product.ratings": { $gte: Number(ratings) } } }]
       : []),
 
-    ...lastFacetStage(page,limit),
+    ...lastFacetStage(page, limit),
   ];
 
   const [result] = await Variant.aggregate(pipeline);
@@ -886,5 +891,47 @@ exports.getOutOfStockVariants = catchAsyncErrors(async (req, res) => {
     success: true,
     totalPages: result?.totalPages || 0,
     out_of_stock_variants: result?.variants || [],
+  });
+});
+
+// ======================= ADMIN - UPDATE VARIANT STOCK ==============================
+exports.updateVariantStock = catchAsyncErrors(async (req, res,next) => {
+  const variant = await Variant.findById(req.params.id);
+  const { stock, sizes, originalIndex, needSize } = req.body;
+
+  if (!variant) {
+    return next(new ErrorHandler("variant not exists"));
+  }
+
+  const { error } = stockJoiSchema.validate({
+    needSize,
+    originalIndex,
+    stock,
+    sizes,
+  });
+
+  if (error) {
+    return next(new ErrorHandler(formatJoiErrMessage(error), 400));
+  }
+
+  if (needSize) {
+    variant.images[originalIndex].sizes.forEach((sz, index) => {
+      if (sz.stock === 0) {
+        const result = sizes.filter(
+          (sze) => sze.size.toLowerCase() === sz.size.toLowerCase()
+        )[0];
+
+        sz.stock = result.stock;
+      }
+    });
+  } else {
+    variant.images[originalIndex].stock = stock;
+  }
+
+  await variant.save({ validateBeforeSave: true });
+
+  res.status(200).json({
+    success: true,
+    message: "stock updated",
   });
 });

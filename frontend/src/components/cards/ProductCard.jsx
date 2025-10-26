@@ -107,7 +107,7 @@ export const ProductCard = ({
           </div>}
           {/* svg and price container emd */}
 
-          {out_of_stock && <UpdateStock/>}
+          {out_of_stock && <UpdateStock variant={variant}/>}
 
           {/* rating begins */}
           <div className="flex justify-center items-center gap-1">

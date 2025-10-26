@@ -180,9 +180,49 @@ const baseProductJoiSchema = Joi.object({
   }),
 });
 
+const stockJoiSchema = Joi.object({
+  needSize: Joi.boolean().required(),
+  originalIndex: Joi.number().min(0).required().messages({
+    "number.base": "original index must be a number",
+    "number.min": "original index cannot be less than 0",
+  }),
+  stock: Joi.number()
+    .min(1)
+    .when(Joi.ref("..needSize"), {
+      is: false, // if needSize = false
+      then: Joi.required().messages({
+        "number.base": "stock must be a number",
+        "number.min": "stock cannot be less than 1",
+      }),
+      otherwise: Joi.forbidden(), // prevent stock if not needed
+    }),
+
+  sizes: Joi.array()
+    .items(
+      Joi.object({
+        size: Joi.string().min(1).max(5).required().messages({
+          "any.required": "size is required",
+          "string.empty": "size is required",
+          "string.min": "size cann't be empty",
+          "string.max": "size cann't exceed 5 chars",
+        }),
+        stock: Joi.number().min(1).required().messages({
+          "number.base": "stock must be a number",
+          "number.min": "stock cannot be less than 1",
+        }),
+      })
+    )
+    .when(Joi.ref("..needSize"), {
+      is: true, // if needSize = true
+      then: Joi.required().messages({ "any.required": "sizes are required" }),
+      otherwise: Joi.forbidden(), // prevent sizes[] if not needed
+    }),
+});
+
 module.exports = {
   variantJoiSchema,
   productJoiSchema,
   baseProductJoiSchema,
   imagesJoiSchema,
+  stockJoiSchema,
 };

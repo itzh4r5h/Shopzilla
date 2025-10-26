@@ -120,3 +120,19 @@ export const deleteVariantOfProduct = createAsyncThunk(
     }
   }
 );
+
+
+export const updateStock = createAsyncThunk(
+  "variant/update_stock",
+  async ({id,stockData}, { dispatch, rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.patch(
+        `/admin/products/variants/${id}`, {...stockData}
+      );
+      successAlert(dispatch, data.message);
+      return data;
+    } catch (error) {
+      return rejectWithError(error, dispatch, rejectWithValue);
+    }
+  }
+);

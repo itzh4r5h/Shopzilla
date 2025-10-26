@@ -5,6 +5,7 @@ import {
   getAllVariants,
   deleteVariantOfProduct,
   getOutOfStockVariants,
+  updateStock,
 } from "../../thunks/admin/variantThunk";
 
 const initialState = {
@@ -49,6 +50,8 @@ const variantSlice = createSlice({
     handleAsyncThunk(builder, addOrUpdateVariant, { ...commonActions });
 
     handleAsyncThunk(builder, deleteVariantOfProduct, { ...commonActions });
+
+    handleAsyncThunk(builder, updateStock, { ...commonActions });
 
     handleAsyncThunk(builder, getAllVariants, {
       pending: (state) => {

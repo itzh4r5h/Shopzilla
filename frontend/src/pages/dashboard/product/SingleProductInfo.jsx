@@ -7,7 +7,7 @@ import {
 } from "../../../store/thunks/admin/adminProductThunk";
 import {
   deleteVariantOfProduct,
-  getAllVariants
+  getAllVariants,
 } from "../../../store/thunks/admin/variantThunk";
 import { useNavigate, useParams } from "react-router";
 import {
@@ -18,9 +18,7 @@ import { ProductModal } from "../../../components/modal/ProductModal";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { VariantModal } from "../../../components/modal/VariantModal";
-import {
-  clearVariants,
-} from "../../../store/slices/admin/variantSlice";
+import { clearVariants } from "../../../store/slices/admin/variantSlice";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -34,11 +32,13 @@ import { DeleteModal } from "../../../components/modal/DeleteModal";
 const AttributeSlideComponent = ({ attributes }) => {
   return (
     <Swiper
+      observer={true}
+      observeParents={true}
       loop={attributes.length > 1 ? true : false}
       pagination={{ clickable: true }}
       grabCursor={true}
       modules={[Pagination]}
-      className="mySwiper"
+      className="attributes_swiper"
       spaceBetween={10}
     >
       {attributes.map((attr) => {
@@ -62,11 +62,13 @@ const AttributeSlideComponent = ({ attributes }) => {
 const SizesSlideComponent = ({ sizes }) => {
   return (
     <Swiper
+      observer={true}
+      observeParents={true}
       loop={sizes.length > 1 ? true : false}
       pagination={{ clickable: true, type: "fraction" }}
       grabCursor={true}
       modules={[Pagination]}
-      className="mySwiper"
+      className="sizes_swiper"
       spaceBetween={10}
     >
       {sizes.map((data, index) => {
@@ -119,11 +121,13 @@ const ImagesSlideComponent = ({ images, needSize }) => {
   return (
     <figure className="relative">
       <Swiper
+        observer={true}
+        observeParents={true}
         loop={images.length > 1 ? true : false}
         pagination={{ clickable: true }}
         grabCursor={true}
         modules={[Pagination]}
-        className="mySwiper"
+        className="images_parent_swiper"
         spaceBetween={10}
       >
         {images.map((img) => {
@@ -163,11 +167,13 @@ const ImagesSlideComponent = ({ images, needSize }) => {
                 {needSize && <SizesSlideComponent sizes={img.sizes} />}
 
                 <Swiper
+                  observer={true}
+                  observeParents={true}
                   loop={img.files.length > 1 ? true : false}
                   pagination={{ clickable: true }}
                   grabCursor={true}
                   modules={[Pagination]}
-                  className="mySwiper"
+                  className="images_child_swiper"
                   spaceBetween={5}
                 >
                   {img.files.map((pic) => {
@@ -201,23 +207,22 @@ export const SingleProductInfo = () => {
     product,
     needSize,
     attributes,
-    updated : productUpdated,
+    updated: productUpdated,
   } = useSelector((state) => state.adminProduct);
-  const {
-    variants,
-    updated : variantUpdated,
-  } = useSelector((state) => state.variant);
+  const { variants, updated: variantUpdated } = useSelector(
+    (state) => state.variant
+  );
   const { id } = useParams();
 
   useEffect(() => {
     dispatch(getProduct(id));
     dispatch(getAllVariants(id));
-    return ()=>{
-      dispatch(clearVariants())
-    }
+    return () => {
+      dispatch(clearVariants());
+    };
   }, []);
 
-  const isUpdated = productUpdated || variantUpdated
+  const isUpdated = productUpdated || variantUpdated;
 
   useEffect(() => {
     if (isUpdated) {
@@ -266,7 +271,11 @@ export const SingleProductInfo = () => {
                       ? "Created on"
                       : key}
                   </h2>
-                  <p className={`text-lg capitalize text-[var(--light)] ${key === "description" && 'line-clamp-4'}`}>
+                  <p
+                    className={`text-lg capitalize text-[var(--light)] ${
+                      key === "description" && "line-clamp-4"
+                    }`}
+                  >
                     {key === "category"
                       ? product[key].name
                       : key === "createdAt"
@@ -376,11 +385,13 @@ export const SingleProductInfo = () => {
 
       {variants?.length > 0 ? (
         <Swiper
+          observer={true}
+          observeParents={true}
           loop={variants.length > 1 ? true : false}
           pagination={{ clickable: true, type: "fraction" }}
           grabCursor={true}
           modules={[Pagination]}
-          className="mySwiper"
+          className="variant_swiper"
           spaceBetween={10}
         >
           {variants.map((variant) => {

@@ -40,6 +40,7 @@ const {
   getAllVariants,
   getFilterOptionsBasedOnSearchedProduct,
   getOutOfStockVariants,
+  updateVariantStock,
 } = require("../controllers/product/variantController");
 const router = express.Router();
 
@@ -116,6 +117,14 @@ router
     isUserAuthenticated,
     authorizedRoles("admin"),
     getInStockAndOutOfStockVariantCount
+  );
+
+router
+  .route("/admin/products/variants/:id")
+  .patch(
+    isUserAuthenticated,
+    authorizedRoles("admin"),
+    updateVariantStock
   );
 
 // =================================== Admin User Product Related Routes =======================================
