@@ -19,6 +19,8 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { VariantModal } from "../../../components/modal/VariantModal";
 import { clearVariants } from "../../../store/slices/admin/variantSlice";
+import { ImageCard } from "../../../components/cards/ImageCard";
+import { DeleteModal } from "../../../components/modal/DeleteModal";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -26,19 +28,15 @@ import { Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/effect-creative";
 import "swiper/css/pagination";
-import { ImageCard } from "../../../components/cards/ImageCard";
-import { DeleteModal } from "../../../components/modal/DeleteModal";
 
 const AttributeSlideComponent = ({ attributes }) => {
   return (
     <Swiper
-      observer={true}
-      observeParents={true}
       loop={attributes.length > 1 ? true : false}
       pagination={{ clickable: true }}
       grabCursor={true}
       modules={[Pagination]}
-      className="attributes_swiper"
+      className="mySwiper2"
       spaceBetween={10}
     >
       {attributes.map((attr) => {
@@ -59,17 +57,16 @@ const AttributeSlideComponent = ({ attributes }) => {
   );
 };
 
-const SizesSlideComponent = ({ sizes }) => {
+const SizesSlideComponent = ({ sizes, imgIndex }) => {
   return (
     <Swiper
-      observer={true}
-      observeParents={true}
       loop={sizes.length > 1 ? true : false}
-      pagination={{ clickable: true, type: "fraction" }}
+      pagination={{ type:'fraction' }}
       grabCursor={true}
       modules={[Pagination]}
-      className="sizes_swiper"
+      className="mySwiper4"
       spaceBetween={10}
+      nested={true}
     >
       {sizes.map((data, index) => {
         return (
@@ -78,7 +75,7 @@ const SizesSlideComponent = ({ sizes }) => {
               {/* size begins */}
               <div className="flex flex-col justify-center gap-2">
                 <label
-                  htmlFor={`sizes.${index}.size`}
+                  htmlFor={`images.${imgIndex}.sizes.${index}.size`}
                   className="text-xl w-fit"
                 >
                   Size
@@ -86,8 +83,9 @@ const SizesSlideComponent = ({ sizes }) => {
                 <input
                   autoComplete="off"
                   defaultValue={data.size}
+                  name={`images.${imgIndex}.sizes.${index}.size`}
                   readOnly
-                  id={`sizes.${index}.size`}
+                  id={`images.${imgIndex}.sizes.${index}.size`}
                   className="uppercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none"
                 />
               </div>
@@ -95,7 +93,7 @@ const SizesSlideComponent = ({ sizes }) => {
               {/* stock begins */}
               <div className="flex flex-col justify-center gap-2">
                 <label
-                  htmlFor={`sizes.${index}.stock`}
+                  htmlFor={`images.${imgIndex}.sizes.${index}.stock`}
                   className="text-xl w-fit"
                 >
                   Stock
@@ -103,8 +101,9 @@ const SizesSlideComponent = ({ sizes }) => {
                 <input
                   autoComplete="off"
                   defaultValue={data.stock}
+                  name={`images.${imgIndex}.sizes.${index}.stock`}
                   readOnly
-                  id={`sizes.${index}.stock`}
+                  id={`images.${imgIndex}.sizes.${index}.stock`}
                   className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none"
                 />
               </div>
@@ -121,18 +120,16 @@ const ImagesSlideComponent = ({ images, needSize }) => {
   return (
     <figure className="relative">
       <Swiper
-        observer={true}
-        observeParents={true}
         loop={images.length > 1 ? true : false}
         pagination={{ clickable: true }}
         grabCursor={true}
         modules={[Pagination]}
-        className="images_parent_swiper"
+        className="mySwiper3"
         spaceBetween={10}
       >
-        {images.map((img) => {
+        {images.map((img, index) => {
           return (
-            <SwiperSlide key={img._id} className="pb-7">
+            <SwiperSlide key={img._id + index} className="pb-7">
               <div className="border-2 border-[var(--purpleDark)] p-2">
                 <div className="grid grid-cols-[3fr_4fr]">
                   <h2 className="text-lg uppercase">Color</h2>
@@ -163,18 +160,21 @@ const ImagesSlideComponent = ({ images, needSize }) => {
                   </div>
                 )}
 
-                {needSize && <h1 className="text-2xl mt-2">Sizes</h1>}
-                {needSize && <SizesSlideComponent sizes={img.sizes} />}
+                {needSize && (
+                  <div>
+                    <h1 className="text-2xl mt-2">Sizes</h1>
+                    <SizesSlideComponent sizes={img.sizes} imgIndex={index} />
+                  </div>
+                )}
 
                 <Swiper
-                  observer={true}
-                  observeParents={true}
                   loop={img.files.length > 1 ? true : false}
                   pagination={{ clickable: true }}
                   grabCursor={true}
                   modules={[Pagination]}
-                  className="images_child_swiper"
+                  className="mySwiper5"
                   spaceBetween={5}
+                  nested={true}
                 >
                   {img.files.map((pic) => {
                     return (
@@ -385,13 +385,11 @@ export const SingleProductInfo = () => {
 
       {variants?.length > 0 ? (
         <Swiper
-          observer={true}
-          observeParents={true}
           loop={variants.length > 1 ? true : false}
           pagination={{ clickable: true, type: "fraction" }}
           grabCursor={true}
           modules={[Pagination]}
-          className="variant_swiper"
+          className="mySwiper"
           spaceBetween={10}
         >
           {variants.map((variant) => {
