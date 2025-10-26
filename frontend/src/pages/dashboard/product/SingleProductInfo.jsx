@@ -118,7 +118,7 @@ const SizesSlideComponent = ({ sizes, imgIndex }) => {
 
 const ImagesSlideComponent = ({ images, needSize }) => {
   return (
-    <figure className="relative">
+    <div className="relative">
       <Swiper
         loop={images.length > 1 ? true : false}
         pagination={{ clickable: true }}
@@ -129,7 +129,7 @@ const ImagesSlideComponent = ({ images, needSize }) => {
       >
         {images.map((img, index) => {
           return (
-            <SwiperSlide key={img._id + index} className="pb-7">
+            <SwiperSlide key={img._id} className="pb-7">
               <div className="border-2 border-[var(--purpleDark)] p-2">
                 <div className="grid grid-cols-[3fr_4fr]">
                   <h2 className="text-lg uppercase">Color</h2>
@@ -196,7 +196,7 @@ const ImagesSlideComponent = ({ images, needSize }) => {
           );
         })}
       </Swiper>
-    </figure>
+    </div>
   );
 };
 
