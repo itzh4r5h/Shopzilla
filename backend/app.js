@@ -15,8 +15,8 @@ require('dotenv').config({ quiet: true})
 
 const errorMiddleware = require('./middlewares/error')
 app.use(cors({
-    origin: "http://localhost:5173",  // your React frontend URL
-    credentials: true                 // if you're using cookies or sessions
+    origin: process.env.FRONTEND_URL,
+    credentials: true               
   }))
 
 app.use(cookieParser())
