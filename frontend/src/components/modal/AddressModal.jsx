@@ -7,7 +7,10 @@ import { SelectCountryStateCity } from "../selectors/SelectCountryStateCity";
 import { Country, State, City } from "country-state-city";
 import { joiResolver } from "@hookform/resolvers/joi";
 import { useDispatch } from "react-redux";
-import { addAddress, updateAddress } from "../../store/thunks/non_admin/userThunk";
+import {
+  addAddress,
+  updateAddress,
+} from "../../store/thunks/non_admin/userThunk";
 import { getIsoCode } from "../../utils/helpers";
 import { MdEditSquare } from "react-icons/md";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
@@ -30,7 +33,6 @@ export const AddressModal = ({
     register,
     handleSubmit,
     reset,
-    setValue,
     control,
     formState: { errors },
   } = useForm({ resolver: joiResolver(schema) });
@@ -58,21 +60,23 @@ export const AddressModal = ({
   useValidationErrorToast(errors);
 
   useEffect(() => {
-    setValue("state", "");
-  }, [countryCode]);
-
-  useEffect(() => {
-    setValue("city", "");
-  }, [stateCode]);
-
-  useEffect(() => {
-    if (edit && shippingAddress) {
+    if (open && edit && shippingAddress) {
       setCountryCode(getIsoCode(shippingAddress?.country, true));
       setStateCode(
         getIsoCode(shippingAddress?.country, false, shippingAddress.state, true)
       );
+
+      // Initialize form values once
+      reset({
+        address: shippingAddress.address,
+        country: shippingAddress.country,
+        state: shippingAddress.state,
+        city: shippingAddress.city,
+        pinCode: `${shippingAddress.pinCode}`,
+        mobileNumber: `${shippingAddress.mobileNumber}`,
+      });
     }
-  }, [edit, shippingAddress]);
+  }, [open, edit, shippingAddress, reset]);
 
   return (
     <div>
@@ -103,7 +107,6 @@ export const AddressModal = ({
                   Address
                 </label>
                 <input
-                  defaultValue={shippingAddress?.address}
                   autoComplete="off"
                   {...register("address", { required: true })}
                   id="address"
@@ -118,7 +121,6 @@ export const AddressModal = ({
                   Country
                 </label>
                 <SelectCountryStateCity
-                  selected={shippingAddress?.country}
                   name="country"
                   control={control}
                   setCode={setCountryCode}
@@ -133,7 +135,6 @@ export const AddressModal = ({
                   State
                 </label>
                 <SelectCountryStateCity
-                  selected={shippingAddress?.state}
                   name="state"
                   control={control}
                   setCode={setStateCode}
@@ -150,7 +151,6 @@ export const AddressModal = ({
                   City
                 </label>
                 <SelectCountryStateCity
-                  selected={shippingAddress?.city}
                   name="city"
                   control={control}
                   optionsData={
@@ -168,7 +168,6 @@ export const AddressModal = ({
                   Pin Code
                 </label>
                 <input
-                  defaultValue={shippingAddress?.pinCode}
                   autoComplete="off"
                   {...register("pinCode", { required: true })}
                   type="number"
@@ -184,7 +183,6 @@ export const AddressModal = ({
                   Mobile Number
                 </label>
                 <input
-                  defaultValue={shippingAddress?.mobileNumber}
                   autoComplete="off"
                   {...register("mobileNumber", { required: true })}
                   id="mobileNumber"

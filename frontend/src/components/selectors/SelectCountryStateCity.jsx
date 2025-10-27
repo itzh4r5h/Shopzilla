@@ -5,7 +5,6 @@ import Box from "@mui/material/Box";
 
 export const SelectCountryStateCity = ({
   name,
-  selected,
   control,
   setCode = () => {},
   optionsData,
@@ -41,11 +40,7 @@ export const SelectCountryStateCity = ({
             },
           }}
           {...field}
-          value={
-            optionsData.find((opt) =>
-              selected ? opt.name === selected : opt.name === field.value
-            ) || null
-          }
+          value={optionsData.find((opt) => opt.name === field.value) || null}
           onChange={(_, newValue) => {
             field.onChange(newValue ? newValue.name : "");
             setCode(newValue ? newValue.isoCode : "");
@@ -53,16 +48,16 @@ export const SelectCountryStateCity = ({
           options={optionsData}
           getOptionLabel={(option) => option?.name || ""}
           renderOption={(props, option) => (
-            <Box component="li" {...props} key={option.name} sx={{textTransform:'capitalize'}}>
+            <Box
+              component="li"
+              {...props}
+              key={option.name}
+              sx={{ textTransform: "capitalize" }}
+            >
               {option.name}
             </Box>
           )}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="outlined"
-            />
-          )}
+          renderInput={(params) => <TextField {...params} variant="outlined" />}
         />
       )}
     />

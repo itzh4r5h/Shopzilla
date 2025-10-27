@@ -52,6 +52,7 @@ export const Profile = () => {
   useEffect(() => {
     if (googleUser === "true") {
       toast.success("signed in with google");
+      navigate("/profile");
     }
   }, [googleUser]);
 
@@ -90,7 +91,7 @@ export const Profile = () => {
   const hasDispatched = useRef(false);
 
   useEffect(() => {
-    if(!user) return; // no user, no token checking
+    if (!user) return; // no user, no token checking
 
     if (!token) return; // no token, do nothing
 
@@ -130,49 +131,7 @@ export const Profile = () => {
 
   return (
     <>
-      {isLoading ? (
-        <div className="flex flex-col justify-center gap-5 relative">
-          {/* profie pic begins */}
-          <div className="self-center relative">
-            <picture className="w-55 h-55 block rounded-full overflow-hidden">
-              <Skeleton height={"100%"} width={"100%"} circle />
-            </picture>
-            <span className="absolute text-xl top-0 right-0 active:text-[var(--purpleDark)] transition-colors">
-              <Skeleton height={25} width={25} />
-            </span>
-          </div>
-          {/* profie pic ends */}
-
-          {/* name begins */}
-          <div className="grid grid-cols-[5fr_1fr] items-center">
-            <Skeleton height={45} />
-
-            <span className="justify-self-end">
-              <Skeleton height={25} width={25} />
-            </span>
-          </div>
-          {/* name ends */}
-
-          {/* email begins */}
-          <div className="grid grid-cols-[5fr_1fr] items-center">
-            <Skeleton height={45} />
-
-            <span className="justify-self-end">
-              <Skeleton height={25} width={25} />
-            </span>
-          </div>
-          {/* email ends */}
-
-          {/* address begins */}
-          <h2 className="text-2xl">
-            <Skeleton height={40} width={"60%"} />
-          </h2>
-          <Skeleton height={140} />
-
-          <Skeleton height={40} />
-          {/* address ends */}
-        </div>
-      ) : (
+      {!isLoading && user ? (
         <div className="flex flex-col justify-center gap-5 relative">
           {/* profie pic begins */}
           <ProfileImage profilePic={user.profilePic} />
@@ -225,6 +184,48 @@ export const Profile = () => {
               <FillButton name={"Go To Dashboard"} />
             </Link>
           )}
+        </div>
+      ) : (
+        <div className="flex flex-col justify-center gap-5 relative">
+          {/* profie pic begins */}
+          <div className="self-center relative">
+            <picture className="w-55 h-55 block rounded-full overflow-hidden">
+              <Skeleton height={"100%"} width={"100%"} circle />
+            </picture>
+            <span className="absolute text-xl top-0 right-0 active:text-[var(--purpleDark)] transition-colors">
+              <Skeleton height={25} width={25} />
+            </span>
+          </div>
+          {/* profie pic ends */}
+
+          {/* name begins */}
+          <div className="grid grid-cols-[5fr_1fr] items-center">
+            <Skeleton height={45} />
+
+            <span className="justify-self-end">
+              <Skeleton height={25} width={25} />
+            </span>
+          </div>
+          {/* name ends */}
+
+          {/* email begins */}
+          <div className="grid grid-cols-[5fr_1fr] items-center">
+            <Skeleton height={45} />
+
+            <span className="justify-self-end">
+              <Skeleton height={25} width={25} />
+            </span>
+          </div>
+          {/* email ends */}
+
+          {/* address begins */}
+          <h2 className="text-2xl">
+            <Skeleton height={40} width={"60%"} />
+          </h2>
+          <Skeleton height={140} />
+
+          <Skeleton height={40} />
+          {/* address ends */}
         </div>
       )}
     </>
