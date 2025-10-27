@@ -69,24 +69,48 @@ export const Profile = () => {
   }, [resendLinkIn]);
 
   useEffect(() => {
-    // Early exit if countdown hasn't ended
-    if (deletionCountdown.secondsLeft > 0) return;
+    // defensive: make sure deletionCountdown exists and secondsLeft is a number
+    const seconds =
+      deletionCountdown && typeof deletionCountdown.secondsLeft !== "undefined"
+        ? Number(deletionCountdown.secondsLeft)
+        : null;
 
-    // Then check if user exists
-    if (!user) return;
+    // if countdown still running or invalid, do nothing
+    if (seconds === null || seconds > 0) return;
 
-    // Skip if user is verified
-    if (user.isVerified) return;
-
-    // Finally, check localStorage time
-    const time = localStorage.getItem(`deletion_timer_${user._id}`);
-    if (time && new Date(time).getTime() <= Date.now()) {
-      dispatch(signOutUser());
-      navigate("/signup");
-      localStorage.clear();
-      toast.error("Account is deleted");
+    // need a user to proceed
+    if (!user || !user._id) {
+      return;
     }
-  }, [deletionCountdown, user]);
+
+    const key = `deletion_timer_${user._id}`;
+    const timeStr = localStorage.getItem(key);
+
+    if (!timeStr) {
+      return;
+    }
+
+    const timeMs = new Date(timeStr).getTime();
+    if (Number.isNaN(timeMs)) {
+      return;
+    }
+
+    if (timeMs > Date.now()) {
+      return;
+    }
+
+    // Everything checks out — perform sign out, navigate, cleanup.
+    dispatch(signOutUser());
+
+    // clearing entire localStorage.
+    localStorage.clear();
+
+    // show toast and navigate
+    toast.error("Account is deleted");
+    navigate("/signup");
+
+    // include deps to avoid stale closures
+  }, [deletionCountdown, user, dispatch, navigate, toast]);
 
   const hasDispatched = useRef(false);
 
