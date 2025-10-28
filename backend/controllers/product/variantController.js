@@ -706,6 +706,8 @@ const variantStage = (page, limit) => {
     { $unwind: "$selectedIndexes" },
     // 👇 make that flattened object the actual root
     { $replaceRoot: { newRoot: "$selectedIndexes" } },
+    // sort docs
+    { $sort: { createdAt: -1, _id: -1 } },
     { $skip: (page - 1) * limit },
     { $limit: limit },
   ];
