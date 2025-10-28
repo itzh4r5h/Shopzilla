@@ -13,6 +13,13 @@ const startDeletionWorker = () => {
           const user = await User.findById(job.data.userId);
           if (user && !user.isVerified) {
             await User.findByIdAndDelete(user._id);
+            // Lookup socketId from userId
+            const socketId = global._userSockets[user._id];
+            if (socketId && global._io) {
+              global._io.to(socketId).emit("userDeleted", {
+                message: "account is deleted",
+              });
+            }
             console.log(`[Worker] Deleted unverified user: ${user.email}`);
           }
         } catch (error) {

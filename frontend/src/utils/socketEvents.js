@@ -1,8 +1,10 @@
 import { toast } from "react-toastify";
 import { socket } from "./socket";
 import { getAllVariants } from "../store/thunks/admin/variantThunk";
+import { clearUser } from "../store/slices/non_admin/userSlice";
+import { clearIsLoggedIn } from "../store/slices/non_admin/authSlice";
 
-export const startSocketConnection = (loggedInUserId,dispatch) => {
+export const startSocketConnection = (loggedInUserId,dispatch,navigate) => {
   if (!socket.connected) {
     socket.connect(); // connect only once
   }
@@ -18,6 +20,16 @@ export const startSocketConnection = (loggedInUserId,dispatch) => {
   socket.on("productImagesUploaded", (data) => {
     toast.success(data.message);
     dispatch(getAllVariants(data.id));
+  });
+
+  socket.off("userDeleted"); // remove old listeners
+  socket.on("userDeleted", (data) => {
+    document.cookie = ""
+    dispatch(clearUser())
+    dispatch(clearIsLoggedIn())
+    toast.error(data.message);
+    navigate("/signup");
+    localStorage.clear()
   });
 };
 
