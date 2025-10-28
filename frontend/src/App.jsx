@@ -43,7 +43,7 @@ export const App = () => {
 
   useEffect(() => {
     if (isLoggedIn && user?.role === "admin") {
-      startSocketConnection(user?._id, dispatch);
+      startSocketConnection(user?._id, dispatch,navigate);
     }
   }, [isLoggedIn, user?._id]);
 
