@@ -70,7 +70,7 @@ exports.signUpUser = catchAsyncErrors(async (req, res, next) => {
     "delete-user",
     { userId: user._id },
     {
-      delay: process.env.USER_DELETION_MINUTES * 60 * 1000 + 3000,
+      delay: process.env.USER_DELETION_MINUTES * 60 * 1000,
       jobId: `delete-user-${user._id}`,
     }
   );
