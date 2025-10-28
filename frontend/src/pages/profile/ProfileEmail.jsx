@@ -21,8 +21,9 @@ export const ProfileEmail = () => {
   const { user, updated } = useSelector((state) => state.user);
   const { resendOtpIn, sending } = useSelector((state) => state.email);
 
-
-  const isOtpResendExists = localStorage.getItem(`otp_resend_timer_${user?._id}`);
+  const isOtpResendExists = localStorage.getItem(
+    `otp_resend_timer_${user?._id}`
+  );
 
   const schema = useMemo(() => {
     return emailJoiSchema(isOtpResendExists);
@@ -46,12 +47,11 @@ export const ProfileEmail = () => {
   };
 
   const sendOtp = () => {
-    const email = getValues('email')
+    const email = getValues("email");
     if (email === user.email) {
       setReadOnly(true);
       return toast.error("enter new email");
     } else {
-      localStorage.setItem("email", email);
       dispatch(sendOtpToEmail(email));
     }
   };
@@ -60,6 +60,7 @@ export const ProfileEmail = () => {
 
   useEffect(() => {
     if (resendOtpIn) {
+      localStorage.setItem("email", getValues("email"));
       resendCountdown.reset(resendOtpIn);
     }
   }, [resendOtpIn]);
@@ -175,7 +176,10 @@ export const ProfileEmail = () => {
           )}
           {!readOnly && resendCountdown.secondsLeft === 0 && !sending && (
             <span className="w-full" onClick={sendOtp}>
-              <FillButton type="button" name={isOtpResendExists ? "Resend OTP" : "Send OTP"} />
+              <FillButton
+                type="button"
+                name={isOtpResendExists ? "Resend OTP" : "Send OTP"}
+              />
             </span>
           )}
 
