@@ -150,6 +150,8 @@ export const ProductDetails = ({ path }) => {
     }
   };
 
+  // issues when all out of stock color not updating
+
   // this is used to set the totalStock and currentStock based on needSize of variant
   useEffect(() => {
     updateStock();

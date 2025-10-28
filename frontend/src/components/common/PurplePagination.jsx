@@ -15,7 +15,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
   },
 }));
 
-export const PurplePagination = ({ count,setPage, ...props }) => {
+export const PurplePagination = ({ count,setPage,page, ...props }) => {
     const dispatch = useDispatch();
     const handleChange = (event, value) =>{
          dispatch(setPage(value))
@@ -24,6 +24,7 @@ export const PurplePagination = ({ count,setPage, ...props }) => {
   return (
     <StyledPagination
       count={count}
+      page={page}
       onChange={handleChange}
       variant="outlined"
       shape="rounded"

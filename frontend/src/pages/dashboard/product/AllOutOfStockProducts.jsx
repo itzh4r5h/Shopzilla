@@ -52,7 +52,7 @@ export const AllOutOfStockProducts = () => {
 
         {out_of_stock_variants?.length > 0 && (
           <div className="flex justify-center items-end col-span-2">
-            <PurplePagination count={totalPages} setPage={setPage} />
+            <PurplePagination count={totalPages} setPage={setPage} page={page}/>
           </div>
         )}
       </div>
