@@ -43,11 +43,15 @@ export const CartCard = ({
     }
   };
 
-  const { getValues, control } = useForm({
+  const { setValue, getValues, control } = useForm({
     defaultValues: {
-      quantity: productQuantity,
+      quantity: 1,
     },
   });
+
+  useEffect(() => {
+    setValue("quantity", productQuantity);
+  }, [productQuantity, setValue]);
 
   const [stock, setStock] = useState(0);
 
@@ -146,7 +150,9 @@ export const CartCard = ({
 
           <FaTimesCircle
             className="justify-self-center text-2xl active:text-[var(--purpleDark)] transition-colors"
-            onClick={() => dispatch(removeProductFromCart({id:variant._id,colorIndex}))}
+            onClick={() =>
+              dispatch(removeProductFromCart({ id: variant._id, colorIndex }))
+            }
           />
         </div>
         {/*increase/decrease quanity and remove from cart begins */}
