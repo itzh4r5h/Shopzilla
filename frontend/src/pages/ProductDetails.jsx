@@ -114,17 +114,17 @@ export const ProductDetails = ({ path }) => {
     (rev) => rev.user.toString() === user?._id.toString()
   );
 
-  const selectedColorIndex = useRef(Number(selectedProduct));
+  const [selectedColorIndex,setSelectedColorIndex] = useState(Number(selectedProduct))
   const [selectedSizeIndex, setSelectedSizeIndex] = useState(0);
   // this will work as check
   const [totalStock, setTotalStock] = useState(0);
   // current stock of selected product
   const [currentStock, setCurrentStock] = useState(0);
 
-  const updateStock = () => {
+  const updateStock = (clrIndex) => {
     if (variant) {
       if (variant.needSize) {
-        const stocks = variant.images[selectedColorIndex.current].sizes.map(
+        const stocks = variant.images[clrIndex].sizes.map(
           (sizeObj) => sizeObj.stock
         );
         const totalStk = stocks.reduce((sum, stock) => sum + stock, 0);
@@ -143,18 +143,16 @@ export const ProductDetails = ({ path }) => {
         }
         setTotalStock(totalStk);
       } else {
-        const stck = variant.images[selectedColorIndex.current].stock;
+        const stck = variant.images[selectedColorIndex].stock;
         setTotalStock(stck);
         setCurrentStock(stck);
       }
     }
   };
 
-  // issues when all out of stock color not updating
-
   // this is used to set the totalStock and currentStock based on needSize of variant
   useEffect(() => {
-    updateStock();
+    updateStock(selectedColorIndex);
   }, [variant]);
 
   const [quantity, setQuantity] = useState(1);
@@ -183,7 +181,7 @@ export const ProductDetails = ({ path }) => {
             cartData: {
               quantity,
               sizeIndex: selectedSizeIndex,
-              colorIndex: selectedColorIndex.current,
+              colorIndex: selectedColorIndex,
             },
           })
         );
@@ -191,7 +189,7 @@ export const ProductDetails = ({ path }) => {
         dispatch(
           addProductToCartOrUpdateQuantity({
             id: variantId,
-            cartData: { quantity, colorIndex: selectedColorIndex.current },
+            cartData: { quantity, colorIndex: selectedColorIndex },
           })
         );
       }
@@ -205,7 +203,7 @@ export const ProductDetails = ({ path }) => {
         <article className="w-full min-h-full border border-[var(--black)] bg-[var(--white)] p-2 flex flex-col gap-2 mt-5">
           <Swiper
             loop={
-              variant.images[selectedColorIndex.current].files.length > 1
+              variant.images[selectedColorIndex].files.length > 1
                 ? true
                 : false
             }
@@ -224,7 +222,7 @@ export const ProductDetails = ({ path }) => {
             modules={[EffectCreative, Pagination]}
             className="mySwiper"
           >
-            {variant.images[selectedColorIndex.current].files.map((img) => {
+            {variant.images[selectedColorIndex].files.map((img) => {
               return (
                 <SwiperSlide key={img._id}>
                   <picture className="w-full h-55 block relative overflow-hidden bg-white">
@@ -249,19 +247,19 @@ export const ProductDetails = ({ path }) => {
                 return (
                   <div
                     onClick={() => {
-                      selectedColorIndex.current = index;
-                      updateStock();
+                      setSelectedColorIndex(index)
+                      updateStock(index);
                       setQuantity(1);
                     }}
                     className={`h-9 w-9 border-2 rounded-full relative ${
-                      selectedColorIndex.current === index
+                      selectedColorIndex === index
                         ? "border-[var(--purpleDark)]"
                         : "border-transparent"
                     }`}
                     key={index}
                   >
                     <div
-                      className="h-7 w-7 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                      className="h-7 w-7 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border"
                       style={{ backgroundColor: clr }}
                     ></div>
                   </div>
@@ -273,7 +271,7 @@ export const ProductDetails = ({ path }) => {
           {/* size box begins */}
           {variant.needSize && totalStock > 0 && (
             <div className="overflow-x-auto flex gap-3 items-centers">
-              {variant.images[selectedColorIndex.current].sizes
+              {variant.images[selectedColorIndex].sizes
                 .map((sizeObj) => sizeObj)
                 .map((sz, index) => {
                   return (
@@ -335,7 +333,7 @@ export const ProductDetails = ({ path }) => {
               <div className="absolute flex justify-center items-center w-fit top-1/2 -translate-y-1/2 left-1">
                 <BsCurrencyRupee className="text-md" />
                 <span className="text-md font-bold">
-                  {variant.images[selectedColorIndex.current].price}
+                  {variant.images[selectedColorIndex].price}
                 </span>
               </div>
               {/* price ends */}
@@ -388,7 +386,7 @@ export const ProductDetails = ({ path }) => {
               <span onClick={handleAddToCart} className="w-full">
                 <OutlineButton name={"Add To Cart"} />
               </span>
-              <Checkout details={{id:variant._id,productData:{...(variant.needSize?{quantity,sizeIndex: selectedSizeIndex,colorIndex: selectedColorIndex.current}:{quantity, colorIndex: selectedColorIndex.current})}}} />
+              <Checkout details={{id:variant._id,productData:{...(variant.needSize?{quantity,sizeIndex: selectedSizeIndex,colorIndex: selectedColorIndex}:{quantity, colorIndex: selectedColorIndex})}}} />
             </div>
           )}
 
