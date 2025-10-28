@@ -129,7 +129,7 @@ export const ProductDetails = ({ path }) => {
         );
         const totalStk = stocks.reduce((sum, stock) => sum + stock, 0);
         if (totalStk > 0) {
-          // for setting up selectedSizeIndex based on stock is in stock of that size
+          // for setting up selectedSizeIndex based on stock is in-stock of that size
           for (let index = 0; index < stocks.length; index++) {
             if (stocks[index] > 0) {
               setSelectedSizeIndex(index);
@@ -137,6 +137,9 @@ export const ProductDetails = ({ path }) => {
               break;
             }
           }
+        }
+        else{
+          setCurrentStock(0)
         }
         setTotalStock(totalStk);
       } else {
@@ -400,7 +403,7 @@ export const ProductDetails = ({ path }) => {
 
           <h2 className="text-2xl text-center">Ratings & Reviews</h2>
           {isLoggedIn &&
-            user.orderedProducts.includes(variant.product._id) &&
+            user?.orderedProducts.includes(variant.product._id) &&
             !isReviewed && <ReviewModal id={variant.product._id} />}
 
           {/* overvall rating begins */}
