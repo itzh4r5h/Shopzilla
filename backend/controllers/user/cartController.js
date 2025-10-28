@@ -1,10 +1,9 @@
 const { User } = require("../../models/User");
-const { Product } = require("../../models/product/Product");
 const { Variant } = require("../../models/product/Variant");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
-const { isOnlyDigits } = require("../../utils/helpers");
 const { validateQuantityAndStock } = require("../../utils/commonValidations");
+
 
 // ========================= ADD PRODUCT TO CART OR UPDATE PRODUCT QUANTITY =========================
 exports.addProductToCartOrUpdateQuantity = catchAsyncErrors(
@@ -21,7 +20,12 @@ exports.addProductToCartOrUpdateQuantity = catchAsyncErrors(
       return next(new ErrorHandler("product not exists", 404));
     }
 
-    const { quantity, colorIndex, sizeIndex } = validateQuantityAndStock(req,variant,next)
+    const error =  validateQuantityAndStock(req,variant)
+    if(error){
+      return next(new ErrorHandler(error,400))
+    }
+
+    const { quantity, colorIndex, sizeIndex } = req.body
 
     const isAdded = user.cartProducts.find(
       (cartProduct) =>

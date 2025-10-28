@@ -2,11 +2,11 @@ const ErrorHandler = require("./errorHandler");
 const { isOnlyDigits } = require("./helpers");
 
 
-const validateQuantityAndStock = (req,variant,next)=>{
+const validateQuantityAndStock = (req,variant)=>{
     const { quantity, colorIndex, sizeIndex } = req.body;
 
     if (typeof colorIndex !== "number" && !colorIndex) {
-      return next(new ErrorHandler("color is required"));
+      return "color is required"
     }
 
     if (!quantity || quantity.toString().trim() === "") {
@@ -14,32 +14,30 @@ const validateQuantityAndStock = (req,variant,next)=>{
     }
 
     if (!isOnlyDigits(quantity)) {
-      return next(new ErrorHandler("quantity must be a number", 400));
+      return "quantity must be a number"
     }
 
     // if need size is true
     if (variant.needSize) {
       if (typeof sizeIndex !== "number" && !sizeIndex) {
-        return next(new ErrorHandler("size is required"));
+        return "size is required"
       }
 
       if (
         Number(quantity) > variant.images[colorIndex].sizes[sizeIndex].stock ||
         variant.images[colorIndex].sizes[sizeIndex].stock === 0
       ) {
-        return next(new ErrorHandler("oops! not enough stock", 400));
+        return "oops! not enough stock"
       }
     } else {
       if (
         Number(quantity) > variant.images[colorIndex].stock ||
         variant.images[colorIndex].stock === 0
       ) {
-        return next(new ErrorHandler("oops! not enough stock", 400));
+        return "oops! not enough stock"
       }
     }
-    // condition ends
-
-    return {quantity,colorIndex,sizeIndex}
+    return false
 }
 
 

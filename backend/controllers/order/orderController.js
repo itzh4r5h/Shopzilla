@@ -38,12 +38,12 @@ exports.createNewOrder = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("product not exists", 404));
     }
 
-    const { quantity, colorIndex, sizeIndex } = validateQuantityAndStock(
-      req,
-      variant,
-      next
-    );
+    const error = validateQuantityAndStock(req, variant);
+    if (error) {
+      return next(new ErrorHandler(error, 400));
+    }
 
+    const { quantity, colorIndex, sizeIndex } = req.body;
     const item = {
       needSize: variant.needSize,
       colorIndex,
@@ -261,7 +261,9 @@ exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
 
   if (order.orderStatus === "delivered") {
     const user = await User.findById(order.user);
-    const productIds = order.orderItems.map((item) => item.productId.toString());
+    const productIds = order.orderItems.map((item) =>
+      item.productId.toString()
+    );
     const mergeIds = [
       ...user.orderedProducts.map((id) => id.toString()),
       ...productIds,
