@@ -18,6 +18,10 @@ import { ProfileEmail } from "./ProfileEmail";
 import { ProfilePassword } from "./ProfilePassword";
 import { ProfileAddress } from "./ProfileAddress";
 import { ProfileImage } from "./ProfileImage";
+import {
+  startSocketConnection,
+  stopSocketConnection,
+} from "../../utils/socketEvents";
 
 export const Profile = () => {
   const dispatch = useDispatch();
@@ -69,48 +73,13 @@ export const Profile = () => {
   }, [resendLinkIn]);
 
   useEffect(() => {
-    // defensive: make sure deletionCountdown exists and secondsLeft is a number
-    const seconds =
-      deletionCountdown && typeof deletionCountdown.secondsLeft !== "undefined"
-        ? Number(deletionCountdown.secondsLeft)
-        : null;
-
-    // if countdown still running or invalid, do nothing
-    if (seconds === null || seconds > 0) return;
-
-    // need a user to proceed
-    if (!user || !user._id) {
-      return;
+    if (!user) return;
+    if (user.isVerified) {
+      stopSocketConnection();
+    } else {
+      startSocketConnection(user._id, dispatch, navigate);
     }
-
-    const key = `deletion_timer_${user._id}`;
-    const timeStr = localStorage.getItem(key);
-
-    if (!timeStr) {
-      return;
-    }
-
-    const timeMs = new Date(timeStr).getTime();
-    if (Number.isNaN(timeMs)) {
-      return;
-    }
-
-    if (timeMs > Date.now()) {
-      return;
-    }
-
-    // Everything checks out — perform sign out, navigate, cleanup.
-    dispatch(signOutUser());
-
-    // clearing entire localStorage.
-    localStorage.clear();
-
-    // show toast and navigate
-    toast.error("Account is deleted");
-    navigate("/signup");
-
-    // include deps to avoid stale closures
-  }, [deletionCountdown, user, dispatch, navigate, toast]);
+  }, [user]);
 
   const hasDispatched = useRef(false);
 
@@ -131,25 +100,6 @@ export const Profile = () => {
       hasDispatched.current = true;
     }
   }, [token, user]);
-
-  useEffect(() => {
-    if (!user) return; // early exit if user not ready
-
-    const resendKey = `resend_timer_${user._id}`;
-    const deletionKey = `deletion_timer_${user._id}`;
-
-    const hasResendTimer = localStorage.getItem(resendKey);
-    const hasDeletionTimer = localStorage.getItem(deletionKey);
-
-    // If there are no timers, do nothing
-    if (!hasResendTimer && !hasDeletionTimer) return;
-
-    // If user is verified, clean up both timers
-    if (user.isVerified) {
-      localStorage.removeItem(resendKey);
-      localStorage.removeItem(deletionKey);
-    }
-  }, [user]);
 
   const isLoading = userLoading || authLoading;
 
