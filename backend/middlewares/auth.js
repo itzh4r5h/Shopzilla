@@ -7,7 +7,7 @@ exports.isUserAuthenticated = catchAsyncErrors(async (req,res,next)=>{
     const {token} = req.cookies;
     
     if(!token){
-        return next(new ErrorHandler('User not authorized, please signin',401))
+        return next(new ErrorHandler('user not authorized, please signin',401))
     }
 
     const decodedData = jwt.verify(token,process.env.JWT_SECRET)
@@ -19,7 +19,8 @@ exports.isUserAuthenticated = catchAsyncErrors(async (req,res,next)=>{
     const user = await User.findById(decodedData.id)
 
     if(!user){
-        return next(new ErrorHandler('User not exists',404))
+        res.clearCookie("token");
+        return next(new ErrorHandler('user not exists',404))
     }
 
     req.user = user
@@ -30,7 +31,7 @@ exports.isUserAuthenticated = catchAsyncErrors(async (req,res,next)=>{
 exports.authorizedRoles = (...roles)=>{
     return (req,res,next)=>{
         if(!roles.includes(req.user.role)){
-            return next(new ErrorHandler(`Role "${req.user.role}" is not authorized`,403))
+            return next(new ErrorHandler(`role "${req.user.role}" is not authorized`,403))
         }
         next()
     }
@@ -46,7 +47,7 @@ exports.isOtpValid = catchAsyncErrors(async (req,res,next)=>{
     const user = await User.findOne({email:req.user.email,otp,otpExpire:{$gt:Date.now()}})
 
     if(!user){
-        return next(new ErrorHandler('Invalid OTP or OTP is expired',404))
+        return next(new ErrorHandler('invalid OTP or OTP is expired',404))
     }
     
     user.otp = undefined
@@ -70,7 +71,7 @@ exports.isEmailVerified = catchAsyncErrors(async (req,res,next)=>{
     }
     
     if(!user.isVerified){
-        return next(new ErrorHandler('Account no longer exists',410))
+        return next(new ErrorHandler('account no longer exists',410))
     }
 
     next()
