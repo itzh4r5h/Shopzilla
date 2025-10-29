@@ -223,7 +223,7 @@ export const UserOrders = () => {
                           </picture>
 
                           <div>
-                            <p className="line-clamp-3 text-lg my-2">
+                            <p className="line-clamp-2 text-lg my-2">
                               {product.name}
                             </p>
 
@@ -268,6 +268,10 @@ export const UserOrders = () => {
                               </div>
                               {/* quantity ends */}
                             </div>
+
+                           {product.needSize &&  <p className="text-lg uppercase text-[var(--light)]">
+                              size - {product.size}
+                            </p>}
                           </div>
                         </div>
                       </SwiperSlide>
