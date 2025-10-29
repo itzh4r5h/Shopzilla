@@ -73,6 +73,7 @@ exports.getAllShippingAddress = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     allShippingAddress: user.shippingAddress,
+    shippingAddressIndex: user.shippingAddressIndex
   });
 });
 
@@ -165,13 +166,24 @@ exports.deleteShippingAddress = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("address not exists", 404));
   }
 
+  let shippingAddressIndex = user.shippingAddressIndex
+
   const shippingAddress = user.shippingAddress.filter(
-    (address) => address._id.toString() !== req.params.id.toString()
+    (address,index) => {
+      if(address._id.toString() === req.params.id.toString()){
+        if(index+1 === user.shippingAddressIndex){
+          shippingAddressIndex = 1
+        }
+        return false
+      }
+      return true
+    }
   );
+
 
   await User.findByIdAndUpdate(
     req.user._id,
-    { shippingAddress },
+    { shippingAddress,shippingAddressIndex },
     { new: true, runValidators: true }
   );
 
