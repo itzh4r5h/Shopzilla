@@ -74,7 +74,7 @@ export const Profile = () => {
 
   useEffect(() => {
     if (!user) return;
-    if (user.isVerified) {
+    if (user.isVerified && user.role !== 'admin') {
       stopSocketConnection();
     } else {
       startSocketConnection(user._id, dispatch, navigate);
