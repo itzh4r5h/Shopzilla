@@ -7,7 +7,8 @@ import { deleteReview } from "../../store/thunks/non_admin/reviewThunk";
 
 export const ReviewCard = ({ review, id }) => {
   const dispatch = useDispatch();
-  const { isLoggedIn, user } = useSelector((state) => state.user);
+  const { isLoggedIn } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.user);
 
   const handleDeleteReview = () => {
     dispatch(deleteReview(id));
@@ -15,12 +16,16 @@ export const ReviewCard = ({ review, id }) => {
 
   return (
     <article>
-      <div className="grid grid-cols-[6fr_1fr_1fr] items-center pr-2 w-full">
+      <div className="grid grid-cols-[10fr_1fr_1fr] items-center w-full gap-x-2">
         <h3 className="text-lg font-medium">{review.name}</h3>
         {isLoggedIn && review.user.toString() === user._id.toString() && (
           <>
-            <ReviewModal edit={true} id={id} review={review} />
-            <DeleteModal deleteFunction={handleDeleteReview} />
+           <span className="justify-self-center">
+             <ReviewModal edit={true} id={id} review={review} />
+           </span>
+            <span className="justify-self-center">
+              <DeleteModal deleteFunction={handleDeleteReview} />
+            </span>
           </>
         )}
       </div>
