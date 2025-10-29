@@ -49,6 +49,7 @@ const initialState = {
   updatedAddress: undefined,
   loading: false,
   allShippingAddress: undefined,
+  shippingAddressIndex: 1,
   user: undefined,
   isPasswordExists: undefined,
 };
@@ -159,6 +160,7 @@ const userSlice = createSlice({
       },
       fulfilled: (state, action) => {
         state.allShippingAddress = action.payload.allShippingAddress;
+        state.shippingAddressIndex = action.payload.shippingAddressIndex;
       },
     });
   },
