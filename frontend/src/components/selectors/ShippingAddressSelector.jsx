@@ -11,7 +11,7 @@ import { AddressModal } from "../modal/AddressModal";
 export const ShippingAddressSelector = () => {
   const dispatch = useDispatch();
 
-  const { allShippingAddress, updatedAddress, user } =
+  const { allShippingAddress, updatedAddress, shippingAddressIndex } =
     useSelector((state) => state.user);
 
   const [shippingAddress, setShippingAddress] = useState([]);
@@ -35,7 +35,7 @@ export const ShippingAddressSelector = () => {
   });
 
   useEffect(() => {
-    if (allShippingAddress && allShippingAddress?.length > 0 && user) {
+    if (allShippingAddress && allShippingAddress?.length > 0) {
       // Compute addresses immediately
       const formatted = allShippingAddress.map((address) =>
         Object.values(address).slice(0, -1).join(", ")
@@ -45,10 +45,10 @@ export const ShippingAddressSelector = () => {
       setShippingAddress(formatted);
 
       // Using formatted array directly so that it will set the selector value immediately
-      const selected = formatted[user?.shippingAddressIndex - 1];
+      const selected = formatted[shippingAddressIndex - 1];
       setValue("shippingAddress", selected);
     }
-  }, [allShippingAddress, user, setValue]);
+  }, [allShippingAddress, shippingAddressIndex,setValue]);
 
 
   return allShippingAddress?.length < 1 ? (
