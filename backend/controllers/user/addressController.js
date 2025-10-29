@@ -167,6 +167,7 @@ exports.deleteShippingAddress = catchAsyncErrors(async (req, res, next) => {
   }
 
   let shippingAddressIndex = user.shippingAddressIndex
+  const currentShippingAddressId = user.shippingAddress.find((address,index)=>index+1===shippingAddressIndex)._id
 
   const shippingAddress = user.shippingAddress.filter(
     (address,index) => {
@@ -179,6 +180,14 @@ exports.deleteShippingAddress = catchAsyncErrors(async (req, res, next) => {
       return true
     }
   );
+
+  // it is mandatory to update shippingAddessIndex as shippingAddress array length has been changed
+  for (let index = 0; index < shippingAddress.length; index++) {
+    if(shippingAddress[index]._id.toString() === currentShippingAddressId.toString()){
+      shippingAddressIndex = index+1
+      break
+    }
+  }
 
 
   await User.findByIdAndUpdate(
