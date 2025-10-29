@@ -107,6 +107,7 @@ export const ProductCard = ({
           </div>}
           {/* svg and price container emd */}
 
+          {out_of_stock && variant.needSize && <p className="col-span-2 text-[var(--light)] mb-0.5">sizes - {variant.images[variant.selectedProduct].sizes.filter((sz)=>sz.stock===0).length}</p>}
           {out_of_stock && <UpdateStock variant={variant}/>}
 
           {/* rating begins */}
