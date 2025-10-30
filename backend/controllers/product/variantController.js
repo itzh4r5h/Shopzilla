@@ -159,7 +159,7 @@ const contentValidation = async (req, next, edit = false) => {
   const { attributes, needSize } = req.body;
 
   if (typeof needSize !== "boolean") {
-    return next(new ErrorHandler("need size is required"));
+    return { error: "need size is required" };
   }
 
   const { productId } = req.params;
@@ -167,13 +167,13 @@ const contentValidation = async (req, next, edit = false) => {
   const product = await Product.findById(productId).populate("category");
 
   if (!product) {
-    return next(new ErrorHandler("product not exists", 404));
+    return { error: "product not exists" };
   }
 
   const { error } = variantJoiSchema.validate({ attributes });
 
   if (error) {
-    return next(new ErrorHandler(formatJoiErrMessage(error), 400));
+    return { error: formatJoiErrMessage(error) };
   }
 
   const images = formatImages(req.files, req.body.images, edit, needSize);
@@ -181,7 +181,7 @@ const contentValidation = async (req, next, edit = false) => {
   const { error: imagesError } = imagesJoiSchema.validate({ needSize, images });
 
   if (imagesError) {
-    return next(new ErrorHandler(formatJoiErrMessage(imagesError), 400));
+    return { error: formatJoiErrMessage(imagesError) };
   }
 
   const subcategory = product.category.subcategories.find(
@@ -189,7 +189,7 @@ const contentValidation = async (req, next, edit = false) => {
   );
 
   if (attributes.length !== subcategory.attributes.length) {
-    return next(new ErrorHandler("required attriubtes not given"));
+    return { error: "required attriubtes not given" };
   }
 
   // validates variant attribute with existing subcategory attributes
@@ -199,10 +199,10 @@ const contentValidation = async (req, next, edit = false) => {
     );
 
     if (!definedAttr) {
-      return next(new ErrorHandler("invalid attribute name"));
+      return { error: "invalid attribute name" };
     }
   }
-  return { attributes, productId, images, needSize };
+  return { attributes, productId, images, needSize, error };
 };
 
 const uploadImagesToImageKit = async (
@@ -258,10 +258,12 @@ const uploadImagesToImageKit = async (
 
 // ======================= ADMIN -- CREATE NEW VARIANT ==============================
 exports.createNewVariant = catchAsyncErrors(async (req, res, next) => {
-  const { attributes, productId, images, needSize } = await contentValidation(
-    req,
-    next
-  );
+  const { attributes, productId, images, needSize, error } =
+    await contentValidation(req, next);
+
+  if (error) {
+    return next(new ErrorHandler(error));
+  }
 
   const dummyImagesData = [
     {
@@ -343,11 +345,12 @@ exports.updateVariant = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("variant not exists", 404));
   }
 
-  const { attributes, productId, images, needSize } = await contentValidation(
-    req,
-    next,
-    true
-  );
+  const { attributes, productId, images, needSize, error } =
+    await contentValidation(req, next, true);
+
+  if (error) {
+    return next(new ErrorHandler(error));
+  }
 
   const { removedImagesFileIds } = req.body;
 
@@ -897,7 +900,7 @@ exports.getOutOfStockVariants = catchAsyncErrors(async (req, res) => {
 });
 
 // ======================= ADMIN - UPDATE VARIANT STOCK ==============================
-exports.updateVariantStock = catchAsyncErrors(async (req, res,next) => {
+exports.updateVariantStock = catchAsyncErrors(async (req, res, next) => {
   const variant = await Variant.findById(req.params.id);
   const { stock, sizes, originalIndex, needSize } = req.body;
 
