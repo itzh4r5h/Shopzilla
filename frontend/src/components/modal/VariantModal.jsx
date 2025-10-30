@@ -136,6 +136,18 @@ export const VariantModal = ({
       // Editing existing variant
       const attrs = cleanAttributes(variant.attributes);
 
+      // in case of new attributes addition
+      const extraAttributes = attributesData
+        .filter(
+          (attr) => !attrs.some((variantAttr) => variantAttr.name === attr.name)
+        )
+        .map(({ name }) => ({ name, value:""}));
+
+      // if found then add it to attrs
+      if (extraAttributes.length > 0) {
+        attrs.push(...extraAttributes);
+      }
+
       return {
         attributes: attrs,
         needSize: variant.needSize,
@@ -561,7 +573,11 @@ export const VariantModal = ({
                 </div>
                 {/* images ends */}
 
-                <FillButton type="submit" name={edit ? "Update" : "Add"} padding="px-2 py-1 -mt-4" />
+                <FillButton
+                  type="submit"
+                  name={edit ? "Update" : "Add"}
+                  padding="px-2 py-1 -mt-4"
+                />
               </form>
             </div>
           </>,
