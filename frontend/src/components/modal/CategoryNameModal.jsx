@@ -29,6 +29,10 @@ export const CategoryNameModal = ({ name, icon, id, subId = false }) => {
     control,
     formState: { errors },
   } = useForm({
+    defaultValues:{
+      name,
+      icon
+    },
     resolver: joiResolver(schema),
   });
 
@@ -79,7 +83,6 @@ export const CategoryNameModal = ({ name, icon, id, subId = false }) => {
                     Name
                   </label>
                   <input
-                    defaultValue={name}
                     autoComplete="off"
                     {...register("name", { required: true })}
                     id="name"
@@ -96,7 +99,6 @@ export const CategoryNameModal = ({ name, icon, id, subId = false }) => {
                   <IconSelector
                     name={"icon"}
                     control={control}
-                    selected={icon}
                   />
                 </div>
                 {/* icon ends */}
