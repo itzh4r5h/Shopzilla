@@ -1,4 +1,5 @@
 const { Category } = require("../../models/product/Category");
+const { Product } = require("../../models/product/Product");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const { formatJoiErrMessage } = require("../../utils/helpers");
@@ -35,6 +36,25 @@ exports.createCategory = catchAsyncErrors(async (req, res, next) => {
 // ============================ UPDATE MAIN CATEGORY NAME ============================================
 exports.updateCategoryName = catchAsyncErrors(async (req, res, next) => {
   const { name, icon } = req.body;
+
+  const category = await Category.findById(req.params.id);
+
+  if (!category) {
+    return next(new ErrorHandler("category not exists", 404));
+  }
+
+   const products = await Product.find({
+    category: req.params.id,
+  });
+
+  if (products.length > 0) {
+    return next(
+      new ErrorHandler(
+        `cann't update name as it is used in ${products.length} products`,
+        400
+      )
+    );
+  }
 
   const { error } = nameJoiSchema.validate({ name, icon });
 
@@ -100,6 +120,19 @@ exports.updateSubCategoryName = catchAsyncErrors(async (req, res, next) => {
 
   if (!isSubCategoryExists) {
     return next(new ErrorHandler("subcategory not exists", 404));
+  }
+
+  const products = await Product.find({
+    subcategory: isSubCategoryExists.name,
+  });
+
+  if (products.length > 0) {
+    return next(
+      new ErrorHandler(
+        `cann't update name as it is used in ${products.length} products`,
+        400
+      )
+    );
   }
 
   const { error } = nameJoiSchema.validate({ name, icon });
@@ -180,6 +213,19 @@ exports.deleteSubCategory = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("subcategory not exists", 404));
   }
 
+  const products = await Product.find({
+    subcategory: isSubCategoryExists.name,
+  });
+
+  if (products.length > 0) {
+    return next(
+      new ErrorHandler(
+        `cann't delete as it is used in ${products.length} products`,
+        400
+      )
+    );
+  }
+
   if (category.subcategories.length > 1) {
     category.subcategories = category.subcategories.filter(
       (subcategory) => subcategory._id.toString() !== req.params.subId
@@ -205,6 +251,17 @@ exports.deleteCategory = catchAsyncErrors(async (req, res, next) => {
 
   if (!category) {
     return next(new ErrorHandler("category not exists", 404));
+  }
+
+  const products = await Product.find({ category: req.params.id });
+
+  if (products.length > 0) {
+    return next(
+      new ErrorHandler(
+        `cann't delete as it is used in ${products.length} products`,
+        400
+      )
+    );
   }
 
   await Category.findByIdAndDelete(req.params.id);
@@ -304,29 +361,30 @@ exports.getAllAttributesOfSubCategory = catchAsyncErrors(
   }
 );
 
-
-exports.getAllCategoriesAndSubCategories = catchAsyncErrors(async (req, res, next) => {
-  const categories = await Category.aggregate([
-    {
-      $project: {
-        _id: 1,
-        name: 1,
-        subcategories: {
-          $map: {
-            input: "$subcategories",
-            as: "sub",
-            in: {
-              _id: "$$sub._id",
-              name: "$$sub.name",
+exports.getAllCategoriesAndSubCategories = catchAsyncErrors(
+  async (req, res, next) => {
+    const categories = await Category.aggregate([
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          subcategories: {
+            $map: {
+              input: "$subcategories",
+              as: "sub",
+              in: {
+                _id: "$$sub._id",
+                name: "$$sub.name",
+              },
             },
           },
         },
       },
-    },
-  ]);
+    ]);
 
-  res.status(200).json({
-    success: true,
-    categories,
-  });
-});
+    res.status(200).json({
+      success: true,
+      categories,
+    });
+  }
+);
