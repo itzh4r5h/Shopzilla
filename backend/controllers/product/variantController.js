@@ -262,7 +262,7 @@ exports.createNewVariant = catchAsyncErrors(async (req, res, next) => {
     await contentValidation(req, next);
 
   if (error) {
-    return next(new ErrorHandler(error));
+    return next(new ErrorHandler(error,400));
   }
 
   const dummyImagesData = [
@@ -349,7 +349,7 @@ exports.updateVariant = catchAsyncErrors(async (req, res, next) => {
     await contentValidation(req, next, true);
 
   if (error) {
-    return next(new ErrorHandler(error));
+    return next(new ErrorHandler(error,400));
   }
 
   const { removedImagesFileIds } = req.body;
