@@ -5,7 +5,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import Box from "@mui/material/Box";
 import { Controller } from "react-hook-form";
 
-export const IconSelector = ({ name, control,selected=false }) => {
+export const IconSelector = ({ name, control }) => {
   const optionsData = Object.keys(category_icons);
 
   return (
@@ -39,7 +39,7 @@ export const IconSelector = ({ name, control,selected=false }) => {
             },
           }}
           {...field}
-          value={selected?selected:field.value || ""}
+          value={field.value || ""}
           onChange={(_, newValue) => field.onChange(newValue)}
           options={optionsData}
           getOptionLabel={(option) => option}
