@@ -25,6 +25,7 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { NormalSelect } from "../../components/selectors/NormalSelect";
 import { useForm } from "react-hook-form";
+import { formatINR } from "../../utils/helpers";
 
 // Register Chart.js components
 ChartJS.register(
@@ -195,7 +196,7 @@ export const Dashboard = () => {
         </h1>
         <h1 className="flex justify-end items-center text-xl font-bold border-b-2 w-full pb-1">
           <BsCurrencyRupee />
-          <span>{totalRevenue}</span>
+          <span>{formatINR(totalRevenue)}</span>
         </h1>
       </div>
       {/* revenue ends */}

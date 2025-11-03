@@ -12,6 +12,7 @@ import {
 } from "../../store/thunks/non_admin/cartThunk";
 import { useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
+import { formatINR } from "../../utils/helpers";
 
 export const CartCard = ({
   variant,
@@ -81,7 +82,7 @@ export const CartCard = ({
         {/* product name ends */}
 
         {/* price and rating container begins */}
-        <div className="grid grid-cols-[2fr_2fr] items-center">
+        <div className="grid grid-cols-[3fr_2fr] items-center">
           {/* svg and price container begins */}
           <div className="w-full relative">
             {/* svg begins */}
@@ -109,7 +110,7 @@ export const CartCard = ({
             >
               <BsCurrencyRupee className="text-sm" />
               <span className="text-sm">
-                {variant.images[colorIndex].price}
+                {formatINR(variant.images[colorIndex].price)}
               </span>
             </div>
             {/* price ends */}
@@ -118,8 +119,8 @@ export const CartCard = ({
 
           {/* rating begins */}
           <div className="flex justify-center items-center gap-1">
-            <FaStar className="text-sm text-[var(--purpleDark)]" />
-            <span className="text-sm text-[var(--purpleDark)] font-bold">
+            <FaStar className="text-md text-[var(--purpleDark)]" />
+            <span className="text-md text-[var(--purpleDark)] font-bold">
               {variant.product.ratings}
             </span>
           </div>

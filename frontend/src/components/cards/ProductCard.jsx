@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getRatings } from "../../store/thunks/non_admin/reviewThunk";
 import { UpdateStock } from "../modal/UpdateStock";
+import { formatINR } from "../../utils/helpers";
 
 export const ProductCard = ({
   variant,
@@ -100,7 +101,7 @@ export const ProductCard = ({
               <span
                 className={`${orderDetails ? "text-lg font-bold" : "text-sm"}`}
               >
-                {orderDetails?variant.price:variant.images[variant.selectedProduct].price}
+                {orderDetails?formatINR(variant.price):formatINR(variant.images[variant.selectedProduct].price)}
               </span>
             </div>
             {/* price ends */}

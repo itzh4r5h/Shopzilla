@@ -12,6 +12,7 @@ import {
 import { useNavigate, useParams } from "react-router";
 import {
   flatAttributesValueArray,
+  formatINR,
   formatMongodbDate,
 } from "../../../utils/helpers";
 import { ProductModal } from "../../../components/modal/ProductModal";
@@ -147,7 +148,7 @@ const ImagesSlideComponent = ({ images, needSize }) => {
                 <div className="grid grid-cols-[3fr_4fr]">
                   <h2 className="text-lg uppercase">Price</h2>
                   <p className="text-lg capitalize text-[var(--light)] justify-self-end">
-                    {img.price}
+                    {formatINR(img.price)}
                   </p>
                 </div>
 

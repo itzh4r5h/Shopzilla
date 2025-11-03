@@ -2,6 +2,7 @@ import { BsCurrencyRupee } from "react-icons/bs";
 import { Checkout } from "../../pages/Checkout";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { formatINR } from "../../utils/helpers";
 
 export const PriceCard = ({ price, quanity, orderDetails = false }) => {
   const shippingPrice = price ? (price > 500 ? 0 : 79) : "";
@@ -20,7 +21,7 @@ export const PriceCard = ({ price, quanity, orderDetails = false }) => {
           <span>
             <BsCurrencyRupee />
           </span>
-          <span>{price}</span>
+          <span>{formatINR(price)}</span>
         </h3>
       </div>
       {/* items price ends */}
@@ -44,7 +45,7 @@ export const PriceCard = ({ price, quanity, orderDetails = false }) => {
           <span>
             <BsCurrencyRupee />
           </span>
-          <span>{totalPrice}</span>
+          <span>{formatINR(totalPrice)}</span>
         </h3>
       </div>
       {/* total price ends */}
@@ -55,7 +56,7 @@ export const PriceCard = ({ price, quanity, orderDetails = false }) => {
           <span className="text-2xl">
             <BsCurrencyRupee />
           </span>
-          <span className="text-2xl">{totalPrice}</span>
+          <span className="text-2xl">{formatINR(totalPrice)}</span>
         </h3>
 
        <Checkout cart={true} />
