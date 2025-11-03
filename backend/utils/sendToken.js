@@ -8,17 +8,18 @@ const sendToken = (user, statusCode, res) => {
   const options = {
     maxAge: process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: true 
+    secure: true,
+    sameSite: "none", // allow cross-domain
   };
 
-  let isPasswordExists = false
+  let isPasswordExists = false;
 
-  if(user.password){
-    isPasswordExists = true
+  if (user.password) {
+    isPasswordExists = true;
   }
 
   // Exclude password manually
-  const userData = getBasicDetailsOnly(user)
+  const userData = getBasicDetailsOnly(user);
 
   const deletionDelay = process.env.USER_DELETION_MINUTES * 60 * 1000; // in ms
   const createdTime = new Date(user.createdAt).getTime(); // timestamp in ms
