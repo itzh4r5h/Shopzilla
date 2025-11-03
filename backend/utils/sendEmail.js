@@ -13,6 +13,14 @@ const sendEmail = async (options) => {
     },
   });
 
+
+  // Optional: check connection
+  transporter.verify((err, success) => {
+    if (err) console.error("SMTP verify failed:", err);
+    else console.log("SMTP connection OK");
+  });
+
+
   const mailOptions = {
     from: `shopzilla <${process.env.GMAIL_ID}>`,
     to: email,
