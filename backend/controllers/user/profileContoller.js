@@ -3,7 +3,6 @@ const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const { uploadToImageKit, imagekit } = require("../../utils/uploadImages");
 const {
-  joiEmailValidator,
   joiPasswordValidator,
 } = require("../../validators/userValidator");
 const { getBasicDetailsOnly } = require("../../utils/helpers");

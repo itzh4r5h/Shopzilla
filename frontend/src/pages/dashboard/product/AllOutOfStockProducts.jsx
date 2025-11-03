@@ -1,4 +1,3 @@
-import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { PurplePagination } from "../../../components/common/PurplePagination";
@@ -7,7 +6,6 @@ import { setKeyword, setPage } from "../../../store/slices/admin/variantSlice";
 import { ProductCard } from "../../../components/cards/ProductCard";
 
 export const AllOutOfStockProducts = () => {
-  const adminDefaultPath = "/admin/dashboard";
 
   const dispatch = useDispatch();
   const { loading, updated, out_of_stock_variants, page, keyword, totalPages } =

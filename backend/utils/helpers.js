@@ -1,5 +1,4 @@
 const crypto = require("crypto");
-const { Variant } = require("../models/product/Variant");
 
 exports.isOnlyDigits = (str) => {
   return /^\d+$/.test(str);

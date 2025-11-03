@@ -16,7 +16,7 @@ import "swiper/css";
 import "swiper/css/effect-creative";
 import "swiper/css/pagination";
 import { Heading } from "../components/Headers/Heading";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getProductDetails } from "../store/thunks/non_admin/productThunk";
 import { useNavigate, useParams } from "react-router";

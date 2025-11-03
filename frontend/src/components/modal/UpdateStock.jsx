@@ -7,11 +7,6 @@ import { joiResolver } from "@hookform/resolvers/joi";
 import { useDispatch } from "react-redux";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 import { stockJoiSchema } from "../../validators/productValidators";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/effect-creative";
-import "swiper/css/pagination";
 import { updateStock } from "../../store/thunks/admin/variantThunk";
 import { CustomSwiperSlider } from "../common/CustomSwiperSlider";
 

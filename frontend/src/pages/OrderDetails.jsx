@@ -20,7 +20,6 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { formatMongodbDate } from "../utils/helpers";
 import { ReviewModal } from "../components/modal/ReviewModal";
-import { toast } from "react-toastify";
 import { ReviewCard } from "../components/cards/ReviewCard";
 import { getOrderedProductReviews } from "../store/thunks/non_admin/reviewThunk";
 import { loadUser } from "../store/thunks/non_admin/userThunk";

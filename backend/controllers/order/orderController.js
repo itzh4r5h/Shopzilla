@@ -1,5 +1,4 @@
 const { User } = require("../../models/User");
-const { Product } = require("../../models/product/Product");
 const { Variant } = require("../../models/product/Variant");
 const { Order } = require("../../models/Order");
 const ErrorHandler = require("../../utils/errorHandler");

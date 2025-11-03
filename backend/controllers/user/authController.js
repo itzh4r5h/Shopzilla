@@ -1,7 +1,6 @@
 const { User } = require("../../models/User");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
-const { uploadToImageKit } = require("../../utils/uploadImages");
 const sendToken = require("../../utils/sendToken");
 const {
   createHashWithCrypto,
