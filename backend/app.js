@@ -8,6 +8,8 @@ const passport = require('passport')
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 
+// Required for Render or any proxy (so secure cookies work)
+app.set("trust proxy", 1);
 
 
 // env configuration
