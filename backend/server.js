@@ -6,7 +6,8 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL, // change to frontend URL in production
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
   }
 });
 
