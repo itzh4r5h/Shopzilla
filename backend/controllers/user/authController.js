@@ -33,7 +33,6 @@ exports.signInWithGoogle = catchAsyncErrors(async (req, res, next) => {
   const options = {
     maxAge: process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    httpOnly: true,
     secure: true,
     sameSite: "none", // allow cross-domain
   };
