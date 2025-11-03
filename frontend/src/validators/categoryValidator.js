@@ -22,7 +22,7 @@ const subcategoryJoiSchema = Joi.object({
   }),
 
   subcategory_icon: Joi.string().min(2).max(20).required().messages({
-    "string.base": "subcategory icon must be a string",
+    "string.base": "subcategory icon is required",
     "string.empty": "subcategory icon is required",
     "string.min": "subcategory icon must be at least 2 characters long",
     "string.max": "subcategory icon must not exceed 20 characters",
