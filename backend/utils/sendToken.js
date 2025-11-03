@@ -8,7 +8,7 @@ const sendToken = (user, statusCode, res) => {
   const options = {
     maxAge: process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    // secure: true //enable it when in production
+    secure: true 
   };
 
   let isPasswordExists = false
