@@ -9,7 +9,7 @@ import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 import { createPortal } from "react-dom";
 
 import { Swiper, SwiperSlide } from "swiper/react";
-import { EffectCreative, Pagination } from "swiper/modules";
+import { Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/effect-creative";
 import "swiper/css/pagination";
@@ -17,8 +17,81 @@ import { ImageCard } from "../cards/ImageCard";
 import { variantJoiSchema } from "../../validators/productValidators";
 import { cleanAttributes, deepLowercase } from "../../utils/helpers";
 import { addOrUpdateVariant } from "../../store/thunks/admin/variantThunk";
+import { CustomSwiperSlider } from "../common/CustomSwiperSlider";
 
-const SizesSlideComponent = ({ control, imgIndex, register }) => {
+const SizeSlideComponenet = ({
+  index,
+  sizes,
+  imgIndex,
+  register,
+  removeSize,
+  addSize,
+}) => {
+  return (
+    <div className="grid grid-cols-2 gap-x-2 relative">
+      {sizes.length > 1 && (
+        <div className="flex items-center absolute top-2 right-0 gap-x-2">
+          <FaMinusCircle
+            className="text-xl active:text-[var(--purpleDark)] transition-colors"
+            onClick={() => removeSize(index)}
+          />
+          {index + 1 === sizes.length && (
+            <FaPlusCircle
+              className="text-xl active:text-[var(--purpleDark)] transition-colors"
+              onClick={() => addSize({ size: "", stock: 0 })}
+            />
+          )}
+        </div>
+      )}
+
+      {sizes.length < 2 && (
+        <FaPlusCircle
+          className="text-xl active:text-[var(--purpleDark)] transition-colors absolute top-2 right-0"
+          onClick={() => addSize({ size: "", stock: 0 })}
+        />
+      )}
+
+      {/* size begins */}
+      <div className="flex flex-col justify-center gap-2">
+        <label
+          htmlFor={`images.${imgIndex}.sizes.${index}.size`}
+          className="text-xl w-fit"
+        >
+          Size
+        </label>
+        <input
+          autoComplete="off"
+          {...register(`images.${imgIndex}.sizes.${index}.size`, {
+            required: true,
+          })}
+          id={`images.${imgIndex}.sizes.${index}.size`}
+          className="uppercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+        />
+      </div>
+      {/* size ends */}
+      {/* stock begins */}
+      <div className="flex flex-col justify-center gap-2">
+        <label
+          htmlFor={`images.${imgIndex}.sizes.${index}.stock`}
+          className="text-xl w-fit"
+        >
+          Stock
+        </label>
+        <input
+          autoComplete="off"
+          {...register(`images.${imgIndex}.sizes.${index}.stock`, {
+            required: true,
+          })}
+          id={`images.${imgIndex}.sizes.${index}.stock`}
+          className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+        />
+      </div>
+      {/* stock ends */}
+    </div>
+  );
+};
+
+const SizesComponent = ({ childRefs, control, imgIndex, register }) => {
   // For attributes inside each subcategory
   const {
     fields: sizes,
@@ -29,94 +102,219 @@ const SizesSlideComponent = ({ control, imgIndex, register }) => {
     name: `images.${imgIndex}.sizes`,
   });
 
-  const swiperRef = useRef(null);
-
-  // Whenever sizes change, refresh Swiper
-  useEffect(() => {
-    if (swiperRef.current) {
-      swiperRef.current.update();
-      swiperRef.current.slideTo(sizes.length - 1); // go to last added
-    }
-  }, [sizes]);
-
   return (
-    <Swiper
-      onSwiper={(swiper) => (swiperRef.current = swiper)}
-      loop={sizes.length > 1 ? true : false}
-      pagination={{ clickable: true, type: "fraction" }}
-      grabCursor={true}
-      modules={[Pagination]}
-      className="mySwiper"
-      spaceBetween={10}
+    <CustomSwiperSlider
+      swiperRef={childRefs}
+      slideData={sizes}
+      className="sizes_swiper"
+      isParentSlide={false}
+      pb="pb-10 px-2"
+      isChildRef={true}
+      i={imgIndex}
       nested={true}
     >
-      {sizes.map((data, index) => {
-        return (
-          <SwiperSlide key={data.id} className="pb-10 px-2">
-            <div className="grid grid-cols-2 gap-x-2 relative">
-              {sizes.length > 1 && (
-                <div className="flex items-center absolute top-2 right-0 gap-x-2">
-                  <FaMinusCircle
-                    className="text-xl active:text-[var(--purpleDark)] transition-colors"
-                    onClick={() => removeSize(index)}
-                  />
-                  {index + 1 === sizes.length && (
-                    <FaPlusCircle
-                      className="text-xl active:text-[var(--purpleDark)] transition-colors"
-                      onClick={() => addSize({ size: "", stock: 0 })}
-                    />
-                  )}
-                </div>
-              )}
+      <SizeSlideComponenet
+        sizes={sizes}
+        register={register}
+        addSize={addSize}
+        removeSize={removeSize}
+        imgIndex={imgIndex}
+      />
+    </CustomSwiperSlider>
+  );
+};
 
-              {sizes.length < 2 && (
-                <FaPlusCircle
-                  className="text-xl active:text-[var(--purpleDark)] transition-colors absolute top-2 right-0"
-                  onClick={() => addSize({ size: "", stock: 0 })}
-                />
-              )}
+const ImagesSlideComponent = ({
+  index,
+  images,
+  handleRemoveImagesBox,
+  addImagesBox,
+  needSize,
+  register,
+  control,
+  childRefs,
+  chooseImages,
+  data:imgData,
+  removeImage,
+}) => {
+  const color = `images.${index}.color`;
+  const price = `images.${index}.price`;
+  const stock = `images.${index}.stock`;
+  const fileName = `images.${index}.files`;
 
-              {/* size begins */}
-              <div className="flex flex-col justify-center gap-2">
-                <label
-                  htmlFor={`images.${imgIndex}.sizes.${index}.size`}
-                  className="text-xl w-fit"
-                >
-                  Size
-                </label>
-                <input
-                  autoComplete="off"
-                  {...register(`images.${imgIndex}.sizes.${index}.size`, {
-                    required: true,
-                  })}
-                  id={`images.${imgIndex}.sizes.${index}.size`}
-                  className="uppercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-                />
-              </div>
-              {/* size ends */}
-              {/* stock begins */}
-              <div className="flex flex-col justify-center gap-2">
-                <label
-                  htmlFor={`images.${imgIndex}.sizes.${index}.stock`}
-                  className="text-xl w-fit"
-                >
-                  Stock
-                </label>
-                <input
-                  autoComplete="off"
-                  {...register(`images.${imgIndex}.sizes.${index}.stock`, {
-                    required: true,
-                  })}
-                  id={`images.${imgIndex}.sizes.${index}.stock`}
-                  className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-                />
-              </div>
-              {/* stock ends */}
+  return (
+    <div
+      className={`grid gap-y-3 border-2 border-[var(--purpleDark)] p-2 rounded-md relative`}
+      key={index}
+    >
+      {images.length > 1 && (
+        <div className="flex items-center absolute top-2 right-2 gap-x-2">
+          <FaMinusCircle
+            className="text-xl active:text-[var(--purpleDark)] transition-colors"
+            onClick={() => handleRemoveImagesBox(index, images)}
+          />
+          {index + 1 === images.length && (
+            <FaPlusCircle
+              className="text-xl active:text-[var(--purpleDark)] transition-colors"
+              onClick={() =>
+                addImagesBox({
+                  color: "#000000",
+                  price: 0,
+                  ...(needSize
+                    ? { sizes: [{ size: "", stock: 0 }] }
+                    : { stock: 0 }),
+                  files: [],
+                })
+              }
+            />
+          )}
+        </div>
+      )}
+
+      {images.length < 2 && (
+        <FaPlusCircle
+          className="text-xl active:text-[var(--purpleDark)] transition-colors absolute top-2 right-2"
+          onClick={() =>
+            addImagesBox({
+              color: "#000000",
+              price: 0,
+              ...(needSize
+                ? { sizes: [{ size: "", stock: 0 }] }
+                : { stock: 0 }),
+              files: [],
+            })
+          }
+        />
+      )}
+
+      <div className="grid grid-cols-2 gap-x-2">
+        <label htmlFor={color} className="text-xl w-fit">
+          Color
+        </label>
+        <input
+          type="color"
+          autoComplete="off"
+          {...register(color, {
+            required: true,
+          })}
+          id={color}
+          className="h-full w-20"
+        />
+      </div>
+
+      {/* price begins */}
+      <div className="grid grid-cols-2 gap-x-2">
+        <label htmlFor={price} className="text-xl w-fit">
+          Price
+        </label>
+        <input
+          type="number"
+          autoComplete="off"
+          {...register(price, { required: true })}
+          id={price}
+          className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+        />
+      </div>
+      {/* price ends */}
+
+      {/* stock begins */}
+      {!needSize && (
+        <div className="grid grid-cols-2 gap-x-2 mb-4">
+          <label htmlFor={stock} className="text-xl w-fit">
+            Stock
+          </label>
+          <input
+            type="number"
+            autoComplete="off"
+            {...register(stock, { required: true })}
+            id={stock}
+            className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+          />
+        </div>
+      )}
+      {/* stock ends */}
+
+      {needSize && (
+        <div>
+          <h1 className="capitalize text-2xl">Sizes</h1>
+
+          <SizesComponent
+            childRefs={childRefs}
+            imgIndex={index}
+            control={control}
+            register={register}
+          />
+        </div>
+      )}
+
+      {/* images box begins */}
+      <div className="flex flex-col items-center justify-center gap-2 -mt-4">
+        {/* images label and choose images begins */}
+        <div className="grid grid-cols-2 items-center w-full">
+          <h1 className="capitalize text-xl">Images</h1>
+          <label
+            htmlFor={fileName}
+            className="justify-self-end flex justify-center items-center bg-[var(--purpleDark)] text-white py-1 px-2 gap-1 rounded-md"
+          >
+            <MdOutlineFileUpload className="text-lg" />
+            <span className="text-md">Choose</span>
+          </label>
+          <input
+            type="file"
+            {...register(fileName, { required: true })}
+            name={fileName}
+            id={fileName}
+            accept="image/png, image/jpeg, image/webp"
+            multiple
+            className="hidden"
+            onChange={(e) => chooseImages(e, fileName)}
+          />
+        </div>
+        {/* images label and choose images ends */}
+
+        {/* images preview begins */}
+        <div className="grid w-full">
+          {imgData.files.length > 0 ? (
+            <Swiper
+              loop={imgData.files.length > 1 ? true : false}
+              pagination={{ clickable: true }}
+              grabCursor={true}
+              modules={[Pagination]}
+              className="mySwiper5"
+              spaceBetween={5}
+              nested={true}
+            >
+              {imgData.files.map((img, imgIndex) => {
+                return (
+                  <SwiperSlide key={imgIndex}>
+                    <picture className="w-full h-55 block relative border bg-white">
+                      <ImageCard
+                        src={{
+                          url: img.url || URL.createObjectURL(img),
+                          name: img.name || img.name.split(".")[0],
+                        }}
+                      />
+                      <FaTimesCircle
+                        className="self-end text-2xl absolute top-2 right-2 z-100 text-[var(--purpleDark)]"
+                        onClick={() => {
+                          removeImage(index, imgIndex);
+                        }}
+                      />
+                    </picture>
+                  </SwiperSlide>
+                );
+              })}
+            </Swiper>
+          ) : (
+            <div className="w-full h-55 flex justify-center items-center text-xl border border-black">
+              Images Preview
             </div>
-          </SwiperSlide>
-        );
-      })}
-    </Swiper>
+          )}
+        </div>
+        {/* images preview begins */}
+      </div>
+      {/* images box begins */}
+    </div>
   );
 };
 
@@ -141,7 +339,7 @@ export const VariantModal = ({
         .filter(
           (attr) => !attrs.some((variantAttr) => variantAttr.name === attr.name)
         )
-        .map(({ name }) => ({ name, value:""}));
+        .map(({ name }) => ({ name, value: "" }));
 
       // if found then add it to attrs
       if (extraAttributes.length > 0) {
@@ -274,8 +472,6 @@ export const VariantModal = ({
     handleClose();
   };
 
-  useValidationErrorToast(errors);
-
   useEffect(() => {
     reset(getDefaultValues(attributesData, variant));
   }, [attributesData, reset, variant]);
@@ -292,14 +488,9 @@ export const VariantModal = ({
   };
 
   const swiperRef = useRef(null);
+  const childSwiperRefs = useRef([]);
 
-  // Whenever sizes change, refresh Swiper
-  useEffect(() => {
-    if (swiperRef.current) {
-      swiperRef.current.update();
-      swiperRef.current.slideTo(images.length - 1); // go to last added
-    }
-  }, [images]);
+  useValidationErrorToast(errors, { main: swiperRef, childs: childSwiperRefs });
 
   return (
     <div>
@@ -364,213 +555,15 @@ export const VariantModal = ({
                 {/* attributes ends */}
 
                 {/* images begins */}
-                <div className="grid">
-                  <Swiper
-                    onSwiper={(swiper) => (swiperRef.current = swiper)}
-                    loop={images.length > 1 ? true : false}
-                    pagination={{ type: "fraction" }}
-                    grabCursor={true}
-                    modules={[Pagination]}
-                    className="mySwiper3"
-                    spaceBetween={10}
-                  >
-                    {images.map((imgData, index) => {
-                      const color = `images.${index}.color`;
-                      const price = `images.${index}.price`;
-                      const stock = `images.${index}.stock`;
-                      const fileName = `images.${index}.files`;
+                <CustomSwiperSlider
+                  swiperRef={swiperRef}
+                  slideData={images}
+                  className="options_swiper"
+                  pb="pb-10"
+                >
+                  <ImagesSlideComponent images={images} needSize={needSize} register={register} childRefs={childSwiperRefs} chooseImages={chooseImages} handleRemoveImagesBox={handleRemoveImagesBox} addImagesBox={addImagesBox} removeImage={removeImage} control={control}/>
+                </CustomSwiperSlider>
 
-                      return (
-                        <SwiperSlide key={index} className="pb-10">
-                          <div
-                            className={`grid gap-y-3 border-2 border-[var(--purpleDark)] p-2 rounded-md relative`}
-                            key={index}
-                          >
-                            {images.length > 1 && (
-                              <div className="flex items-center absolute top-2 right-2 gap-x-2">
-                                <FaMinusCircle
-                                  className="text-xl active:text-[var(--purpleDark)] transition-colors"
-                                  onClick={() =>
-                                    handleRemoveImagesBox(index, images)
-                                  }
-                                />
-                                {index + 1 === images.length && (
-                                  <FaPlusCircle
-                                    className="text-xl active:text-[var(--purpleDark)] transition-colors"
-                                    onClick={() =>
-                                      addImagesBox({
-                                        color: "#000000",
-                                        price: 0,
-                                        ...(needSize
-                                          ? { sizes: [{ size: "", stock: 0 }] }
-                                          : { stock: 0 }),
-                                        files: [],
-                                      })
-                                    }
-                                  />
-                                )}
-                              </div>
-                            )}
-
-                            {images.length < 2 && (
-                              <FaPlusCircle
-                                className="text-xl active:text-[var(--purpleDark)] transition-colors absolute top-2 right-2"
-                                onClick={() =>
-                                  addImagesBox({
-                                    color: "#000000",
-                                    price: 0,
-                                    ...(needSize
-                                      ? { sizes: [{ size: "", stock: 0 }] }
-                                      : { stock: 0 }),
-                                    files: [],
-                                  })
-                                }
-                              />
-                            )}
-
-                            <div className="grid grid-cols-2 gap-x-2">
-                              <label htmlFor={color} className="text-xl w-fit">
-                                Color
-                              </label>
-                              <input
-                                type="color"
-                                autoComplete="off"
-                                {...register(color, {
-                                  required: true,
-                                })}
-                                id={color}
-                                className="h-full w-20"
-                              />
-                            </div>
-
-                            {/* price begins */}
-                            <div className="grid grid-cols-2 gap-x-2">
-                              <label htmlFor={price} className="text-xl w-fit">
-                                Price
-                              </label>
-                              <input
-                                type="number"
-                                autoComplete="off"
-                                {...register(price, { required: true })}
-                                id={price}
-                                className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-                              />
-                            </div>
-                            {/* price ends */}
-
-                            {/* stock begins */}
-                            {!needSize && (
-                              <div className="grid grid-cols-2 gap-x-2 mb-4">
-                                <label
-                                  htmlFor={stock}
-                                  className="text-xl w-fit"
-                                >
-                                  Stock
-                                </label>
-                                <input
-                                  type="number"
-                                  autoComplete="off"
-                                  {...register(stock, { required: true })}
-                                  id={stock}
-                                  className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-                                />
-                              </div>
-                            )}
-                            {/* stock ends */}
-
-                            {needSize && (
-                              <div>
-                                <h1 className="capitalize text-2xl">Sizes</h1>
-
-                                <div className="grid w-full">
-                                  <SizesSlideComponent
-                                    imgIndex={index}
-                                    control={control}
-                                    register={register}
-                                  />
-                                </div>
-                              </div>
-                            )}
-
-                            {/* images box begins */}
-                            <div className="flex flex-col items-center justify-center gap-2 -mt-4">
-                              {/* images label and choose images begins */}
-                              <div className="grid grid-cols-2 items-center w-full">
-                                <h1 className="capitalize text-xl">Images</h1>
-                                <label
-                                  htmlFor={fileName}
-                                  className="justify-self-end flex justify-center items-center bg-[var(--purpleDark)] text-white py-1 px-2 gap-1 rounded-md"
-                                >
-                                  <MdOutlineFileUpload className="text-lg" />
-                                  <span className="text-md">Choose</span>
-                                </label>
-                                <input
-                                  type="file"
-                                  {...register(fileName, { required: true })}
-                                  name={fileName}
-                                  id={fileName}
-                                  accept="image/png, image/jpeg, image/webp"
-                                  multiple
-                                  className="hidden"
-                                  onChange={(e) => chooseImages(e, fileName)}
-                                />
-                              </div>
-                              {/* images label and choose images ends */}
-
-                              {/* images preview begins */}
-                              <div className="grid w-full">
-                                {imgData.files.length > 0 ? (
-                                  <Swiper
-                                    loop={
-                                      imgData.files.length > 1 ? true : false
-                                    }
-                                    pagination={{ clickable: true }}
-                                    grabCursor={true}
-                                    modules={[Pagination]}
-                                    className="mySwiper5"
-                                    spaceBetween={5}
-                                    nested={true}
-                                  >
-                                    {imgData.files.map((img, imgIndex) => {
-                                      return (
-                                        <SwiperSlide key={imgIndex}>
-                                          <picture className="w-full h-55 block relative border bg-white">
-                                            <ImageCard
-                                              src={{
-                                                url:
-                                                  img.url ||
-                                                  URL.createObjectURL(img),
-                                                name:
-                                                  img.name ||
-                                                  img.name.split(".")[0],
-                                              }}
-                                            />
-                                            <FaTimesCircle
-                                              className="self-end text-2xl absolute top-2 right-2 z-100 text-[var(--purpleDark)]"
-                                              onClick={() => {
-                                                removeImage(index, imgIndex);
-                                              }}
-                                            />
-                                          </picture>
-                                        </SwiperSlide>
-                                      );
-                                    })}
-                                  </Swiper>
-                                ) : (
-                                  <div className="w-full h-55 flex justify-center items-center text-xl border border-black">
-                                    Images Preview
-                                  </div>
-                                )}
-                              </div>
-                              {/* images preview begins */}
-                            </div>
-                            {/* images box begins */}
-                          </div>
-                        </SwiperSlide>
-                      );
-                    })}
-                  </Swiper>
-                </div>
                 {/* images ends */}
 
                 <FillButton

@@ -11,9 +11,9 @@ export const AttributeComponent = ({
   return (
     <>
       {/* attributes box begins */}
-      <div className="flex flex-col justify-center gap-2 mt-2 relative px-1 border-t py-3">
+      <div className="flex flex-col justify-center gap-2 relative px-2 py-3">
         {attributesLength > 1 && (
-          <div className="flex items-center absolute top-2 right-0 gap-x-2">
+          <div className="flex items-center absolute top-2 right-2 gap-x-2">
             <FaMinusCircle
               className="text-xl active:text-[var(--purpleDark)] transition-colors"
               onClick={removeAttribute}

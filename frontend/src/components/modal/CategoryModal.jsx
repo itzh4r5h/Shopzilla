@@ -1,18 +1,47 @@
 import { FaTimesCircle } from "react-icons/fa";
 import { FillButton } from "../buttons/FillButton";
 import { useForm, useFieldArray } from "react-hook-form";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
 import { useDispatch } from "react-redux";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
-import {
-  categoryJoiSchema
-} from "../../validators/categoryValidator";
+import { categoryJoiSchema } from "../../validators/categoryValidator";
 import { IconSelector } from "../selectors/IconSelector";
 import { deepLowercase } from "../../utils/helpers";
 import { addCategory } from "../../store/thunks/admin/categoryThunk";
 import { SubCategory } from "../common/SubCategory";
+import { CustomSwiperSlider } from "../common/CustomSwiperSlider";
 
+
+const SlideComponent = ({
+  subcategories,
+  index,
+  register,
+  control,
+  addSubcat,
+  removeSubcat,
+  childSwiperRefs,
+}) => {
+  return (
+    <SubCategory
+      subCategoriesLength={subcategories.length}
+      addSubCategory={() =>
+        addSubcat({
+          name: "",
+          subcategory_icon: "",
+          needSize: "false",
+          attributes: [{ name: "" }],
+        })
+      }
+      removeSubCategory={() => removeSubcat(index)}
+      subCategoryName={`subcategories.${index}.name`}
+      subcatIndex={index}
+      control={control}
+      register={register}
+      childSwiperRefs={childSwiperRefs}
+    />
+  );
+};
 
 export const CategoryModal = () => {
   const schema = useMemo(() => {
@@ -35,13 +64,14 @@ export const CategoryModal = () => {
       subcategories: [
         {
           name: "",
-          subcategory_icon:'',
+          subcategory_icon: "",
           needSize: "false",
           attributes: [{ name: "" }],
         },
       ],
     },
     resolver: joiResolver(schema),
+    shouldFocusError:false
   });
 
   // For subcategories
@@ -60,12 +90,16 @@ export const CategoryModal = () => {
   };
 
   const submitForm = (data) => {
-    const categoryData = deepLowercase(data)
-    dispatch(addCategory(categoryData))
+    const categoryData = deepLowercase(data);
+    dispatch(addCategory(categoryData));
     handleClose();
   };
 
-  useValidationErrorToast(errors);
+  
+  const swiperRef = useRef(null);
+  const childSwiperRefs = useRef([]);
+
+  useValidationErrorToast(errors,{main:swiperRef,childs:childSwiperRefs});
 
   return (
     <div>
@@ -74,7 +108,7 @@ export const CategoryModal = () => {
       </span>
       {open && (
         <>
-          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000089] p-2 py-4 overflow-y-auto grid place-items-center">
+          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000089] p-2 overflow-y-auto grid place-items-center">
             <form
               onSubmit={handleSubmit(submitForm)}
               className="bg-white w-full border border-black p-3 flex flex-col justify-center gap-5"
@@ -84,7 +118,9 @@ export const CategoryModal = () => {
                 onClick={handleClose}
               />
 
-              <h1 className="text-center text-3xl -mt-5">Category</h1>
+              <h1 className="text-center text-3xl -mt-11 w-fit mx-auto">
+                Category
+              </h1>
 
               <div className="grid grid-cols-2 gap-x-2">
                 {/* name begins */}
@@ -106,41 +142,32 @@ export const CategoryModal = () => {
                     Icon
                   </label>
 
-                  <IconSelector
-                    name={"category_icon"}
-                    control={control}
-                  />
+                  <IconSelector name={"category_icon"} control={control} />
                 </div>
                 {/* icon ends */}
               </div>
 
               <h2 className="text-2xl">Sub Categories</h2>
 
-              {subcategories.map((subcat, index) => {
-                return (
-                  <div key={subcat.id}>
-                    <SubCategory
-                      subkey={subcat.id}
-                      subCategoriesLength={subcategories.length}
-                      addSubCategory={() =>
-                        addSubcat({
-                          name: "",
-                          subcategory_icon: "",
-                          needSize: "false",
-                          attributes: [{ name: "" }],
-                        })
-                      }
-                      removeSubCategory={() => removeSubcat(index)}
-                      subCategoryName={`subcategories.${index}.name`}
-                      subcatIndex={index}
-                      control={control}
-                      register={register}
-                    />
-                  </div>
-                );
-              })}
+               <CustomSwiperSlider
+                swiperRef={swiperRef}
+                space={20}
+                slideData={subcategories}
+                className="category_subcategories_swiper"
+              >
+                <SlideComponent
+                  subcategories={subcategories}
+                  register={register}
+                  control={control}
+                  removeSubcat={removeSubcat}
+                  addSubcat={addSubcat}
+                  childSwiperRefs={childSwiperRefs}
+                />
+              </CustomSwiperSlider>
 
-              <FillButton type="submit" name="Add" />
+              <span className="-mt-5">
+                <FillButton type="submit" name="Add" />
+              </span>
             </form>
           </div>
         </>

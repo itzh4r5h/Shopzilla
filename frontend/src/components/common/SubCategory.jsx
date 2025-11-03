@@ -3,6 +3,30 @@ import { FaMinusCircle, FaPlusCircle } from "react-icons/fa";
 import { AttributeComponent } from "./AttributeComponent";
 import { IconSelector } from "../selectors/IconSelector";
 import { NormalSelect } from "../selectors/NormalSelect";
+import { CustomSwiperSlider } from "./CustomSwiperSlider";
+
+const SlideComponent = ({
+  attributes,
+  index,
+  register,
+  control,
+  addAttr,
+  removeAttr,
+  subcatIndex
+}) => {
+  return (
+    <AttributeComponent
+      attributesLength={attributes.length}
+      attributeName={`subcategories.${subcatIndex}.attributes.${index}.name`}
+      attributeType={`subcategories.${subcatIndex}.attributes.${index}.type`}
+      addAttribute={() => addAttr({ name: "" })}
+      removeAttribute={() => removeAttr(index)}
+      register={register}
+      control={control}
+      attrIndex={index}
+    />
+  );
+};
 
 export const SubCategory = ({
   subCategoriesLength,
@@ -12,6 +36,7 @@ export const SubCategory = ({
   subcatIndex,
   control,
   register,
+  childSwiperRefs,
 }) => {
   // For attributes inside each subcategory
   const {
@@ -65,7 +90,10 @@ export const SubCategory = ({
         {/* sub category name ends */}
         {/* icon begins */}
         <div className="flex flex-col justify-center gap-2">
-          <label htmlFor={`subcategories.${subcatIndex}.subcategory_icon`} className="text-xl w-fit">
+          <label
+            htmlFor={`subcategories.${subcatIndex}.subcategory_icon`}
+            className="text-xl w-fit"
+          >
             Icon
           </label>
 
@@ -78,36 +106,35 @@ export const SubCategory = ({
       </div>
 
       <div className="flex flex-col justify-center gap-2 mt-2">
-          <label htmlFor={`subcategories.${subcatIndex}.needSize`} className="text-xl w-fit">
-            Need Size
-          </label>
-            <NormalSelect
-            name={`subcategories.${subcatIndex}.needSize`}
-            control={control}
-            center={true}
-            uppercase={true}
-            optionsData={["true", "false"]}
-          />
-        </div>
+        <label
+          htmlFor={`subcategories.${subcatIndex}.needSize`}
+          className="text-xl w-fit"
+        >
+          Need Size
+        </label>
+        <NormalSelect
+          name={`subcategories.${subcatIndex}.needSize`}
+          control={control}
+          center={true}
+          uppercase={true}
+          optionsData={["true", "false"]}
+        />
+      </div>
 
       <h3 className="text-2xl mt-2">Attributes</h3>
 
-      {attributes.map((attribute, index) => {
-        return (
-          <div key={attribute.id}>
-            <AttributeComponent
-              attributesLength={attributes.length}
-              attributeName={`subcategories.${subcatIndex}.attributes.${index}.name`}
-              attributeType={`subcategories.${subcatIndex}.attributes.${index}.type`}
-              addAttribute={() => addAttr({ name: "" })}
-              removeAttribute={() => removeAttr(index)}
-              register={register}
-              control={control}
-              attrIndex={index}
-            />
-          </div>
-        );
-      })}
+      <CustomSwiperSlider
+        swiperRef={childSwiperRefs}
+        isChildRef={true}
+        i={subcatIndex}
+        space={20}
+        slideData={attributes}
+        nested={true}
+        className={`subcatgory_attributes_swiper_${subcatIndex}`}
+        isParentSlide={false}
+      >
+        <SlideComponent subcatIndex={subcatIndex} attributes={attributes} register={register} control={control} removeAttr={removeAttr} addAttr={addAttr}/>
+      </CustomSwiperSlider>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { FaTimesCircle } from "react-icons/fa";
 import { FillButton } from "../buttons/FillButton";
 import { useForm, useFieldArray } from "react-hook-form";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
 import { useDispatch } from "react-redux";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
@@ -9,8 +9,22 @@ import { attributesJoiSchema } from "../../validators/categoryValidator";
 import { cleanAttributes, deepLowercase } from "../../utils/helpers";
 import { updateAttributes } from "../../store/thunks/admin/categoryThunk";
 import { AttributeComponent } from "../common/AttributeComponent";
+import { CustomSwiperSlider } from "../common/CustomSwiperSlider";
 
-
+const SlideComponent = ({ attributes, index, register, control,addAttr,removeAttr }) => {
+  return (
+    <AttributeComponent
+      attributesLength={attributes.length}
+      attributeName={`attributes.${index}.name`}
+      attributeType={`attributes.${index}.type`}
+      addAttribute={() => addAttr({ name: "" })}
+      removeAttribute={() => removeAttr(index)}
+      register={register}
+      control={control}
+      attrIndex={index}
+    />
+  );
+};
 
 export const UpdateAttributesModal = ({ attributesData, id, subId }) => {
   const schema = useMemo(() => {
@@ -31,6 +45,7 @@ export const UpdateAttributesModal = ({ attributesData, id, subId }) => {
       attributes: cleanAttributes(attributesData),
     },
     resolver: joiResolver(schema),
+    shouldFocusError: false,
   });
 
   // For attributes inside each subcategory
@@ -56,7 +71,10 @@ export const UpdateAttributesModal = ({ attributesData, id, subId }) => {
     handleClose();
   };
 
-  useValidationErrorToast(errors);
+  const swiperRef = useRef(null);
+
+  useValidationErrorToast(errors, { main: swiperRef });
+
 
   return (
     <div>
@@ -77,22 +95,14 @@ export const UpdateAttributesModal = ({ attributesData, id, subId }) => {
 
               <h1 className="text-center text-3xl -mt-5">Attributes</h1>
 
-              {attributes.map((attribute, index) => {
-                return (
-                  <div key={attribute.id}>
-                    <AttributeComponent
-                      attributesLength={attributes.length}
-                      attributeName={`attributes.${index}.name`}
-                      attributeType={`attributes.${index}.type`}
-                      addAttribute={() => addAttr({ name: "" })}
-                      removeAttribute={() => removeAttr(index)}
-                      register={register}
-                      control={control}
-                      attrIndex={index}
-                    />
-                  </div>
-                );
-              })}
+              <CustomSwiperSlider
+                swiperRef={swiperRef}
+                space={20}
+                slideData={attributes}
+                className='update_attributes_swiper'
+              >
+                <SlideComponent attributes={attributes} register={register} control={control} removeAttr={removeAttr} addAttr={addAttr}/>
+              </CustomSwiperSlider>
 
               <FillButton type="submit" name="Update" />
             </form>
