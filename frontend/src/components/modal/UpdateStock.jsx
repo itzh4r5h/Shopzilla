@@ -2,7 +2,7 @@ import { FaTimesCircle } from "react-icons/fa";
 import { OutlineButton } from "../buttons/OutlineButton";
 import { FillButton } from "../buttons/FillButton";
 import { useForm } from "react-hook-form";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { joiResolver } from "@hookform/resolvers/joi";
 import { useDispatch } from "react-redux";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
@@ -13,6 +13,46 @@ import "swiper/css";
 import "swiper/css/effect-creative";
 import "swiper/css/pagination";
 import { updateStock } from "../../store/thunks/admin/variantThunk";
+import { CustomSwiperSlider } from "../common/CustomSwiperSlider";
+
+const SizeSlideComponent = ({ index, register }) => {
+  return (
+    <div className="grid grid-cols-2 gap-x-2 relative">
+      {/* size begins */}
+      <div className="flex flex-col justify-center gap-2">
+        <label htmlFor={`sizes.${index}.size`} className="text-xl w-fit">
+          Size
+        </label>
+        <input
+          readOnly
+          disabled
+          autoComplete="off"
+          {...register(`sizes.${index}.size`, {
+            required: true,
+          })}
+          id={`sizes.${index}.size`}
+          className="uppercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+        />
+      </div>
+      {/* size ends */}
+      {/* stock begins */}
+      <div className="flex flex-col justify-center gap-2">
+        <label htmlFor={`sizes.${index}.stock`} className="text-xl w-fit">
+          Stock
+        </label>
+        <input
+          autoComplete="off"
+          {...register(`sizes.${index}.stock`, {
+            required: true,
+          })}
+          id={`sizes.${index}.stock`}
+          className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+        />
+      </div>
+      {/* stock ends */}
+    </div>
+  );
+};
 
 export const UpdateStock = ({ variant }) => {
   const schema = useMemo(() => {
@@ -67,9 +107,11 @@ export const UpdateStock = ({ variant }) => {
     handleClose();
   };
 
-  useValidationErrorToast(errors);
-
   const sizes = variant.needSize ? watch("sizes") || [] : [];
+
+  const swiperRef = useRef(null);
+
+  useValidationErrorToast(errors, { main: swiperRef });
 
   return (
     <div>
@@ -127,65 +169,17 @@ export const UpdateStock = ({ variant }) => {
                   </div>
                 )}
 
-                <div className="grid">
-                  {variant.needSize && sizes.length > 0 && (
-                    <Swiper
-                      loop={sizes?.length > 1 ? true : false}
-                      pagination={{ clickable: true, type: "fraction" }}
-                      grabCursor={true}
-                      modules={[Pagination]}
-                      className="mySwiper"
-                      spaceBetween={10}
-                    >
-                      {sizes.map((data, index) => {
-                        return (
-                          <SwiperSlide key={index} className="pb-10 px-2">
-                            <div className="grid grid-cols-2 gap-x-2 relative">
-                              {/* size begins */}
-                              <div className="flex flex-col justify-center gap-2">
-                                <label
-                                  htmlFor={`sizes.${index}.size`}
-                                  className="text-xl w-fit"
-                                >
-                                  Size
-                                </label>
-                                <input
-                                  readOnly
-                                  disabled
-                                  autoComplete="off"
-                                  {...register(`sizes.${index}.size`, {
-                                    required: true,
-                                  })}
-                                  id={`sizes.${index}.size`}
-                                  className="uppercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-                                />
-                              </div>
-                              {/* size ends */}
-                              {/* stock begins */}
-                              <div className="flex flex-col justify-center gap-2">
-                                <label
-                                  htmlFor={`sizes.${index}.stock`}
-                                  className="text-xl w-fit"
-                                >
-                                  Stock
-                                </label>
-                                <input
-                                  autoComplete="off"
-                                  {...register(`sizes.${index}.stock`, {
-                                    required: true,
-                                  })}
-                                  id={`sizes.${index}.stock`}
-                                  className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-                                />
-                              </div>
-                              {/* stock ends */}
-                            </div>
-                          </SwiperSlide>
-                        );
-                      })}
-                    </Swiper>
-                  )}
-                </div>
+                {variant.needSize && sizes.length > 0 && (
+                  <CustomSwiperSlider
+                    swiperRef={swiperRef}
+                    slideData={sizes}
+                    className="update_stock_swiper"
+                    pb="pb-10 px-2"
+                    keyIsId={false}
+                  >
+                    <SizeSlideComponent register={register} />
+                  </CustomSwiperSlider>
+                )}
               </div>
 
               <FillButton type="submit" name="Update" />
