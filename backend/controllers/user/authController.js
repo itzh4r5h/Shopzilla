@@ -35,6 +35,7 @@ exports.signInWithGoogle = catchAsyncErrors(async (req, res, next) => {
     httpOnly: true,
     secure: true,
     sameSite: "none", // allow cross-domain
+    path: "/",
   };
 
   res.cookie("token", token, options);
@@ -110,7 +111,12 @@ exports.signInUser = catchAsyncErrors(async (req, res, next) => {
 
 // ====================== SIGN OUT THE USER =============================
 exports.signOut = catchAsyncErrors(async (req, res, next) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/",
+  });
 
   res.status(200).json({
     success: true,
