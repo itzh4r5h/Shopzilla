@@ -234,7 +234,7 @@ export const SingleProductInfo = () => {
 
   const handleDeleteProduct = () => {
     dispatch(deleteProduct(id));
-    navigate("/admin/dashboard/products");
+    navigate("/admin/dashboard/products/all");
   };
 
   return (
