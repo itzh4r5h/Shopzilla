@@ -59,17 +59,21 @@ exports.sendEmailForResetPassword = catchAsyncErrors(async (req, res, next) => {
 
     const message = `Your password reset url - ${resetPasswordUrl}`;
 
-    await sendEmail({
+    const { success, message: msg } = await sendEmail({
       email: user.email,
       subject: `Shopzilla - Reset Password`,
       message,
     });
 
-    res.status(200).json({
-      success: true,
-      resendTokenIn: user.resendTokenIn,
-      message: `Email sent to ${user.email}`,
-    });
+    if (success) {
+      res.status(200).json({
+        success: true,
+        resendTokenIn: user.resendTokenIn,
+        message: `Email sent to ${user.email}`,
+      });
+    } else {
+      return next(new ErrorHandler(msg, 400));
+    }
   } catch (err) {
     user.resetPasswordToken = undefined;
     user.resetPasswordTokenExpire = undefined;
@@ -118,17 +122,22 @@ exports.sendEmailForEmailVerification = catchAsyncErrors(
       const emailVerificationUrl = `${process.env.FRONTEND_URL}/profile/${emailVerificationToken}`;
 
       const message = `Your email verification url - ${emailVerificationUrl}`;
-      await sendEmail({
+
+      const { success, message: msg } = await sendEmail({
         email: user.email,
         subject: `Shopzilla - Verify Email`,
         message,
       });
 
-      res.status(200).json({
-        success: true,
-        resendLinkIn: user.resendLinkIn,
-        message: `Email sent to ${user.email}`,
-      });
+      if (success) {
+        res.status(200).json({
+          success: true,
+          resendLinkIn: user.resendLinkIn,
+          message: `Email sent to ${user.email}`,
+        });
+      } else {
+        return next(new ErrorHandler(msg, 400));
+      }
     } catch (err) {
       user.emailVerificationToken = undefined;
       user.emailVerificationTokenExpire = undefined;
@@ -198,17 +207,21 @@ exports.sendOtpToEmail = catchAsyncErrors(async (req, res, next) => {
     const otp = user.otp;
     const message = `Your otp is - ${otp}`;
 
-    await sendEmail({
+    const { success, message: msg } = await sendEmail({
       email,
       subject: `Shopzilla - Verify Email With OTP`,
       message,
     });
 
-    res.status(200).json({
-      success: true,
-      resendOtpIn: user.resendOtpIn,
-      message: `Email sent to ${email}`,
-    });
+    if (success) {
+      res.status(200).json({
+        success: true,
+        resendOtpIn: user.resendOtpIn,
+        message: `Email sent to ${email}`,
+      });
+    } else {
+      return next(new ErrorHandler(msg, 400));
+    }
   } catch (err) {
     user.otp = undefined;
     user.otpExpire = undefined;
