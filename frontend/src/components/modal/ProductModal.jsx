@@ -90,7 +90,7 @@ export const ProductModal = ({
       </span>
       {open && (
         <>
-          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000089] p-2 py-4 overflow-y-auto grid place-items-center">
+          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000089] p-2 py-4 overflow-y-auto [--webkit-overflow-scrolling:touch] grid place-items-center">
             <form
               onSubmit={handleSubmit(submitForm)}
               className="bg-white w-full border border-black p-3 flex flex-col justify-center gap-5"
