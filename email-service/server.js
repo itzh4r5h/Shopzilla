@@ -1,8 +1,19 @@
+const express = require('express')
+const app  = express()
+const cors = require('cors')
+const nodemailer = require("nodemailer");
+const { google } = require("googleapis");
+
 // env configuration
 require('dotenv').config({ quiet: true})
 
-const nodemailer = require("nodemailer");
-const { google } = require("googleapis");
+app.use(cors({
+    origin: process.env.BACKEND_URL,
+    credentials: true               
+  }))
+
+app.use(express.json())
+app.use(express.urlencoded({extended:true}))
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
@@ -16,11 +27,8 @@ const oAuth2Client = new google.auth.OAuth2(
 );
 oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ success: false, message: "method not allowed" });
-  }
 
+app.post('/',async (req,res)=>{
   const { email, subject, message } = req.body;
 
   if (!email || !subject || !message) {
@@ -31,10 +39,10 @@ export default async function handler(req, res) {
     const accessToken = await oAuth2Client.getAccessToken();
 
     const transporter = nodemailer.createTransport({
-      service: GOOGLE_SERVICE,
+      service: process.env.GOOGLE_SERVICE,
       auth: {
         type: "OAuth2",
-        user: GMAIL_ID,
+        user: process.env.GMAIL_ID,
         clientId: CLIENT_ID,
         clientSecret: CLIENT_SECRET,
         refreshToken: REFRESH_TOKEN,
@@ -43,7 +51,7 @@ export default async function handler(req, res) {
     });
 
     await transporter.sendMail({
-      from: `ShopZilla <${GMAIL_ID}>`,
+      from: `ShopZilla <${process.env.GMAIL_ID}>`,
       to: email,
       subject,
       text: message,
@@ -51,6 +59,11 @@ export default async function handler(req, res) {
 
     res.status(200).json({ success: true,message: ''});
   } catch (error) {
+    console.log(error);
     res.status(500).json({ success: false, message: "failed to send email" });
   }
-}
+})
+
+app.listen(process.env.PORT,()=>{
+    console.log(`server is listening on http://localhost:${process.env.PORT}`);
+})
