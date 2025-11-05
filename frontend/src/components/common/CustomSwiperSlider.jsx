@@ -46,6 +46,7 @@ export const CustomSwiperSlider = ({
         className={className}
         spaceBetween={space}
         nested={nested}
+        touchStartPreventDefault={false}
       >
         {slideData.map((data, index) => {
           return (
@@ -53,7 +54,7 @@ export const CustomSwiperSlider = ({
               key={keyIsId ? data.id : index}
               className={`${pb} ${isParentSlide && "parentSlide"}`}
             >
-              {cloneElement(children, { data,index })}
+              {cloneElement(children, { data, index })}
             </SwiperSlide>
           );
         })}
