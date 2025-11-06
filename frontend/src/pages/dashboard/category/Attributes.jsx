@@ -5,6 +5,9 @@ import { useEffect } from "react";
 import { getAllAttributes } from "../../../store/thunks/admin/categoryThunk";
 import { UpdateAttributesModal } from "../../../components/modal/UpdateAttributesModal";
 
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+
 export const Attributes = () => {
   const { subcategory, category, id, subId } = useParams();
   const dispatch = useDispatch();
@@ -48,6 +51,29 @@ export const Attributes = () => {
           </div>
 
          <UpdateAttributesModal attributesData={attributes} id={id} subId={subId}/>
+        </>
+      )}
+
+      {loading && (
+        <>
+          <div className="flex flex-col gap-y-3 overflow-y-auto pb-1">
+            {[1,2,3,4,5,6,7,8,9,10].map((attr) => {
+              return (
+                <div className="bg-white border p-2 rounded-md" key={attr}>
+                  <div className="grid grid-cols-2 gap-4">
+                    <h3 className="text-lg font-semibold uppercase tracking-widest">
+                      <Skeleton width={'65%'}/>
+                    </h3>
+                    <h3 className="text-lg font-semibold uppercase tracking-widest text-green-600">
+                   <Skeleton/>
+                    </h3>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+       <Skeleton height={40}/>
         </>
       )}
     </div>
