@@ -1,4 +1,3 @@
-import { FaTimesCircle } from "react-icons/fa";
 import { FillButton } from "../buttons/FillButton";
 import { useForm } from "react-hook-form";
 import { useEffect, useMemo, useState } from "react";
@@ -11,6 +10,7 @@ import { addProduct, updateProduct } from "../../store/thunks/admin/adminProduct
 import { CategorySelector } from "../selectors/CategorySelector";
 import { getAllCaetgories, getAllSubCaetgories } from "../../store/thunks/admin/categoryThunk";
 import { clearSubCategories } from "../../store/slices/admin/categorySlice";
+import { CustomDialog } from "../common/CustomDialog";
 
 export const ProductModal = ({
   edit = false,
@@ -88,19 +88,11 @@ export const ProductModal = ({
           <FillButton name={"Add Product"} />
         )}
       </span>
-      {open && (
-        <>
-          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000089] p-2 py-4 overflow-y-auto [--webkit-overflow-scrolling:touch] grid place-items-center">
-            <form
+        <CustomDialog open={open} handleClose={handleClose} title={'Product Basic Details'}>
+          <form
               onSubmit={handleSubmit(submitForm)}
-              className="bg-white w-full border border-black p-3 flex flex-col justify-center gap-5"
+              className="flex flex-col justify-center gap-5"
             >
-              <FaTimesCircle
-                className="self-end text-2xl active:text-[var(--purpleDark)] transition-colors"
-                onClick={handleClose}
-              />
-
-              <h1 className="text-center text-3xl -mt-5">Product Basic Details</h1>
 
               {/* name begins */}
               <div className="flex flex-col justify-center gap-2">
@@ -166,9 +158,7 @@ export const ProductModal = ({
 
               <FillButton type="submit" name={edit ? "Update" : "Add"} />
             </form>
-          </div>
-        </>
-      )}
+        </CustomDialog>
     </div>
   );
 };

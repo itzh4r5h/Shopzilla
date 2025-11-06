@@ -6,7 +6,6 @@ import { joiResolver } from "@hookform/resolvers/joi";
 import { useDispatch } from "react-redux";
 import { MdEditSquare, MdOutlineFileUpload } from "react-icons/md";
 import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
-import { createPortal } from "react-dom";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
@@ -18,6 +17,7 @@ import { variantJoiSchema } from "../../validators/productValidators";
 import { cleanAttributes, deepLowercase } from "../../utils/helpers";
 import { addOrUpdateVariant } from "../../store/thunks/admin/variantThunk";
 import { CustomSwiperSlider } from "../common/CustomSwiperSlider";
+import { CustomDialog } from "../common/CustomDialog";
 
 const SizeSlideComponenet = ({
   index,
@@ -134,7 +134,7 @@ const ImagesSlideComponent = ({
   control,
   childRefs,
   chooseImages,
-  data:imgData,
+  data: imgData,
   removeImage,
 }) => {
   const color = `images.${index}.color`;
@@ -501,81 +501,82 @@ export const VariantModal = ({
           <FillButton type="button" name={"Add variant"} />
         )}
       </span>
-      {open &&
-        createPortal(
-          <>
-            <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000089] p-2 py-4 overflow-y-auto grid place-items-center">
-              <form
-                onSubmit={handleSubmit(submitForm)}
-                className="bg-white w-full border border-black p-3 flex flex-col justify-center gap-5"
-              >
-                <FaTimesCircle
-                  className="self-end text-2xl active:text-[var(--purpleDark)] transition-colors"
-                  onClick={handleClose}
-                />
+      <CustomDialog
+        open={open}
+        handleClose={handleClose}
+        title={"Variant Details"}
+      >
+        <form
+          onSubmit={handleSubmit(submitForm)}
+          className="flex flex-col justify-center gap-5"
+        >
+          {/* attributes begins */}
+          <div className="flex flex-col justify-center gap-y-2">
+            <h1 className="text-2xl">Attributes</h1>
+            {attributes.map((attr, index) => {
+              const attrName = `attributes.${index}.name`;
+              const attrValue = `attributes.${index}.value`;
 
-                <h1 className="text-center text-3xl -mt-5">Variant Details</h1>
-
-                {/* attributes begins */}
-                <div className="flex flex-col justify-center gap-y-2">
-                  <h1 className="text-2xl">Attributes</h1>
-                  {attributes.map((attr, index) => {
-                    const attrName = `attributes.${index}.name`;
-                    const attrValue = `attributes.${index}.value`;
-
-                    return (
-                      <div
-                        className="flex flex-col justify-center gap-y-2"
-                        key={attr.id}
-                      >
-                        <div className="grid grid-cols-2 gap-x-2">
-                          <input
-                            autoComplete="off"
-                            {...register(attrName, {
-                              required: true,
-                            })}
-                            id={attrName}
-                            readOnly
-                            className="uppercase text-lg outline-none pointer-events-none"
-                          />
-
-                          <input
-                            autoComplete="off"
-                            {...register(attrValue, {
-                              required: true,
-                            })}
-                            id={attrValue}
-                            className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                {/* attributes ends */}
-
-                {/* images begins */}
-                <CustomSwiperSlider
-                  swiperRef={swiperRef}
-                  slideData={images}
-                  className="options_swiper"
-                  pb="pb-10"
+              return (
+                <div
+                  className="flex flex-col justify-center gap-y-2"
+                  key={attr.id}
                 >
-                  <ImagesSlideComponent images={images} needSize={needSize} register={register} childRefs={childSwiperRefs} chooseImages={chooseImages} handleRemoveImagesBox={handleRemoveImagesBox} addImagesBox={addImagesBox} removeImage={removeImage} control={control}/>
-                </CustomSwiperSlider>
+                  <div className="grid grid-cols-2 gap-x-2">
+                    <input
+                      autoComplete="off"
+                      {...register(attrName, {
+                        required: true,
+                      })}
+                      id={attrName}
+                      readOnly
+                      className="uppercase text-lg outline-none pointer-events-none"
+                    />
 
-                {/* images ends */}
+                    <input
+                      autoComplete="off"
+                      {...register(attrValue, {
+                        required: true,
+                      })}
+                      id={attrValue}
+                      className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {/* attributes ends */}
 
-                <FillButton
-                  type="submit"
-                  name={edit ? "Update" : "Add"}
-                  padding="px-2 py-1 -mt-4"
-                />
-              </form>
-            </div>
-          </>,
-          document.body
-        )}
+          {/* images begins */}
+          <CustomSwiperSlider
+            swiperRef={swiperRef}
+            slideData={images}
+            className="options_swiper"
+            pb="pb-10"
+          >
+            <ImagesSlideComponent
+              images={images}
+              needSize={needSize}
+              register={register}
+              childRefs={childSwiperRefs}
+              chooseImages={chooseImages}
+              handleRemoveImagesBox={handleRemoveImagesBox}
+              addImagesBox={addImagesBox}
+              removeImage={removeImage}
+              control={control}
+            />
+          </CustomSwiperSlider>
+
+          {/* images ends */}
+
+          <FillButton
+            type="submit"
+            name={edit ? "Update" : "Add"}
+            padding="px-2 py-1 -mt-4"
+          />
+        </form>
+      </CustomDialog>
     </div>
   );
 };

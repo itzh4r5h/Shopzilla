@@ -1,4 +1,3 @@
-import { FaTimesCircle } from "react-icons/fa";
 import { FillButton } from "../buttons/FillButton";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useMemo, useRef, useState } from "react";
@@ -10,6 +9,7 @@ import { deepLowercase } from "../../utils/helpers";
 import { addSubCategories } from "../../store/thunks/admin/categoryThunk";
 import { SubCategory } from "../common/SubCategory";
 import { CustomSwiperSlider } from "../common/CustomSwiperSlider";
+import { CustomDialog } from "../common/CustomDialog";
 
 const SlideComponent = ({
   subcategories,
@@ -102,42 +102,34 @@ export const SubCategoryModal = ({ id }) => {
       <span onClick={() => setOpen(true)}>
         <FillButton name={"Add Sub Category"} />
       </span>
-      {open && (
-        <>
-          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000089] p-2 py-4 overflow-y-auto grid place-items-center">
-            <form
-              onSubmit={handleSubmit(submitForm)}
-              className="bg-white w-full border border-black p-3 flex flex-col justify-center gap-5"
-            >
-              <FaTimesCircle
-                className="self-end text-2xl active:text-[var(--purpleDark)] transition-colors"
-                onClick={handleClose}
-              />
 
-              <h1 className="text-center text-3xl -mt-5">Sub Categories</h1>
-              <CustomSwiperSlider
-                swiperRef={swiperRef}
-                space={20}
-                slideData={subcategories}
-                className='subcategories_swiper'
-              >
-                <SlideComponent
-                  subcategories={subcategories}
-                  register={register}
-                  control={control}
-                  removeSubcat={removeSubcat}
-                  addSubcat={addSubcat}
-                  childSwiperRefs={childSwiperRefs}
-                />
-              </CustomSwiperSlider>
+      <CustomDialog open={open} handleClose={handleClose} title={'Subcategories'}>
+        <form
+          onSubmit={handleSubmit(submitForm)}
+          className="flex flex-col justify-center gap-5"
+        >
+        
+          <CustomSwiperSlider
+            swiperRef={swiperRef}
+            space={20}
+            slideData={subcategories}
+            className="subcategories_swiper"
+          >
+            <SlideComponent
+              subcategories={subcategories}
+              register={register}
+              control={control}
+              removeSubcat={removeSubcat}
+              addSubcat={addSubcat}
+              childSwiperRefs={childSwiperRefs}
+            />
+          </CustomSwiperSlider>
 
-              <span className="-mt-4">
-                <FillButton type="submit" name="Add" />
-              </span>
-            </form>
-          </div>
-        </>
-      )}
+          <span className="-mt-4">
+            <FillButton type="submit" name="Add" />
+          </span>
+        </form>
+      </CustomDialog>
     </div>
   );
 };

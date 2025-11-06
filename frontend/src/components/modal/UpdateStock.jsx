@@ -1,4 +1,3 @@
-import { FaTimesCircle } from "react-icons/fa";
 import { OutlineButton } from "../buttons/OutlineButton";
 import { FillButton } from "../buttons/FillButton";
 import { useForm } from "react-hook-form";
@@ -9,6 +8,7 @@ import { useValidationErrorToast } from "../../hooks/useValidationErrorToast";
 import { stockJoiSchema } from "../../validators/productValidators";
 import { updateStock } from "../../store/thunks/admin/variantThunk";
 import { CustomSwiperSlider } from "../common/CustomSwiperSlider";
+import { CustomDialog } from "../common/CustomDialog";
 
 const SizeSlideComponent = ({ index, register }) => {
   return (
@@ -117,71 +117,65 @@ export const UpdateStock = ({ variant }) => {
           name={"update"}
         />
       </span>
-      {open && (
-        <>
-          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000089] p-2 py-4 overflow-y-auto grid place-items-center">
-            <form
-              onSubmit={handleSubmit(submitForm)}
-              className="bg-white w-full border border-black p-3 flex flex-col justify-center gap-5"
-            >
-              <FaTimesCircle
-                className="self-end text-2xl active:text-[var(--purpleDark)] transition-colors"
-                onClick={handleClose}
-              />
 
-              <h1 className="text-center text-3xl -mt-5">Update Stock</h1>
-
-              <div className="flex flex-col gap-y-2">
-                <div className="grid grid-cols-2">
-                  <h3 className="text-2xl capitalize">Name</h3>
-                  <h3 className="text-xl line-clamp-2 capitalize text-[var(--light)]">
-                    {variant.product.name}
-                  </h3>
-                </div>
-                <div className="grid grid-cols-2">
-                  <h3 className="text-2xl capitalize">Color</h3>
-                  <div
-                    className="h-10 w-15 rounded-3xl border-2"
-                    style={{
-                      backgroundColor:
-                        variant.images[variant.selectedProduct].color,
-                    }}
-                  ></div>
-                </div>
-                {!variant.needSize && (
-                  <div className="grid grid-cols-2 justify-center gap-2">
-                    <label htmlFor="stock" className="text-2xl w-fit">
-                      Stock
-                    </label>
-                    <input
-                      autoComplete="off"
-                      {...register("stock", {
-                        required: true,
-                      })}
-                      id="stock"
-                      className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-                    />
-                  </div>
-                )}
-
-                {variant.needSize && sizes.length > 0 && (
-                  <CustomSwiperSlider
-                    swiperRef={swiperRef}
-                    slideData={sizes}
-                    className="update_stock_swiper"
-                    pb="pb-10 px-2"
-                    keyIsId={false}
-                  >
-                    <SizeSlideComponent register={register} />
-                  </CustomSwiperSlider>
-                )}
+      <CustomDialog
+        open={open}
+        handleClose={handleClose}
+        title={"Update Stock"}
+      >
+        <form
+          onSubmit={handleSubmit(submitForm)}
+          className="flex flex-col justify-center gap-5"
+        >
+          <div className="flex flex-col gap-y-2">
+            <div className="grid grid-cols-2">
+              <h3 className="text-2xl capitalize">Name</h3>
+              <h3 className="text-xl line-clamp-2 capitalize text-[var(--light)]">
+                {variant.product.name}
+              </h3>
+            </div>
+            <div className="grid grid-cols-2">
+              <h3 className="text-2xl capitalize">Color</h3>
+              <div
+                className="h-10 w-15 rounded-3xl border-2"
+                style={{
+                  backgroundColor:
+                    variant.images[variant.selectedProduct].color,
+                }}
+              ></div>
+            </div>
+            {!variant.needSize && (
+              <div className="grid grid-cols-2 justify-center gap-2">
+                <label htmlFor="stock" className="text-2xl w-fit">
+                  Stock
+                </label>
+                <input
+                  autoComplete="off"
+                  {...register("stock", {
+                    required: true,
+                  })}
+                  id="stock"
+                  className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
+                />
               </div>
+            )}
 
-              <FillButton type="submit" name="Update" />
-            </form>
+            {variant.needSize && sizes.length > 0 && (
+              <CustomSwiperSlider
+                swiperRef={swiperRef}
+                slideData={sizes}
+                className="update_stock_swiper"
+                pb="pb-10 px-2"
+                keyIsId={false}
+              >
+                <SizeSlideComponent register={register} />
+              </CustomSwiperSlider>
+            )}
           </div>
-        </>
-      )}
+
+          <FillButton type="submit" name="Update" />
+        </form>
+      </CustomDialog>
     </div>
   );
 };

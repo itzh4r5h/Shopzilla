@@ -1,4 +1,3 @@
-import { FaTimesCircle } from "react-icons/fa";
 import { FillButton } from "../buttons/FillButton";
 import { useForm } from "react-hook-form";
 import { useMemo, useState } from "react";
@@ -13,6 +12,7 @@ import {
   updateSubCategoryName,
 } from "../../store/thunks/admin/categoryThunk";
 import { MdEditSquare } from "react-icons/md";
+import { CustomDialog } from "../common/CustomDialog";
 
 export const CategoryNameModal = ({ name, icon, id, subId = false }) => {
   const schema = useMemo(() => {
@@ -29,9 +29,9 @@ export const CategoryNameModal = ({ name, icon, id, subId = false }) => {
     control,
     formState: { errors },
   } = useForm({
-    defaultValues:{
+    defaultValues: {
       name,
-      icon
+      icon,
     },
     resolver: joiResolver(schema),
   });
@@ -60,55 +60,43 @@ export const CategoryNameModal = ({ name, icon, id, subId = false }) => {
       <span onClick={() => setOpen(true)}>
         <MdEditSquare className="text-2xl active:text-[var(--purpleDark)] transition-colors" />
       </span>
-      {open && (
-        <>
-          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000089] p-2 py-4 overflow-y-auto grid place-items-center">
-            <form
-              onSubmit={handleSubmit(submitForm)}
-              className="bg-white w-full border border-black p-3 flex flex-col justify-center gap-5"
-            >
-              <FaTimesCircle
-                className="self-end text-2xl active:text-[var(--purpleDark)] transition-colors"
-                onClick={handleClose}
+      <CustomDialog
+        open={open}
+        handleClose={handleClose}
+        title={"Update Category Name"}
+      >
+        <form
+          onSubmit={handleSubmit(submitForm)}
+          className="flex flex-col justify-center gap-5"
+        >
+          <div className="grid grid-cols-2 gap-x-2">
+            {/* name begins */}
+            <div className="flex flex-col justify-center gap-2">
+              <label htmlFor="name" className="text-xl w-fit">
+                Name
+              </label>
+              <input
+                autoComplete="off"
+                {...register("name", { required: true })}
+                id="name"
+                className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
               />
+            </div>
+            {/* name ends */}
+            {/* icon begins */}
+            <div className="flex flex-col justify-center gap-2">
+              <label htmlFor="icon" className="text-xl w-fit">
+                Icon
+              </label>
 
-              <h1 className="text-center text-3xl -mt-5">
-                Update Category Name
-              </h1>
-
-              <div className="grid grid-cols-2 gap-x-2">
-                {/* name begins */}
-                <div className="flex flex-col justify-center gap-2">
-                  <label htmlFor="name" className="text-xl w-fit">
-                    Name
-                  </label>
-                  <input
-                    autoComplete="off"
-                    {...register("name", { required: true })}
-                    id="name"
-                    className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-                  />
-                </div>
-                {/* name ends */}
-                {/* icon begins */}
-                <div className="flex flex-col justify-center gap-2">
-                  <label htmlFor="icon" className="text-xl w-fit">
-                    Icon
-                  </label>
-
-                  <IconSelector
-                    name={"icon"}
-                    control={control}
-                  />
-                </div>
-                {/* icon ends */}
-              </div>
-
-              <FillButton type="submit" name="Update" />
-            </form>
+              <IconSelector name={"icon"} control={control} />
+            </div>
+            {/* icon ends */}
           </div>
-        </>
-      )}
+
+          <FillButton type="submit" name="Update" />
+        </form>
+      </CustomDialog>
     </div>
   );
 };

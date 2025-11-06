@@ -1,4 +1,3 @@
-import { FaTimesCircle } from "react-icons/fa";
 import { FillButton } from "../buttons/FillButton";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useMemo, useRef, useState } from "react";
@@ -11,7 +10,7 @@ import { deepLowercase } from "../../utils/helpers";
 import { addCategory } from "../../store/thunks/admin/categoryThunk";
 import { SubCategory } from "../common/SubCategory";
 import { CustomSwiperSlider } from "../common/CustomSwiperSlider";
-
+import { CustomDialog } from "../common/CustomDialog";
 
 const SlideComponent = ({
   subcategories,
@@ -71,7 +70,7 @@ export const CategoryModal = () => {
       ],
     },
     resolver: joiResolver(schema),
-    shouldFocusError:false
+    shouldFocusError: false,
   });
 
   // For subcategories
@@ -95,83 +94,70 @@ export const CategoryModal = () => {
     handleClose();
   };
 
-  
   const swiperRef = useRef(null);
   const childSwiperRefs = useRef([]);
 
-  useValidationErrorToast(errors,{main:swiperRef,childs:childSwiperRefs});
+  useValidationErrorToast(errors, { main: swiperRef, childs: childSwiperRefs });
 
   return (
     <div>
       <span onClick={() => setOpen(true)}>
         <FillButton name={"Add Category"} />
       </span>
-      {open && (
-        <>
-          <div className="w-full h-screen fixed top-0 left-0 z-999 bg-[#00000089] p-2 overflow-y-auto grid place-items-center">
-            <form
-              onSubmit={handleSubmit(submitForm)}
-              className="bg-white w-full border border-black p-3 flex flex-col justify-center gap-5"
-            >
-              <FaTimesCircle
-                className="self-end text-2xl active:text-[var(--purpleDark)] transition-colors"
-                onClick={handleClose}
+
+      <CustomDialog open={open} handleClose={handleClose} title={'Category'} >
+        <form
+          onSubmit={handleSubmit(submitForm)}
+          className="flex flex-col justify-center gap-5"
+        >
+          <div className="grid grid-cols-2 gap-x-2">
+            {/* name begins */}
+            <div className="flex flex-col justify-center gap-2">
+              <label htmlFor="name" className="text-xl w-fit">
+                Name
+              </label>
+              <input
+                autoComplete="off"
+                {...register("name", { required: true })}
+                id="name"
+                className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
               />
+            </div>
+            {/* name ends */}
+            {/* icon begins */}
+            <div className="flex flex-col justify-center gap-2">
+              <label htmlFor="category_icon" className="text-xl w-fit">
+                Icon
+              </label>
 
-              <h1 className="text-center text-3xl -mt-11 w-fit mx-auto">
-                Category
-              </h1>
-
-              <div className="grid grid-cols-2 gap-x-2">
-                {/* name begins */}
-                <div className="flex flex-col justify-center gap-2">
-                  <label htmlFor="name" className="text-xl w-fit">
-                    Name
-                  </label>
-                  <input
-                    autoComplete="off"
-                    {...register("name", { required: true })}
-                    id="name"
-                    className="lowercase border rounded-md p-1 text-lg bg-[var(--grey)] outline-none focus:ring-2 focus:ring-[var(--purpleDark)]"
-                  />
-                </div>
-                {/* name ends */}
-                {/* icon begins */}
-                <div className="flex flex-col justify-center gap-2">
-                  <label htmlFor="category_icon" className="text-xl w-fit">
-                    Icon
-                  </label>
-
-                  <IconSelector name={"category_icon"} control={control} />
-                </div>
-                {/* icon ends */}
-              </div>
-
-              <h2 className="text-2xl">Sub Categories</h2>
-
-               <CustomSwiperSlider
-                swiperRef={swiperRef}
-                space={20}
-                slideData={subcategories}
-                className="category_subcategories_swiper"
-              >
-                <SlideComponent
-                  subcategories={subcategories}
-                  register={register}
-                  control={control}
-                  removeSubcat={removeSubcat}
-                  addSubcat={addSubcat}
-                  childSwiperRefs={childSwiperRefs}
-                />
-              </CustomSwiperSlider>
-
-              <span className="-mt-5">
-                <FillButton type="submit" name="Add" />
-              </span>
-            </form>
+              <IconSelector name={"category_icon"} control={control} />
+            </div>
+            {/* icon ends */}
           </div>
-        </>
-      )}
+
+          <h2 className="text-2xl">Sub Categories</h2>
+
+          <CustomSwiperSlider
+            swiperRef={swiperRef}
+            space={20}
+            slideData={subcategories}
+            className="category_subcategories_swiper"
+          >
+            <SlideComponent
+              subcategories={subcategories}
+              register={register}
+              control={control}
+              removeSubcat={removeSubcat}
+              addSubcat={addSubcat}
+              childSwiperRefs={childSwiperRefs}
+            />
+          </CustomSwiperSlider>
+
+          <span className="-mt-5">
+            <FillButton type="submit" name="Add" />
+          </span>
+        </form>
+      </CustomDialog>
     </div>
   );
 };
