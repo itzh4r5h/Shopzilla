@@ -26,9 +26,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 
 import { ImageCard } from "../components/cards/ImageCard";
 import { toast } from "react-toastify";
-import {
-  clearProductDetails,
-} from "../store/slices/non_admin/productSlice";
+import { clearProductDetails } from "../store/slices/non_admin/productSlice";
 import { ReviewModal } from "../components/modal/ReviewModal";
 import { ReviewCard } from "../components/cards/ReviewCard";
 import { addProductToCartOrUpdateQuantity } from "../store/thunks/non_admin/cartThunk";
@@ -58,10 +56,9 @@ export const ProductDetails = ({ path }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { productId, variantId, selectedProduct } = useParams();
-  const {
-    loading: productLoading,
-    variant,
-  } = useSelector((state) => state.product);
+  const { loading: productLoading, variant } = useSelector(
+    (state) => state.product
+  );
   const { user } = useSelector((state) => state.user);
   const { isLoggedIn } = useSelector((state) => state.auth);
   const {
@@ -114,7 +111,9 @@ export const ProductDetails = ({ path }) => {
     (rev) => rev.user.toString() === user?._id.toString()
   );
 
-  const [selectedColorIndex,setSelectedColorIndex] = useState(Number(selectedProduct))
+  const [selectedColorIndex, setSelectedColorIndex] = useState(
+    Number(selectedProduct)
+  );
   const [selectedSizeIndex, setSelectedSizeIndex] = useState(0);
   // this will work as check
   const [totalStock, setTotalStock] = useState(0);
@@ -137,9 +136,8 @@ export const ProductDetails = ({ path }) => {
               break;
             }
           }
-        }
-        else{
-          setCurrentStock(0)
+        } else {
+          setCurrentStock(0);
         }
         setTotalStock(totalStk);
       } else {
@@ -203,9 +201,7 @@ export const ProductDetails = ({ path }) => {
         <article className="w-full min-h-full border border-[var(--black)] bg-[var(--white)] p-2 flex flex-col gap-2 mt-5">
           <Swiper
             loop={
-              variant.images[selectedColorIndex].files.length > 1
-                ? true
-                : false
+              variant.images[selectedColorIndex].files.length > 1 ? true : false
             }
             pagination={{ clickable: true }}
             grabCursor={true}
@@ -247,7 +243,7 @@ export const ProductDetails = ({ path }) => {
                 return (
                   <div
                     onClick={() => {
-                      setSelectedColorIndex(index)
+                      setSelectedColorIndex(index);
                       updateStock(index);
                       setQuantity(1);
                     }}
@@ -386,7 +382,20 @@ export const ProductDetails = ({ path }) => {
               <span onClick={handleAddToCart} className="w-full">
                 <OutlineButton name={"Add To Cart"} />
               </span>
-              <Checkout details={{id:variant._id,productData:{...(variant.needSize?{quantity,sizeIndex: selectedSizeIndex,colorIndex: selectedColorIndex}:{quantity, colorIndex: selectedColorIndex})}}} />
+              <Checkout
+                details={{
+                  id: variant._id,
+                  productData: {
+                    ...(variant.needSize
+                      ? {
+                          quantity,
+                          sizeIndex: selectedSizeIndex,
+                          colorIndex: selectedColorIndex,
+                        }
+                      : { quantity, colorIndex: selectedColorIndex }),
+                  },
+                }}
+              />
             </div>
           )}
 
@@ -394,10 +403,26 @@ export const ProductDetails = ({ path }) => {
           <h2 className="text-center border-t-1 border-black mt-5 pt-1 text-2xl font-bold">
             Description
           </h2>
-          <p className="text-md text-pretty text-center border-b-1 border-black mb-5 pb-5">
+          <p className="text-md text-pretty text-center border-b-1 border-black mb-2 pb-5">
             {variant.product.description}
           </p>
           {/* description ends */}
+
+          {/* specifications begins */}
+          <h2 className="text-center text-2xl font-bold">Specifications</h2>
+          <div className=" border-b-1 border-black mb-5 pb-5 grid grid-cols-2 gap-2">
+            {variant.attributes.map((attr) => {
+              return (
+                <div className="border rounded-md p-2" key={attr._id}>
+                  <h1 className="capitalize text-lg">{attr.name}</h1>
+                  <h3 className="capitalize text-[var(--light)] text-md">
+                    {attr.value}
+                  </h3>
+                </div>
+              );
+            })}
+          </div>
+          {/* specifications ends */}
 
           {/* Rating and reviews begins */}
 
