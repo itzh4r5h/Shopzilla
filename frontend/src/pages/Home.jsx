@@ -18,7 +18,7 @@ export const Home = () => {
 
   return (
     <div className="h-full relative">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 h-full">
         {loading &&
           [...Array(20)].map((item, index) => {
             return <ProductCard key={index} />;
@@ -29,6 +29,7 @@ export const Home = () => {
           variants?.map((variant, index) => {
             return (
               <Link
+                className="h-fit"
                 to={`/products/${variant.product._id}/variants/${variant._id}/${variant.selectedProduct}`}
                 key={variant._id + index}
               >
@@ -39,7 +40,11 @@ export const Home = () => {
 
         {variants?.length > 0 && (
           <div className="flex justify-center items-end col-span-2">
-            <PurplePagination count={totalPages} setPage={setPage} page={page}/>
+            <PurplePagination
+              count={totalPages}
+              setPage={setPage}
+              page={page}
+            />
           </div>
         )}
       </div>
