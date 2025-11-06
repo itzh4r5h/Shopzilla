@@ -74,7 +74,7 @@ export const Profile = () => {
 
   useEffect(() => {
     if (!user) return;
-    if (user.isVerified && user.role !== 'admin') {
+    if (user.isVerified && user.role !== "admin") {
       stopSocketConnection();
     } else {
       startSocketConnection(user._id, dispatch, navigate);
@@ -147,17 +147,17 @@ export const Profile = () => {
           )}
           {/* email ends */}
 
-          {user?.isVerified && <ProfilePassword />}
-
-          {/* address begins */}
-          {user?.isVerified && <ProfileAddress />}
-          {/* address ends */}
-
           {isAdminUser && (
             <Link to="/admin/dashboard/home">
               <FillButton name={"Go To Dashboard"} />
             </Link>
           )}
+
+          {user?.isVerified && <ProfilePassword />}
+
+          {/* address begins */}
+          {user?.isVerified && <ProfileAddress />}
+          {/* address ends */}
         </div>
       ) : (
         <div className="flex flex-col justify-center gap-5 relative">
