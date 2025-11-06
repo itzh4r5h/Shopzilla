@@ -13,11 +13,15 @@ import { DeleteModal } from "../../../components/modal/DeleteModal";
 import { CategoryNameModal } from "../../../components/modal/CategoryNameModal";
 import { SubCategoryModal } from "../../../components/modal/SubCategoryModal";
 
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+
 export const SubCateogries = () => {
   const { category, id } = useParams();
   const dispatch = useDispatch();
-  const { subcategories, loading, updated } =
-    useSelector((state) => state.category);
+  const { subcategories, loading, updated } = useSelector(
+    (state) => state.category
+  );
 
   useEffect(() => {
     dispatch(getAllSubCaetgories(id));
@@ -28,7 +32,6 @@ export const SubCateogries = () => {
       dispatch(getAllSubCaetgories(id));
     }
   }, [updated]);
-
 
   return (
     <div className="grid gap-y-1 grid-cols-1 grid-rows-[1fr_10fr_1fr] h-full relative">
@@ -52,7 +55,7 @@ export const SubCateogries = () => {
                         deleteSubCategory({ id, subId: subcategory._id })
                       );
                     }}
-                    textSize={'text-3xl'}
+                    textSize={"text-3xl"}
                   />
                 </div>
                 <Link
@@ -73,6 +76,32 @@ export const SubCateogries = () => {
                   </p>
                   <IoIosArrowForward className="text-2xl" />
                 </Link>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {loading && (
+        <div className="flex flex-col gap-y-3 overflow-y-auto pb-1">
+          {[1, 2, 3, 4, 5].map((data) => {
+            return (
+              <div className="relative" key={data}>
+                <div className="absolute right-1 top-1 flex flex-col justify-center items-center gap-2">
+                  <Skeleton height={20} width={20} />
+                  <Skeleton height={20} width={20} />
+                </div>
+
+                <div className="bg-white border rounded-md h-17 p-2 grid items-center grid-cols-[2fr_8.5fr_1fr_.5fr] gap-x-3 active:border-[var(--purpleDark)] active:ring-2 active:ring-[var(--purpleDark)]">
+                  <picture className="relative h-10 w-full block overflow-hidden">
+                    <Skeleton height={"100%"} />
+                  </picture>
+
+                  <p className="text-lg leading-tight tracking-wider uppercase">
+                    <Skeleton />
+                  </p>
+                  <Skeleton height={25} width={20} />
+                </div>
               </div>
             );
           })}
