@@ -29,7 +29,7 @@ export const DeleteModal = ({ deleteFunction,textSize }) => {
                 <OutlineButton type="button" name="Cancel" />
               </span>
               <span onClick={handleDelete}>
-                <FillButton type="button" name="Delete" />
+                <FillButton type="button" name="Delete" clr="bg-red-600"/>
               </span>
             </div>
           </div>
