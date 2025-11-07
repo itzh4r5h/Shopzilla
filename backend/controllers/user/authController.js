@@ -35,6 +35,7 @@ exports.signInWithGoogle = catchAsyncErrors(async (req, res, next) => {
     httpOnly: true,
     secure: true,
     sameSite: "None", // allow cross-domain
+    domain: ".onrender.com",
     path: "/",
   };
 
@@ -115,6 +116,7 @@ exports.signOut = catchAsyncErrors(async (req, res, next) => {
     httpOnly: true,
     secure: true,
     sameSite: "None",
+    domain: ".onrender.com",
     path: "/",
   });
 

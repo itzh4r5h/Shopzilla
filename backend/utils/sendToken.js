@@ -10,6 +10,7 @@ const sendToken = (user, statusCode, res) => {
     httpOnly: true,
     secure: true,
     sameSite: "None",
+    domain: ".onrender.com",
     path: '/'
   };
 
