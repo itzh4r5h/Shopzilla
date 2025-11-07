@@ -23,7 +23,6 @@ exports.isUserAuthenticated = catchAsyncErrors(async (req, res, next) => {
       httpOnly: true,
       secure: true,
       sameSite: "None",
-      domain: ".onrender.com",
       path: "/",
     });
     return next(new ErrorHandler("user not exists", 404));

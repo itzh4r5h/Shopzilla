@@ -34,8 +34,7 @@ exports.signInWithGoogle = catchAsyncErrors(async (req, res, next) => {
     maxAge: process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
     httpOnly: true,
     secure: true,
-    sameSite: "None", // allow cross-domain
-    domain: ".onrender.com",
+    sameSite: "None",
     path: "/",
   };
 
@@ -116,7 +115,6 @@ exports.signOut = catchAsyncErrors(async (req, res, next) => {
     httpOnly: true,
     secure: true,
     sameSite: "None",
-    domain: ".onrender.com",
     path: "/",
   });
 
