@@ -266,7 +266,7 @@ export const ProductDetails = ({ path }) => {
 
           {/* size box begins */}
           {variant.needSize && totalStock > 0 && (
-            <div className="overflow-x-auto flex gap-3 items-centers">
+            <div className="overflow-x-auto flex gap-3 items-centers px-1 pb-1" id="productSizes">
               {variant.images[selectedColorIndex].sizes
                 .map((sizeObj) => sizeObj)
                 .map((sz, index) => {
@@ -281,7 +281,7 @@ export const ProductDetails = ({ path }) => {
                             }
                           : () => {}
                       }
-                      className={`h-9 w-9 border-2 rounded-full relative ${
+                      className={`h-9 w-9 border-2 rounded-full relative shrink-0 ${
                         selectedSizeIndex === index
                           ? "border-[var(--purpleDark)]"
                           : "border-transparent"
