@@ -9,7 +9,7 @@ const sendToken = (user, statusCode, res) => {
     maxAge: process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
     httpOnly: true,
     secure: true,
-    sameSite: "none", // allow cross-domain
+    sameSite: "None",
     path: '/'
   };
 
