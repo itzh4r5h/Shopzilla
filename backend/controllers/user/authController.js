@@ -152,19 +152,6 @@ exports.verifyUserEmail = catchAsyncErrors(async (req, res, next) => {
     console.log(`Job for user ${user._id} deleted successfully`);
   }
 
-  const token = user.getJWTToken();
-
-  // options for cookie
-  const options = {
-    maxAge: process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
-    httpOnly: true,
-    secure: true,
-    sameSite: "None", // allow cross-domain
-    path: "/",
-  };
-
-  res.cookie("token", token, options);
-
   res.status(200).json({
     success: true,
     user: user,
