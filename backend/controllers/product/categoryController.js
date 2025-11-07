@@ -43,7 +43,7 @@ exports.updateCategoryName = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("category not exists", 404));
   }
 
-   const products = await Product.find({
+  const products = await Product.find({
     category: req.params.id,
   });
 
@@ -179,6 +179,19 @@ exports.updateSubCategoryAttriubtes = catchAsyncErrors(
 
     if (error) {
       return next(new ErrorHandler(formatJoiErrMessage(error), 400));
+    }
+
+     const products = await Product.find({
+      subcategory: isSubCategoryExists.name,
+    });
+
+    if (products.length > 0 && isSubCategoryExists.attributes.length > attributes.length) {
+      return next(
+        new ErrorHandler(
+          `you can't remove attributes as it is used in ${products.length} products`,
+          400
+        )
+      );
     }
 
     category.subcategories.forEach((subcategory) => {
