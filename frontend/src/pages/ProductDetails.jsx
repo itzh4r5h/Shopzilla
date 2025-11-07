@@ -221,7 +221,7 @@ export const ProductDetails = ({ path }) => {
             {variant.images[selectedColorIndex].files.map((img) => {
               return (
                 <SwiperSlide key={img._id}>
-                  <picture className="w-full h-55 block relative overflow-hidden bg-white">
+                  <picture className="w-full h-90 block relative overflow-hidden bg-white">
                     <ImageCard src={img} />
                   </picture>
                 </SwiperSlide>
