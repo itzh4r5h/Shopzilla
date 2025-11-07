@@ -61,3 +61,14 @@ input[type="color"]::-moz-color-swatch {
   border: none;
   border-radius: 5px;
 }
+
+#productSizes::-webkit-scrollbar{
+  display: block;
+  height: 2px;
+}
+
+#productSizes::-webkit-scrollbar-thumb{
+  display: block;
+  background-color: var(--purpleDark);
+  border-radius: 5px;
+}
