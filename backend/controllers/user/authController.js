@@ -34,7 +34,7 @@ exports.signInWithGoogle = catchAsyncErrors(async (req, res, next) => {
     maxAge: process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
     httpOnly: true,
     secure: true,
-    sameSite: "none", // allow cross-domain
+    sameSite: "None", // allow cross-domain
     path: "/",
   };
 
@@ -114,7 +114,7 @@ exports.signOut = catchAsyncErrors(async (req, res, next) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: true,
-    sameSite: "none",
+    sameSite: "None",
     path: "/",
   });
 
@@ -151,6 +151,19 @@ exports.verifyUserEmail = catchAsyncErrors(async (req, res, next) => {
     await job.remove();
     console.log(`Job for user ${user._id} deleted successfully`);
   }
+
+  const token = user.getJWTToken();
+
+  // options for cookie
+  const options = {
+    maxAge: process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    secure: true,
+    sameSite: "None", // allow cross-domain
+    path: "/",
+  };
+
+  res.cookie("token", token, options);
 
   res.status(200).json({
     success: true,
