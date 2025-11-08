@@ -43,13 +43,20 @@
 - 🧱 **Complete Product Management**
   - Create, update, delete, and view products  
   - Manage **variants per product** (size, color, etc.)  
+- 🧩 **Category System**  
+  - 🗂️ Create Categories to organize products  
+  - 🧷 Create Subcategories within a category  
+  - ⚙️ Add Attributes (e.g., Material, Fit, Type) under specific subcategories  
+  - 🚫 **Smart Restriction Rules**  
+    - Categories/Subcategories **cannot be deleted or updated** if used by any product  
+    - Attributes **can be updated** but **cannot be deleted** if products are using them 
 - 🧾 **Order Management**
   - View and update order statuses directly  
 - 👥 **User Management**
   - View all registered users  
   - Search users by name or email  
 - 📦 **Stock Management**
-  - View out-of-stock products with filters and search  
+  - View out-of-stock products with filters and search and update it according to need.
 - 🔍 **Search & Filters**
   - Quickly search through products, variants, and users  
 - 📄 **Pagination** — for products, users, and orders  
