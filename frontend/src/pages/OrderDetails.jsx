@@ -192,7 +192,7 @@ export const OrderDetails = () => {
         {/* price details begins */}
         <PriceCard
           quanity={orderQuantity}
-          price={order.totalPrice}
+          price={order.itemsPrice}
           orderDetails={true}
         />
         {/* price details ends */}
